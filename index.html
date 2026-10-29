@@ -320,7 +320,7 @@
     .team-screen-grid .career-panel-content { display: flex; flex-direction: column; gap: 8px; }
     .team-summary { display: grid; gap: 4px; padding: 8px 10px; border: 1px solid rgb(82 211 162 / 20%); border-radius: 8px; background: rgb(82 211 162 / 5%); color: var(--muted); font-size: 9px; line-height: 1.35; }
     .team-summary strong { color: var(--accent); font-size: 11px; }
-    .team-roster { display: grid; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 6px; }
+    .team-roster { display: grid; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 6px; overflow-y: auto; }
     .team-member { display: grid; min-width: 0; gap: 4px; padding: 7px; border: 1px solid var(--border); border-radius: 8px; background: rgb(255 255 255 / 1.2%); }
     .team-member-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
     .team-member-heading > strong { min-width: 0; font-size: 10px; }
@@ -338,7 +338,7 @@
     .succession-row > div strong { font-size: 9px; }
     .succession-row > div span { color: var(--muted); font-size: 7px; }
     .succession-row .button { min-height: 25px; padding: 0 6px; font-size: 8px; }
-    .team-candidates { display: grid; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 5px; }
+    .team-candidates { display: grid; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 5px; overflow-y: auto; }
     .team-candidate { display: grid; min-width: 0; gap: 4px; padding: 7px; border: 1px solid var(--border); border-radius: 8px; background: rgb(255 255 255 / 1.2%); }
     .team-candidate > div { display: flex; justify-content: space-between; gap: 4px; }
     .team-candidate > div strong { font-size: 9px; }
@@ -817,6 +817,14 @@
     @media (max-width: 360px) {
       .career-nav-button { font-size: 7px; }
       .career-position { min-width: 24px; }
+    }
+    #gameApp :not(svg):not(path):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
+      font-size: max(13px, .8125em);
+    }
+    @media (max-width: 620px) {
+      #gameApp .career-nav-button, #gameApp .career-position {
+        font-size: 11px;
+      }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
