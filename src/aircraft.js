@@ -19,8 +19,8 @@
       const payloadPotential = clamp(payload * 9.2 + (16 - emptyWeight) * 3.2, 0, 100);
       return { emptyWeight, payload, reliability, payloadPotential, milestones };
     },
-    reportScore(report) {
-      return Math.round(clamp(28 + report * 0.72 + (report >= milestoneLevel ? 8 : 0), 0, 100));
+    reportScore(report, multiplier = 1) {
+      return Math.round(clamp((28 + report * 0.72 + (report >= milestoneLevel ? 8 : 0)) * multiplier, 0, 100));
     },
     upgradeCost(attribute, level) {
       return Math.round(attribute.baseCost * (1 + level / 100));

@@ -145,15 +145,18 @@
           const next = clone(state);
           next.year += 1;
           next.week = 0;
-          const legacyBonus = Math.min(6, Math.floor(next.prestige / 25));
-          next.attributes = Object.fromEntries(Object.entries(baseStats).map(([key, value]) => [key, value + legacyBonus]));
+          const legacyBonus = Math.min(2, Math.floor(next.prestige / 25));
+          next.attributes = Object.fromEntries(Object.entries(next.attributes).map(([key, value]) =>
+            [key, Math.min(100, value + legacyBonus)]
+          ));
+          next.seasonScope = game.Content.seasonScopeForYear(next.year).id;
           next.rivals = game.Rivals.create(next.year);
           next.scouted = {};
           next.phase = "preparation";
           next.event = null;
           next.eventResult = null;
           next.eventStrategies = ["balanced", "balanced", "balanced"];
-          pushLog(next, 0, `Temporada ${next.year} iniciada. O projeto foi reiniciado; experiência acumulada concede +${legacyBonus} níveis.`);
+          pushLog(next, 0, `Temporada ${next.year} iniciada. O avião preservou seus níveis${legacyBonus ? ` e a experiência da equipe concedeu +${legacyBonus} níveis` : ""}. Novo regulamento: ${game.Content.seasonScopeForYear(next.year).title}.`);
           return { state: next, notice: { text: `Temporada ${next.year} iniciada.`, kind: "success" } };
         }
         default:

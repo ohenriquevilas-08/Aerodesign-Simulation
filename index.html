@@ -174,8 +174,6 @@
     }
     .hub-field input:focus, .hub-field select:focus { border-color: var(--accent); outline: 2px solid rgb(82 211 162 / 18%); }
     .hub-difficulty-help { min-height: 30px; margin: -7px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
-    .hub-replace-save { display: flex; align-items: flex-start; gap: 9px; padding: 10px; border: 1px solid rgb(240 189 104 / 45%); color: var(--warning); font-size: 11px; line-height: 1.5; }
-    .hub-replace-save input { flex: 0 0 auto; margin: 2px 0 0; accent-color: var(--accent); }
     .hub-form-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 9px; margin-top: 5px; }
     .hub-status { min-height: 20px; margin: 12px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
     .hub-status[data-kind="error"] { color: var(--danger); }
@@ -190,6 +188,8 @@
     }
     .career-context h2 { margin: 0; font-size: clamp(18px, 2.4vw, 25px); letter-spacing: -.04em; }
     .career-context p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .career-indicators { display: flex; flex-shrink: 0; align-items: center; gap: 8px; }
+    .career-money { padding: 8px 11px; border: 1px solid rgb(82 211 162 / 30%); border-radius: 8px; background: rgb(82 211 162 / 7%); color: var(--accent); font-size: 12px; font-weight: 750; white-space: nowrap; }
     .turn-indicator { flex-shrink: 0; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; color: #c9d4df; font-size: 11px; }
     .career-nav-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
     .career-nav {
@@ -265,11 +265,16 @@
     }
     .career-screen:focus { outline: none; }
     .career-screen[aria-hidden="true"] { pointer-events: none; }
-    .overview-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: auto 1fr; gap: 12px; }
+    .overview-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: auto auto 1fr; gap: 12px; }
     .overview-grid .season-card { grid-column: 1; }
-    .overview-grid .aircraft-card { grid-column: 1; }
+    .overview-grid .aircraft-card { grid-column: 1; grid-row: 2 / 4; }
     .overview-grid .rivalry-panel { grid-column: 2; grid-row: 1; }
-    .overview-grid .season-log { grid-column: 2; grid-row: 2; }
+    .overview-grid .scope-card { grid-column: 2; grid-row: 2; }
+    .overview-grid .season-log { grid-column: 2; grid-row: 3; }
+    .scope-card { padding: 16px 18px; }
+    .scope-card h2 { margin: 5px 0 6px; font-size: 14px; }
+    .scope-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .scope-impact { display: block; margin-top: 9px; color: #b6e8d2; font-size: 10px; line-height: 1.45; }
     .main-panel { min-height: 100%; overflow: hidden; }
     .career-panel { min-height: 100%; overflow: hidden; }
     .career-panel .section-heading { padding: 21px 24px 0; }
@@ -416,6 +421,8 @@
     .event-header { justify-content: space-between; gap: 15px; }
     .event-header h3 { margin: 0; font-size: 16px; }
     .event-header p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .event-scope { margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--accent); background: rgb(82 211 162 / 6%); color: #c1e8d6; font-size: 11px; line-height: 1.5; }
+    .event-scope strong { color: var(--accent); }
     .event-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 18px 0; }
     .event-stage { min-height: 82px; padding: 12px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 13%); }
     .event-stage span { color: var(--muted); font-size: 10px; }
@@ -425,6 +432,14 @@
     .competition-lead h4 { margin: 0; font-size: 12px; }
     .competition-lead span { color: var(--muted); font-size: 10px; }
     .competition-commentary { min-height: 46px; margin: 14px 0; padding: 12px 14px; border-left: 3px solid var(--warning); border-radius: 0 8px 8px 0; background: rgb(240 189 104 / 7%); color: #f0d7aa; font-size: 11px; line-height: 1.5; }
+    .flight-circuit { margin: 16px 0; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: radial-gradient(ellipse at 50% 50%, rgb(82 211 162 / 7%), transparent 60%), #101a24; }
+    .flight-circuit svg { display: block; width: 100%; height: auto; max-height: 220px; }
+    .circuit-track { fill: none; stroke: #39514f; stroke-width: 34; }
+    .circuit-centerline { fill: none; stroke: #7a9d8b; stroke-width: 2; stroke-dasharray: 9 10; opacity: .7; }
+    .circuit-pylon { fill: #f0bd68; stroke: #111822; stroke-width: 4; }
+    .circuit-plane { fill: #71e0b4; filter: drop-shadow(0 0 5px rgb(82 211 162 / 80%)); }
+    .circuit-caption { display: flex; justify-content: space-between; gap: 8px; margin: 0 3px 3px; color: var(--muted); font-size: 10px; }
+    .circuit-caption strong { color: var(--accent); font-weight: 650; }
     .strategy-detail { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
     .leader-row td { color: var(--accent) !important; }
     .event-stage.flight-stage { min-height: 130px; }
@@ -465,10 +480,12 @@
     @media (max-width: 620px) {
       .shell { padding: 18px 12px 12px; }
       .topbar { align-items: flex-start; margin-bottom: 12px; }
-      .topbar-actions { flex-direction: column; align-items: stretch; }
+      .topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
       .topbar-actions .button { min-height: 34px; font-size: 11px; }
-      .career-context { align-items: flex-start; }
+      .career-context { align-items: flex-start; flex-wrap: wrap; }
       .career-context p { max-width: 250px; line-height: 1.45; }
+      .career-indicators { width: 100%; justify-content: space-between; }
+      .career-money, .turn-indicator { flex: 1; text-align: center; }
       .career-nav-wrap { gap: 4px; }
       .career-arrow { width: 32px; flex-basis: 32px; }
       .career-position { min-width: 35px; }
@@ -478,7 +495,7 @@
       .career-track { min-height: 0; height: 100%; }
       .career-screen { min-height: 0; height: 100%; padding: 7px; overflow-y: auto; }
       .overview-grid { height: auto; min-height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; align-content: start; }
-      .overview-grid .season-card, .overview-grid .aircraft-card, .overview-grid .rivalry-panel, .overview-grid .season-log { grid-column: 1; grid-row: auto; }
+      .overview-grid .season-card, .overview-grid .aircraft-card, .overview-grid .rivalry-panel, .overview-grid .scope-card, .overview-grid .season-log { grid-column: 1; grid-row: auto; }
       .career-panel-content { padding: 18px 16px; }
       .career-panel .section-heading { padding: 18px 16px 0; }
       .career-panel-content .engineering-list { grid-template-columns: minmax(0, 1fr); }
@@ -547,10 +564,6 @@
               </select>
             </div>
             <p class="hub-difficulty-help" id="difficultyHelp">Recursos e evolução das rivais em equilíbrio.</p>
-            <label class="hub-replace-save" id="replaceSaveLabel" hidden>
-              <input id="replaceSaveInput" type="checkbox">
-              <span>Entendo que iniciar uma nova carreira substituirá o jogo salvo neste navegador.</span>
-            </label>
             <div class="hub-form-actions">
               <button class="hub-button" type="button" data-action="home">VOLTAR</button>
               <button class="hub-button hub-button-primary" type="submit">INICIAR JOGO</button>
@@ -581,7 +594,10 @@
         <h2 id="mainTitle">Visão geral</h2>
         <p id="mainSubtitle">Acompanhe a equipe e prepare a temporada.</p>
       </div>
-      <div class="turn-indicator" id="turnIndicator">20 ações restantes</div>
+      <div class="career-indicators">
+        <div class="career-money" id="careerCashLabel" role="status" aria-label="Saldo atual">0 cr</div>
+        <div class="turn-indicator" id="turnIndicator">20 ações restantes</div>
+      </div>
     </header>
     <nav class="career-nav-wrap" aria-label="Navegação da carreira">
       <button class="career-arrow" type="button" data-action="previous-screen" aria-label="Tela anterior">‹</button>
@@ -624,6 +640,12 @@
             <section class="panel panel-pad rivalry-panel" id="rivalryPanel">
               <div class="section-heading"><div><h2>Disputa pelo título</h2><p>Rivalidade da temporada</p></div></div>
               <div class="rivalry-score" id="rivalryScore"></div>
+            </section>
+            <section class="panel scope-card" aria-labelledby="scopeTitle">
+              <span class="eyebrow">REGULAMENTO DO ANO</span>
+              <h2 id="scopeTitle">Escopo da temporada</h2>
+              <p id="scopeCriteria"></p>
+              <strong class="scope-impact" id="scopeImpact"></strong>
             </section>
             <section class="panel panel-pad season-log">
               <div class="section-heading"><div><h2>Diário da equipe</h2><p>Últimos acontecimentos da temporada</p></div></div>
@@ -693,10 +715,47 @@
 /* content.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
+  const seasonScopes = Object.freeze([
+    Object.freeze({
+      id: "payload",
+      title: "Desafio de carga útil",
+      criteria: "A arbitragem valoriza projetos que transportam mais carga.",
+      flightMultiplier: 1.08,
+      reportMultiplier: 1,
+      reliabilityModifier: 0
+    }),
+    Object.freeze({
+      id: "reliability",
+      title: "Desafio de confiabilidade",
+      criteria: "Segurança e voos consistentes recebem prioridade.",
+      flightMultiplier: 0.98,
+      reportMultiplier: 1,
+      reliabilityModifier: 0.06
+    }),
+    Object.freeze({
+      id: "technical-report",
+      title: "Desafio de relatório técnico",
+      criteria: "Documentação e apresentação técnica têm peso maior.",
+      flightMultiplier: 1,
+      reportMultiplier: 1.1,
+      reliabilityModifier: 0
+    }),
+    Object.freeze({
+      id: "balanced-efficiency",
+      title: "Desafio de eficiência",
+      criteria: "A competição busca equilíbrio entre carga, segurança e projeto.",
+      flightMultiplier: 1.03,
+      reportMultiplier: 1.04,
+      reliabilityModifier: 0.02
+    })
+  ]);
+  const seasonScopeForYear = (year) => seasonScopes[(Math.max(1, year) - 1) % seasonScopes.length];
 
   game.Content = Object.freeze({
     saveKey: "aerodesign-manager-save-v1",
-    saveVersion: 3,
+    saveVersion: 4,
+    seasonScopes,
+    seasonScopeForYear,
     difficulties: Object.freeze({
       freshman: { label: "Calouro", startingCash: 1400, rivalProgress: 0.75, description: "Mais créditos iniciais; as rivais evoluem com calma." },
       standard: { label: "Intermediário", startingCash: 1000, rivalProgress: 1, description: "Recursos e evolução das rivais em equilíbrio." },
@@ -786,8 +845,8 @@
       const payloadPotential = clamp(payload * 9.2 + (16 - emptyWeight) * 3.2, 0, 100);
       return { emptyWeight, payload, reliability, payloadPotential, milestones };
     },
-    reportScore(report) {
-      return Math.round(clamp(28 + report * 0.72 + (report >= milestoneLevel ? 8 : 0), 0, 100));
+    reportScore(report, multiplier = 1) {
+      return Math.round(clamp((28 + report * 0.72 + (report >= milestoneLevel ? 8 : 0)) * multiplier, 0, 100));
     },
     upgradeCost(attribute, level) {
       return Math.round(attribute.baseCost * (1 + level / 100));
@@ -886,6 +945,8 @@
 
   game.Competition = Object.freeze({
     create(state) {
+      const scope = game.Content.seasonScopes.find((option) => option.id === state.seasonScope) ||
+        game.Content.seasonScopeForYear(state.year);
       let seed = state.rngState;
       const forecast = [];
       for (let index = 0; index < 3; index += 1) {
@@ -906,7 +967,7 @@
       ];
       const standings = teams.map((team) => ({
         ...team,
-        report: Aircraft.reportScore(team.attributes.report),
+        report: Aircraft.reportScore(team.attributes.report, scope.reportMultiplier),
         flights: [],
         total: 0
       }));
@@ -915,6 +976,7 @@
         seed,
         event: {
           round: 0,
+          scope: { ...scope },
           weather: forecast,
           standings,
           commentary: [{ text: "Os projetos foram lacrados. A arbitragem prepara a avaliação dos relatórios.", kind: "info" }]
@@ -930,6 +992,7 @@
     runFlight(event, playerStrategyId, seed) {
       const round = event.round;
       const roundWeather = event.weather[round];
+      const scope = event.scope || game.Content.seasonScopeForYear(1);
       const previousLeader = standingsByScore(event.standings)[0];
       const nextStandings = event.standings.map((team) => {
         const strategyId = team.isPlayer
@@ -938,12 +1001,12 @@
         const strategy = strategies[strategyId];
         const design = Aircraft.derive(team.attributes);
         const effectiveReliability = clamp(
-          design.reliability + roundWeather.reliabilityModifier + strategy.reliabilityModifier,
+          design.reliability + roundWeather.reliabilityModifier + strategy.reliabilityModifier + scope.reliabilityModifier,
           0.35,
           0.98
         );
         const crashChance = clamp(0.04 + (1 - effectiveReliability) * 0.45, 0.04, 0.36);
-        const potential = design.payloadPotential * strategy.loadMultiplier * roundWeather.payloadMultiplier;
+        const potential = design.payloadPotential * strategy.loadMultiplier * roundWeather.payloadMultiplier * scope.flightMultiplier;
         let rng = Random.next(seed);
         seed = rng.seed;
         const failureRoll = rng.value;
@@ -1020,7 +1083,7 @@
 /* state.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties } = game.Content;
+  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear } = game.Content;
   const strategyIds = Object.keys(strategies);
 
   function isNumber(value) {
@@ -1037,6 +1100,7 @@
         teamName: teamName || "Projeto Aurora",
         aircraftName: aircraftName || "Aurora",
         difficulty,
+        seasonScope: seasonScopeForYear(1).id,
         year: 1,
         week: 0,
         cash: difficulties[difficulty].startingCash,
@@ -1068,10 +1132,12 @@
       const validIdentity = typeof candidate.teamName === "string" && candidate.teamName.trim().length > 0 &&
         candidate.teamName.length <= 32 && typeof candidate.aircraftName === "string" &&
         candidate.aircraftName.trim().length > 0 && candidate.aircraftName.length <= 24 &&
-        Object.hasOwn(difficulties, candidate.difficulty);
+        Object.hasOwn(difficulties, candidate.difficulty) &&
+        seasonScopes.some((scope) => scope.id === candidate.seasonScope);
       const validEvent = candidate.event === null || (
         candidate.event && Number.isInteger(candidate.event.round) &&
         candidate.event.round >= 0 && candidate.event.round <= 3 &&
+        candidate.event.scope && seasonScopes.some((scope) => scope.id === candidate.event.scope.id) &&
         Array.isArray(candidate.event.weather) && candidate.event.weather.length === 3 &&
         candidate.event.weather.every((entry) => entry && weather.some((option) => option.id === entry.id)) &&
         Array.isArray(candidate.event.standings) && candidate.event.standings.length === rivalBlueprints.length + 1 &&
@@ -1104,7 +1170,7 @@
         validEventPhase;
     },
     migrate(candidate) {
-      if (!candidate || ![1, 2].includes(candidate.version)) return candidate;
+      if (!candidate || ![1, 2, 3].includes(candidate.version)) return candidate;
       let migrated = { ...candidate };
 
       if (candidate.version === 1) {
@@ -1183,8 +1249,14 @@
         aircraftName: typeof migrated.aircraftName === "string" && migrated.aircraftName.trim()
           ? migrated.aircraftName.trim()
           : "Aurora",
-        difficulty: Object.hasOwn(difficulties, migrated.difficulty) ? migrated.difficulty : "standard"
+        difficulty: Object.hasOwn(difficulties, migrated.difficulty) ? migrated.difficulty : "standard",
+        seasonScope: seasonScopes.some((scope) => scope.id === migrated.seasonScope)
+          ? migrated.seasonScope
+          : seasonScopeForYear(migrated.year || 1).id
       };
+      if (migrated.event && !migrated.event.scope) {
+        migrated.event.scope = { ...seasonScopes.find((scope) => scope.id === migrated.seasonScope) };
+      }
       return migrated;
     }
   });
@@ -1339,15 +1411,18 @@
           const next = clone(state);
           next.year += 1;
           next.week = 0;
-          const legacyBonus = Math.min(6, Math.floor(next.prestige / 25));
-          next.attributes = Object.fromEntries(Object.entries(baseStats).map(([key, value]) => [key, value + legacyBonus]));
+          const legacyBonus = Math.min(2, Math.floor(next.prestige / 25));
+          next.attributes = Object.fromEntries(Object.entries(next.attributes).map(([key, value]) =>
+            [key, Math.min(100, value + legacyBonus)]
+          ));
+          next.seasonScope = game.Content.seasonScopeForYear(next.year).id;
           next.rivals = game.Rivals.create(next.year);
           next.scouted = {};
           next.phase = "preparation";
           next.event = null;
           next.eventResult = null;
           next.eventStrategies = ["balanced", "balanced", "balanced"];
-          pushLog(next, 0, `Temporada ${next.year} iniciada. O projeto foi reiniciado; experiência acumulada concede +${legacyBonus} níveis.`);
+          pushLog(next, 0, `Temporada ${next.year} iniciada. O avião preservou seus níveis${legacyBonus ? ` e a experiência da equipe concedeu +${legacyBonus} níveis` : ""}. Novo regulamento: ${game.Content.seasonScopeForYear(next.year).title}.`);
           return { state: next, notice: { text: `Temporada ${next.year} iniciada.`, kind: "success" } };
         }
         default:
@@ -1397,6 +1472,15 @@
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
   })[character]);
   const credits = (amount) => `${Math.round(amount).toLocaleString("pt-BR")} cr`;
+  const signedPercent = (value) => `${value > 0 ? "+" : ""}${Math.round(value * 100)}%`;
+
+  function scopeImpact(scope) {
+    const impacts = [];
+    if (scope.flightMultiplier !== 1) impacts.push(`potencial de voo ${signedPercent(scope.flightMultiplier - 1)}`);
+    if (scope.reportMultiplier !== 1) impacts.push(`relatório ${signedPercent(scope.reportMultiplier - 1)}`);
+    if (scope.reliabilityModifier !== 0) impacts.push(`confiabilidade +${Math.round(scope.reliabilityModifier * 100)} p.p.`);
+    return `Impacto: ${impacts.join(" · ") || "critérios equilibrados"}.`;
+  }
 
   function setNotice(notice) {
     const node = document.getElementById("actionNotice");
@@ -1422,6 +1506,7 @@
     document.getElementById("designYear").textContent = `· Ano ${state.year}`;
     document.getElementById("aircraftName").textContent = state.aircraftName;
     document.getElementById("cashLabel").textContent = credits(state.cash);
+    document.getElementById("careerCashLabel").textContent = credits(state.cash);
     document.getElementById("prestigeLabel").textContent = state.prestige;
     document.getElementById("weekProgress").style.width = `${(state.week / weeksPerSeason) * 100}%`;
     document.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", String(state.week));
@@ -1433,6 +1518,11 @@
       ? "Preparação para a competição"
       : state.phase === "event-report" ? "Abertura do campeonato"
         : state.phase === "event-flight" ? "Competição em andamento" : "Resultado oficial";
+    const scope = game.Content.seasonScopes.find((option) => option.id === state.seasonScope) ||
+      game.Content.seasonScopeForYear(state.year);
+    document.getElementById("scopeTitle").textContent = `Ano ${state.year} · ${scope.title}`;
+    document.getElementById("scopeCriteria").textContent = scope.criteria;
+    document.getElementById("scopeImpact").textContent = scopeImpact(scope);
     const active = careerScreens.find(({ id }) => id === activeScreen) || careerScreens[0];
     document.getElementById("mainTitle").textContent = active.title;
     document.getElementById("mainSubtitle").textContent = activeScreen === "championship" && state.phase !== "preparation"
@@ -1673,6 +1763,36 @@
       `<div>${escapeHtml(entry.text)}</div>`).join("")}</div>`;
   }
 
+  function renderScopeBanner(scope) {
+    return `<div class="event-scope"><strong>Regulamento · ${escapeHtml(scope.title)}:</strong> ${escapeHtml(scope.criteria)} ${escapeHtml(scopeImpact(scope))}</div>`;
+  }
+
+  function renderFlightCircuit(aircraftName, round) {
+    const path = "M 90 170 C 90 95 190 55 400 55 C 610 55 710 95 710 170 C 710 245 610 275 400 275 C 190 275 90 245 90 170 Z";
+    return `
+      <div class="flight-circuit">
+        <div class="circuit-caption"><strong>Pista 2D · ${escapeHtml(aircraftName)}</strong><span>Bateria ${round + 1} · percurso da equipe</span></div>
+        <svg viewBox="0 0 800 330" role="img" aria-label="${escapeHtml(aircraftName)} completando o circuito; equipes rivais são simuladas automaticamente">
+          <defs>
+            <path id="circuitPath" d="${path}"></path>
+            <symbol id="aircraftGlyph" viewBox="-28 -8 56 16">
+              <path d="M 28 0 L 10 -4 L 13 -1 L -12 -1 L -23 -7 L -27 -5 L -20 0 L -27 5 L -23 7 L -12 1 L 13 1 L 10 4 Z"></path>
+            </symbol>
+          </defs>
+          <path class="circuit-track" d="${path}"></path>
+          <path class="circuit-centerline" d="${path}"></path>
+          <circle class="circuit-pylon" cx="90" cy="170" r="8"></circle>
+          <circle class="circuit-pylon" cx="710" cy="170" r="8"></circle>
+          <g class="circuit-plane" aria-hidden="true">
+            <use href="#aircraftGlyph" x="-28" y="-8" width="56" height="16"></use>
+            <animateMotion id="flightMotion" dur="2.4s" begin="indefinite" fill="freeze" rotate="auto">
+              <mpath href="#circuitPath"></mpath>
+            </animateMotion>
+          </g>
+        </svg>
+      </div>`;
+  }
+
   function renderReportPhase(state) {
     return `
       <div class="event-content">
@@ -1682,6 +1802,7 @@
             <span class="rival-tag">ABERTURA</span>
           </div>
         </section>
+        ${renderScopeBanner(state.event.scope)}
         ${renderStageTiles(state, "report", false)}
         ${renderCommentary(state.event)}
         <div class="competition-lead"><h4>Equipes na disputa</h4><span>As notas são reveladas ao encerrar a avaliação</span></div>
@@ -1701,6 +1822,8 @@
             <span class="rival-tag">AO VIVO · ${round + 1}/3</span>
           </div>
         </section>
+        ${renderScopeBanner(state.event.scope)}
+        ${renderFlightCircuit(state.aircraftName, round)}
         ${renderStageTiles(state, "flight", true)}
         ${renderCommentary(state.event)}
         <div class="competition-lead"><h4>Classificação parcial</h4><span>Atualiza depois de cada bateria</span></div>
@@ -1721,6 +1844,7 @@
             <span class="rival-tag">RESULTADO FINAL</span>
           </div>
         </section>
+        ${renderScopeBanner(state.event.scope)}
         ${renderStageTiles(state, "results", false)}
         ${renderCommentary(state.event)}
         <div class="competition-lead"><h4>Classificação final</h4><span>Prestígio e premiação registrados no caixa</span></div>
@@ -1768,6 +1892,7 @@
   let hubNotice = { text: "", kind: "" };
   const careerScreens = ["overview", "engineering", "fundraising", "rivals", "championship"];
   let swipeStart = null;
+  let flightLaunching = false;
 
   function render() {
     const inGame = appView === "game";
@@ -1789,7 +1914,6 @@
         : saveExists
           ? saved.message
           : "Nenhuma carreira salva neste navegador. Comece uma nova temporada.";
-      document.getElementById("replaceSaveLabel").hidden = appView !== "setup" || !saveExists;
       if (appView === "setup") {
         const difficulty = game.Content.difficulties[document.getElementById("difficultyInput").value];
         document.getElementById("difficultyHelp").textContent = difficulty?.description || "";
@@ -1842,10 +1966,10 @@
       case "new-game":
         appView = "setup";
         hubNotice = { text: "", kind: "" };
-        document.getElementById("replaceSaveInput").checked = false;
         render();
         return;
       case "home":
+        if (flightLaunching) return;
         if (appView === "game") {
           const saved = game.Storage.save(state);
           hubNotice = saved.ok
@@ -1856,6 +1980,7 @@
         render();
         return;
       case "continue": {
+        if (flightLaunching) return;
         const loaded = game.Storage.load();
         if (loaded.ok) {
           state = loaded.state;
@@ -1878,6 +2003,7 @@
         return;
       }
       case "load": {
+        if (flightLaunching) return;
         const loaded = game.Storage.load();
         if (loaded.ok) {
           state = loaded.state;
@@ -1899,26 +2025,20 @@
         round: Number(button.dataset.round),
         strategy: button.dataset.strategy
       });
-      case "run-flight": return apply({ type: "run-flight" });
+      case "run-flight": return launchFlight(button);
       case "next-season": return apply({ type: "next-season" });
       default: return;
     }
   }
 
   function handleNewGame(event) {
+    if (flightLaunching) return;
     event.preventDefault();
     const teamName = document.getElementById("teamNameInput").value.trim();
     const aircraftName = document.getElementById("aircraftNameInput").value.trim();
     const difficulty = document.getElementById("difficultyInput").value;
     if (!teamName || !aircraftName) {
       hubNotice = { text: "Informe o nome da equipe e do avião.", kind: "error" };
-      render();
-      return;
-    }
-
-    const saved = game.Storage.load();
-    if (!saved.missing && !document.getElementById("replaceSaveInput").checked) {
-      hubNotice = { text: "Marque a confirmação para substituir o jogo salvo antes de iniciar.", kind: "error" };
       render();
       return;
     }
@@ -1931,6 +2051,33 @@
     if (!result.ok) notice = { text: `Carreira iniciada, mas não foi possível salvar: ${result.message}`, kind: "error" };
     hubNotice = { text: "", kind: "" };
     render();
+  }
+
+  function launchFlight(button) {
+    if (flightLaunching) return;
+    const motion = document.getElementById("flightMotion");
+    if (!motion || typeof motion.beginElement !== "function") {
+      apply({ type: "run-flight" });
+      return;
+    }
+
+    flightLaunching = true;
+    button.disabled = true;
+    document.querySelectorAll('[data-action="choose-strategy"]').forEach((option) => { option.disabled = true; });
+    const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = reducedMotion ? 40 : 2500;
+    const launchingState = state;
+    const launchingRound = state.event.round;
+    motion.setAttribute("dur", `${reducedMotion ? 0.01 : 2.4}s`);
+    motion.beginElement();
+    window.setTimeout(() => {
+      if (state !== launchingState || state.phase !== "event-flight" || state.event.round !== launchingRound) {
+        flightLaunching = false;
+        return;
+      }
+      flightLaunching = false;
+      apply({ type: "run-flight" });
+    }, duration);
   }
 
   function handleKeydown(event) {

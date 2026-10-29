@@ -7,6 +7,7 @@
   let hubNotice = { text: "", kind: "" };
   const careerScreens = ["overview", "engineering", "fundraising", "rivals", "championship"];
   let swipeStart = null;
+  let flightLaunching = false;
 
   function render() {
     const inGame = appView === "game";
@@ -28,7 +29,6 @@
         : saveExists
           ? saved.message
           : "Nenhuma carreira salva neste navegador. Comece uma nova temporada.";
-      document.getElementById("replaceSaveLabel").hidden = appView !== "setup" || !saveExists;
       if (appView === "setup") {
         const difficulty = game.Content.difficulties[document.getElementById("difficultyInput").value];
         document.getElementById("difficultyHelp").textContent = difficulty?.description || "";
@@ -81,10 +81,10 @@
       case "new-game":
         appView = "setup";
         hubNotice = { text: "", kind: "" };
-        document.getElementById("replaceSaveInput").checked = false;
         render();
         return;
       case "home":
+        if (flightLaunching) return;
         if (appView === "game") {
           const saved = game.Storage.save(state);
           hubNotice = saved.ok
@@ -95,6 +95,7 @@
         render();
         return;
       case "continue": {
+        if (flightLaunching) return;
         const loaded = game.Storage.load();
         if (loaded.ok) {
           state = loaded.state;
@@ -117,6 +118,7 @@
         return;
       }
       case "load": {
+        if (flightLaunching) return;
         const loaded = game.Storage.load();
         if (loaded.ok) {
           state = loaded.state;
@@ -138,26 +140,20 @@
         round: Number(button.dataset.round),
         strategy: button.dataset.strategy
       });
-      case "run-flight": return apply({ type: "run-flight" });
+      case "run-flight": return launchFlight(button);
       case "next-season": return apply({ type: "next-season" });
       default: return;
     }
   }
 
   function handleNewGame(event) {
+    if (flightLaunching) return;
     event.preventDefault();
     const teamName = document.getElementById("teamNameInput").value.trim();
     const aircraftName = document.getElementById("aircraftNameInput").value.trim();
     const difficulty = document.getElementById("difficultyInput").value;
     if (!teamName || !aircraftName) {
       hubNotice = { text: "Informe o nome da equipe e do avião.", kind: "error" };
-      render();
-      return;
-    }
-
-    const saved = game.Storage.load();
-    if (!saved.missing && !document.getElementById("replaceSaveInput").checked) {
-      hubNotice = { text: "Marque a confirmação para substituir o jogo salvo antes de iniciar.", kind: "error" };
       render();
       return;
     }
@@ -170,6 +166,33 @@
     if (!result.ok) notice = { text: `Carreira iniciada, mas não foi possível salvar: ${result.message}`, kind: "error" };
     hubNotice = { text: "", kind: "" };
     render();
+  }
+
+  function launchFlight(button) {
+    if (flightLaunching) return;
+    const motion = document.getElementById("flightMotion");
+    if (!motion || typeof motion.beginElement !== "function") {
+      apply({ type: "run-flight" });
+      return;
+    }
+
+    flightLaunching = true;
+    button.disabled = true;
+    document.querySelectorAll('[data-action="choose-strategy"]').forEach((option) => { option.disabled = true; });
+    const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = reducedMotion ? 40 : 2500;
+    const launchingState = state;
+    const launchingRound = state.event.round;
+    motion.setAttribute("dur", `${reducedMotion ? 0.01 : 2.4}s`);
+    motion.beginElement();
+    window.setTimeout(() => {
+      if (state !== launchingState || state.phase !== "event-flight" || state.event.round !== launchingRound) {
+        flightLaunching = false;
+        return;
+      }
+      flightLaunching = false;
+      apply({ type: "run-flight" });
+    }, duration);
   }
 
   function handleKeydown(event) {

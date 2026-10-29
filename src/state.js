@@ -1,6 +1,6 @@
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties } = game.Content;
+  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear } = game.Content;
   const strategyIds = Object.keys(strategies);
 
   function isNumber(value) {
@@ -17,6 +17,7 @@
         teamName: teamName || "Projeto Aurora",
         aircraftName: aircraftName || "Aurora",
         difficulty,
+        seasonScope: seasonScopeForYear(1).id,
         year: 1,
         week: 0,
         cash: difficulties[difficulty].startingCash,
@@ -48,10 +49,12 @@
       const validIdentity = typeof candidate.teamName === "string" && candidate.teamName.trim().length > 0 &&
         candidate.teamName.length <= 32 && typeof candidate.aircraftName === "string" &&
         candidate.aircraftName.trim().length > 0 && candidate.aircraftName.length <= 24 &&
-        Object.hasOwn(difficulties, candidate.difficulty);
+        Object.hasOwn(difficulties, candidate.difficulty) &&
+        seasonScopes.some((scope) => scope.id === candidate.seasonScope);
       const validEvent = candidate.event === null || (
         candidate.event && Number.isInteger(candidate.event.round) &&
         candidate.event.round >= 0 && candidate.event.round <= 3 &&
+        candidate.event.scope && seasonScopes.some((scope) => scope.id === candidate.event.scope.id) &&
         Array.isArray(candidate.event.weather) && candidate.event.weather.length === 3 &&
         candidate.event.weather.every((entry) => entry && weather.some((option) => option.id === entry.id)) &&
         Array.isArray(candidate.event.standings) && candidate.event.standings.length === rivalBlueprints.length + 1 &&
@@ -84,7 +87,7 @@
         validEventPhase;
     },
     migrate(candidate) {
-      if (!candidate || ![1, 2].includes(candidate.version)) return candidate;
+      if (!candidate || ![1, 2, 3].includes(candidate.version)) return candidate;
       let migrated = { ...candidate };
 
       if (candidate.version === 1) {
@@ -163,8 +166,14 @@
         aircraftName: typeof migrated.aircraftName === "string" && migrated.aircraftName.trim()
           ? migrated.aircraftName.trim()
           : "Aurora",
-        difficulty: Object.hasOwn(difficulties, migrated.difficulty) ? migrated.difficulty : "standard"
+        difficulty: Object.hasOwn(difficulties, migrated.difficulty) ? migrated.difficulty : "standard",
+        seasonScope: seasonScopes.some((scope) => scope.id === migrated.seasonScope)
+          ? migrated.seasonScope
+          : seasonScopeForYear(migrated.year || 1).id
       };
+      if (migrated.event && !migrated.event.scope) {
+        migrated.event.scope = { ...seasonScopes.find((scope) => scope.id === migrated.seasonScope) };
+      }
       return migrated;
     }
   });

@@ -17,6 +17,8 @@
 
   game.Competition = Object.freeze({
     create(state) {
+      const scope = game.Content.seasonScopes.find((option) => option.id === state.seasonScope) ||
+        game.Content.seasonScopeForYear(state.year);
       let seed = state.rngState;
       const forecast = [];
       for (let index = 0; index < 3; index += 1) {
@@ -37,7 +39,7 @@
       ];
       const standings = teams.map((team) => ({
         ...team,
-        report: Aircraft.reportScore(team.attributes.report),
+        report: Aircraft.reportScore(team.attributes.report, scope.reportMultiplier),
         flights: [],
         total: 0
       }));
@@ -46,6 +48,7 @@
         seed,
         event: {
           round: 0,
+          scope: { ...scope },
           weather: forecast,
           standings,
           commentary: [{ text: "Os projetos foram lacrados. A arbitragem prepara a avaliação dos relatórios.", kind: "info" }]
@@ -61,6 +64,7 @@
     runFlight(event, playerStrategyId, seed) {
       const round = event.round;
       const roundWeather = event.weather[round];
+      const scope = event.scope || game.Content.seasonScopeForYear(1);
       const previousLeader = standingsByScore(event.standings)[0];
       const nextStandings = event.standings.map((team) => {
         const strategyId = team.isPlayer
@@ -69,12 +73,12 @@
         const strategy = strategies[strategyId];
         const design = Aircraft.derive(team.attributes);
         const effectiveReliability = clamp(
-          design.reliability + roundWeather.reliabilityModifier + strategy.reliabilityModifier,
+          design.reliability + roundWeather.reliabilityModifier + strategy.reliabilityModifier + scope.reliabilityModifier,
           0.35,
           0.98
         );
         const crashChance = clamp(0.04 + (1 - effectiveReliability) * 0.45, 0.04, 0.36);
-        const potential = design.payloadPotential * strategy.loadMultiplier * roundWeather.payloadMultiplier;
+        const potential = design.payloadPotential * strategy.loadMultiplier * roundWeather.payloadMultiplier * scope.flightMultiplier;
         let rng = Random.next(seed);
         seed = rng.seed;
         const failureRoll = rng.value;

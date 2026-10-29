@@ -174,8 +174,6 @@
     }
     .hub-field input:focus, .hub-field select:focus { border-color: var(--accent); outline: 2px solid rgb(82 211 162 / 18%); }
     .hub-difficulty-help { min-height: 30px; margin: -7px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
-    .hub-replace-save { display: flex; align-items: flex-start; gap: 9px; padding: 10px; border: 1px solid rgb(240 189 104 / 45%); color: var(--warning); font-size: 11px; line-height: 1.5; }
-    .hub-replace-save input { flex: 0 0 auto; margin: 2px 0 0; accent-color: var(--accent); }
     .hub-form-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 9px; margin-top: 5px; }
     .hub-status { min-height: 20px; margin: 12px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
     .hub-status[data-kind="error"] { color: var(--danger); }
@@ -190,6 +188,8 @@
     }
     .career-context h2 { margin: 0; font-size: clamp(18px, 2.4vw, 25px); letter-spacing: -.04em; }
     .career-context p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+    .career-indicators { display: flex; flex-shrink: 0; align-items: center; gap: 8px; }
+    .career-money { padding: 8px 11px; border: 1px solid rgb(82 211 162 / 30%); border-radius: 8px; background: rgb(82 211 162 / 7%); color: var(--accent); font-size: 12px; font-weight: 750; white-space: nowrap; }
     .turn-indicator { flex-shrink: 0; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; color: #c9d4df; font-size: 11px; }
     .career-nav-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
     .career-nav {
@@ -265,11 +265,16 @@
     }
     .career-screen:focus { outline: none; }
     .career-screen[aria-hidden="true"] { pointer-events: none; }
-    .overview-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: auto 1fr; gap: 12px; }
+    .overview-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: auto auto 1fr; gap: 12px; }
     .overview-grid .season-card { grid-column: 1; }
-    .overview-grid .aircraft-card { grid-column: 1; }
+    .overview-grid .aircraft-card { grid-column: 1; grid-row: 2 / 4; }
     .overview-grid .rivalry-panel { grid-column: 2; grid-row: 1; }
-    .overview-grid .season-log { grid-column: 2; grid-row: 2; }
+    .overview-grid .scope-card { grid-column: 2; grid-row: 2; }
+    .overview-grid .season-log { grid-column: 2; grid-row: 3; }
+    .scope-card { padding: 16px 18px; }
+    .scope-card h2 { margin: 5px 0 6px; font-size: 14px; }
+    .scope-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .scope-impact { display: block; margin-top: 9px; color: #b6e8d2; font-size: 10px; line-height: 1.45; }
     .main-panel { min-height: 100%; overflow: hidden; }
     .career-panel { min-height: 100%; overflow: hidden; }
     .career-panel .section-heading { padding: 21px 24px 0; }
@@ -416,6 +421,8 @@
     .event-header { justify-content: space-between; gap: 15px; }
     .event-header h3 { margin: 0; font-size: 16px; }
     .event-header p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .event-scope { margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--accent); background: rgb(82 211 162 / 6%); color: #c1e8d6; font-size: 11px; line-height: 1.5; }
+    .event-scope strong { color: var(--accent); }
     .event-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 18px 0; }
     .event-stage { min-height: 82px; padding: 12px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 13%); }
     .event-stage span { color: var(--muted); font-size: 10px; }
@@ -425,6 +432,14 @@
     .competition-lead h4 { margin: 0; font-size: 12px; }
     .competition-lead span { color: var(--muted); font-size: 10px; }
     .competition-commentary { min-height: 46px; margin: 14px 0; padding: 12px 14px; border-left: 3px solid var(--warning); border-radius: 0 8px 8px 0; background: rgb(240 189 104 / 7%); color: #f0d7aa; font-size: 11px; line-height: 1.5; }
+    .flight-circuit { margin: 16px 0; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: radial-gradient(ellipse at 50% 50%, rgb(82 211 162 / 7%), transparent 60%), #101a24; }
+    .flight-circuit svg { display: block; width: 100%; height: auto; max-height: 220px; }
+    .circuit-track { fill: none; stroke: #39514f; stroke-width: 34; }
+    .circuit-centerline { fill: none; stroke: #7a9d8b; stroke-width: 2; stroke-dasharray: 9 10; opacity: .7; }
+    .circuit-pylon { fill: #f0bd68; stroke: #111822; stroke-width: 4; }
+    .circuit-plane { fill: #71e0b4; filter: drop-shadow(0 0 5px rgb(82 211 162 / 80%)); }
+    .circuit-caption { display: flex; justify-content: space-between; gap: 8px; margin: 0 3px 3px; color: var(--muted); font-size: 10px; }
+    .circuit-caption strong { color: var(--accent); font-weight: 650; }
     .strategy-detail { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
     .leader-row td { color: var(--accent) !important; }
     .event-stage.flight-stage { min-height: 130px; }
@@ -465,10 +480,12 @@
     @media (max-width: 620px) {
       .shell { padding: 18px 12px 12px; }
       .topbar { align-items: flex-start; margin-bottom: 12px; }
-      .topbar-actions { flex-direction: column; align-items: stretch; }
+      .topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
       .topbar-actions .button { min-height: 34px; font-size: 11px; }
-      .career-context { align-items: flex-start; }
+      .career-context { align-items: flex-start; flex-wrap: wrap; }
       .career-context p { max-width: 250px; line-height: 1.45; }
+      .career-indicators { width: 100%; justify-content: space-between; }
+      .career-money, .turn-indicator { flex: 1; text-align: center; }
       .career-nav-wrap { gap: 4px; }
       .career-arrow { width: 32px; flex-basis: 32px; }
       .career-position { min-width: 35px; }
@@ -478,7 +495,7 @@
       .career-track { min-height: 0; height: 100%; }
       .career-screen { min-height: 0; height: 100%; padding: 7px; overflow-y: auto; }
       .overview-grid { height: auto; min-height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; align-content: start; }
-      .overview-grid .season-card, .overview-grid .aircraft-card, .overview-grid .rivalry-panel, .overview-grid .season-log { grid-column: 1; grid-row: auto; }
+      .overview-grid .season-card, .overview-grid .aircraft-card, .overview-grid .rivalry-panel, .overview-grid .scope-card, .overview-grid .season-log { grid-column: 1; grid-row: auto; }
       .career-panel-content { padding: 18px 16px; }
       .career-panel .section-heading { padding: 18px 16px 0; }
       .career-panel-content .engineering-list { grid-template-columns: minmax(0, 1fr); }
@@ -547,10 +564,6 @@
               </select>
             </div>
             <p class="hub-difficulty-help" id="difficultyHelp">Recursos e evolução das rivais em equilíbrio.</p>
-            <label class="hub-replace-save" id="replaceSaveLabel" hidden>
-              <input id="replaceSaveInput" type="checkbox">
-              <span>Entendo que iniciar uma nova carreira substituirá o jogo salvo neste navegador.</span>
-            </label>
             <div class="hub-form-actions">
               <button class="hub-button" type="button" data-action="home">VOLTAR</button>
               <button class="hub-button hub-button-primary" type="submit">INICIAR JOGO</button>
@@ -581,7 +594,10 @@
         <h2 id="mainTitle">Visão geral</h2>
         <p id="mainSubtitle">Acompanhe a equipe e prepare a temporada.</p>
       </div>
-      <div class="turn-indicator" id="turnIndicator">20 ações restantes</div>
+      <div class="career-indicators">
+        <div class="career-money" id="careerCashLabel" role="status" aria-label="Saldo atual">0 cr</div>
+        <div class="turn-indicator" id="turnIndicator">20 ações restantes</div>
+      </div>
     </header>
     <nav class="career-nav-wrap" aria-label="Navegação da carreira">
       <button class="career-arrow" type="button" data-action="previous-screen" aria-label="Tela anterior">‹</button>
@@ -624,6 +640,12 @@
             <section class="panel panel-pad rivalry-panel" id="rivalryPanel">
               <div class="section-heading"><div><h2>Disputa pelo título</h2><p>Rivalidade da temporada</p></div></div>
               <div class="rivalry-score" id="rivalryScore"></div>
+            </section>
+            <section class="panel scope-card" aria-labelledby="scopeTitle">
+              <span class="eyebrow">REGULAMENTO DO ANO</span>
+              <h2 id="scopeTitle">Escopo da temporada</h2>
+              <p id="scopeCriteria"></p>
+              <strong class="scope-impact" id="scopeImpact"></strong>
             </section>
             <section class="panel panel-pad season-log">
               <div class="section-heading"><div><h2>Diário da equipe</h2><p>Últimos acontecimentos da temporada</p></div></div>

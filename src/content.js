@@ -1,9 +1,46 @@
 (() => {
   const game = globalThis.AeroDesign ||= {};
+  const seasonScopes = Object.freeze([
+    Object.freeze({
+      id: "payload",
+      title: "Desafio de carga útil",
+      criteria: "A arbitragem valoriza projetos que transportam mais carga.",
+      flightMultiplier: 1.08,
+      reportMultiplier: 1,
+      reliabilityModifier: 0
+    }),
+    Object.freeze({
+      id: "reliability",
+      title: "Desafio de confiabilidade",
+      criteria: "Segurança e voos consistentes recebem prioridade.",
+      flightMultiplier: 0.98,
+      reportMultiplier: 1,
+      reliabilityModifier: 0.06
+    }),
+    Object.freeze({
+      id: "technical-report",
+      title: "Desafio de relatório técnico",
+      criteria: "Documentação e apresentação técnica têm peso maior.",
+      flightMultiplier: 1,
+      reportMultiplier: 1.1,
+      reliabilityModifier: 0
+    }),
+    Object.freeze({
+      id: "balanced-efficiency",
+      title: "Desafio de eficiência",
+      criteria: "A competição busca equilíbrio entre carga, segurança e projeto.",
+      flightMultiplier: 1.03,
+      reportMultiplier: 1.04,
+      reliabilityModifier: 0.02
+    })
+  ]);
+  const seasonScopeForYear = (year) => seasonScopes[(Math.max(1, year) - 1) % seasonScopes.length];
 
   game.Content = Object.freeze({
     saveKey: "aerodesign-manager-save-v1",
-    saveVersion: 3,
+    saveVersion: 4,
+    seasonScopes,
+    seasonScopeForYear,
     difficulties: Object.freeze({
       freshman: { label: "Calouro", startingCash: 1400, rivalProgress: 0.75, description: "Mais créditos iniciais; as rivais evoluem com calma." },
       standard: { label: "Intermediário", startingCash: 1000, rivalProgress: 1, description: "Recursos e evolução das rivais em equilíbrio." },

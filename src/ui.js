@@ -5,6 +5,15 @@
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
   })[character]);
   const credits = (amount) => `${Math.round(amount).toLocaleString("pt-BR")} cr`;
+  const signedPercent = (value) => `${value > 0 ? "+" : ""}${Math.round(value * 100)}%`;
+
+  function scopeImpact(scope) {
+    const impacts = [];
+    if (scope.flightMultiplier !== 1) impacts.push(`potencial de voo ${signedPercent(scope.flightMultiplier - 1)}`);
+    if (scope.reportMultiplier !== 1) impacts.push(`relatório ${signedPercent(scope.reportMultiplier - 1)}`);
+    if (scope.reliabilityModifier !== 0) impacts.push(`confiabilidade +${Math.round(scope.reliabilityModifier * 100)} p.p.`);
+    return `Impacto: ${impacts.join(" · ") || "critérios equilibrados"}.`;
+  }
 
   function setNotice(notice) {
     const node = document.getElementById("actionNotice");
@@ -30,6 +39,7 @@
     document.getElementById("designYear").textContent = `· Ano ${state.year}`;
     document.getElementById("aircraftName").textContent = state.aircraftName;
     document.getElementById("cashLabel").textContent = credits(state.cash);
+    document.getElementById("careerCashLabel").textContent = credits(state.cash);
     document.getElementById("prestigeLabel").textContent = state.prestige;
     document.getElementById("weekProgress").style.width = `${(state.week / weeksPerSeason) * 100}%`;
     document.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", String(state.week));
@@ -41,6 +51,11 @@
       ? "Preparação para a competição"
       : state.phase === "event-report" ? "Abertura do campeonato"
         : state.phase === "event-flight" ? "Competição em andamento" : "Resultado oficial";
+    const scope = game.Content.seasonScopes.find((option) => option.id === state.seasonScope) ||
+      game.Content.seasonScopeForYear(state.year);
+    document.getElementById("scopeTitle").textContent = `Ano ${state.year} · ${scope.title}`;
+    document.getElementById("scopeCriteria").textContent = scope.criteria;
+    document.getElementById("scopeImpact").textContent = scopeImpact(scope);
     const active = careerScreens.find(({ id }) => id === activeScreen) || careerScreens[0];
     document.getElementById("mainTitle").textContent = active.title;
     document.getElementById("mainSubtitle").textContent = activeScreen === "championship" && state.phase !== "preparation"
@@ -281,6 +296,36 @@
       `<div>${escapeHtml(entry.text)}</div>`).join("")}</div>`;
   }
 
+  function renderScopeBanner(scope) {
+    return `<div class="event-scope"><strong>Regulamento · ${escapeHtml(scope.title)}:</strong> ${escapeHtml(scope.criteria)} ${escapeHtml(scopeImpact(scope))}</div>`;
+  }
+
+  function renderFlightCircuit(aircraftName, round) {
+    const path = "M 90 170 C 90 95 190 55 400 55 C 610 55 710 95 710 170 C 710 245 610 275 400 275 C 190 275 90 245 90 170 Z";
+    return `
+      <div class="flight-circuit">
+        <div class="circuit-caption"><strong>Pista 2D · ${escapeHtml(aircraftName)}</strong><span>Bateria ${round + 1} · percurso da equipe</span></div>
+        <svg viewBox="0 0 800 330" role="img" aria-label="${escapeHtml(aircraftName)} completando o circuito; equipes rivais são simuladas automaticamente">
+          <defs>
+            <path id="circuitPath" d="${path}"></path>
+            <symbol id="aircraftGlyph" viewBox="-28 -8 56 16">
+              <path d="M 28 0 L 10 -4 L 13 -1 L -12 -1 L -23 -7 L -27 -5 L -20 0 L -27 5 L -23 7 L -12 1 L 13 1 L 10 4 Z"></path>
+            </symbol>
+          </defs>
+          <path class="circuit-track" d="${path}"></path>
+          <path class="circuit-centerline" d="${path}"></path>
+          <circle class="circuit-pylon" cx="90" cy="170" r="8"></circle>
+          <circle class="circuit-pylon" cx="710" cy="170" r="8"></circle>
+          <g class="circuit-plane" aria-hidden="true">
+            <use href="#aircraftGlyph" x="-28" y="-8" width="56" height="16"></use>
+            <animateMotion id="flightMotion" dur="2.4s" begin="indefinite" fill="freeze" rotate="auto">
+              <mpath href="#circuitPath"></mpath>
+            </animateMotion>
+          </g>
+        </svg>
+      </div>`;
+  }
+
   function renderReportPhase(state) {
     return `
       <div class="event-content">
@@ -290,6 +335,7 @@
             <span class="rival-tag">ABERTURA</span>
           </div>
         </section>
+        ${renderScopeBanner(state.event.scope)}
         ${renderStageTiles(state, "report", false)}
         ${renderCommentary(state.event)}
         <div class="competition-lead"><h4>Equipes na disputa</h4><span>As notas são reveladas ao encerrar a avaliação</span></div>
@@ -309,6 +355,8 @@
             <span class="rival-tag">AO VIVO · ${round + 1}/3</span>
           </div>
         </section>
+        ${renderScopeBanner(state.event.scope)}
+        ${renderFlightCircuit(state.aircraftName, round)}
         ${renderStageTiles(state, "flight", true)}
         ${renderCommentary(state.event)}
         <div class="competition-lead"><h4>Classificação parcial</h4><span>Atualiza depois de cada bateria</span></div>
@@ -329,6 +377,7 @@
             <span class="rival-tag">RESULTADO FINAL</span>
           </div>
         </section>
+        ${renderScopeBanner(state.event.scope)}
         ${renderStageTiles(state, "results", false)}
         ${renderCommentary(state.event)}
         <div class="competition-lead"><h4>Classificação final</h4><span>Prestígio e premiação registrados no caixa</span></div>
