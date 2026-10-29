@@ -246,7 +246,7 @@
     }
     .career-track {
       display: flex;
-      width: 500%;
+      width: 600%;
       height: 100%;
       align-items: stretch;
       transition: transform .42s cubic-bezier(.22, .72, .24, 1);
@@ -283,6 +283,26 @@
     .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .career-panel-content .engineering-item { min-height: 170px; grid-template-columns: minmax(0, 1fr); align-content: space-between; }
     .career-panel-content .engineering-actions { justify-items: start; }
+    .skill-tree-intro { margin: 0 0 14px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .skill-tree-summary { margin: 0 0 14px; padding: 10px 12px; border: 1px solid rgb(82 211 162 / 25%); border-radius: 8px; background: rgb(82 211 162 / 6%); color: #b6e8d2; font-size: 11px; }
+    .skill-tree { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
+    .skill-branch { min-width: 0; padding: 12px; border: 1px solid var(--border); border-radius: 11px; background: rgb(0 0 0 / 10%); }
+    .skill-branch-heading { min-height: 65px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .skill-branch-heading h4 { margin: 0; font-size: 12px; }
+    .skill-branch-heading p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .skill-node-list { display: grid; gap: 9px; margin-top: 10px; }
+    .skill-node { display: grid; gap: 7px; padding: 11px; border: 1px solid #394b5e; border-radius: 8px; background: #192532; }
+    .skill-node.skill-unlocked { border-color: rgb(82 211 162 / 42%); background: rgb(82 211 162 / 6%); }
+    .skill-node.skill-disabled:not(.skill-unlocked) { opacity: .76; }
+    .skill-node-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+    .skill-node-heading strong { font-size: 11px; line-height: 1.4; }
+    .skill-node-heading span { flex-shrink: 0; color: var(--muted); font-size: 8px; font-weight: 750; letter-spacing: .06em; }
+    .skill-unlocked .skill-node-heading span { color: var(--accent); }
+    .skill-node > p { min-height: 42px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .skill-node-effects { color: #b6e8d2; font-size: 9px; line-height: 1.4; }
+    .skill-node-footer { display: grid; gap: 4px; padding-top: 7px; border-top: 1px solid var(--border); color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .skill-node-footer strong { color: #d7e0e9; font-size: 10px; }
+    .skill-node .button { justify-self: start; }
     .rivals-screen-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
     .rivals-screen-grid > .panel { overflow: auto; }
     .championship-preview {
@@ -339,6 +359,7 @@
     .aircraft-card { padding: 18px; }
     .aircraft-name { margin: 0 0 3px; font-size: 14px; }
     .aircraft-summary { margin: 0 0 17px; color: var(--muted); font-size: 11px; }
+    .aircraft-concept { margin: -8px 0 14px; color: #b6e8d2; font-size: 10px; }
     .aircraft-stat { margin-top: 13px; }
     .aircraft-stat-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 7px; font-size: 11px; }
     .aircraft-stat-top span:first-child { color: #c8d1dc; }
@@ -475,6 +496,7 @@
       .hub-menu { max-width: none; }
       .career-viewport { height: clamp(500px, calc(100vh - 370px), 790px); }
       .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(240px, .9fr); }
+      .skill-tree { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .rivals-screen-grid { grid-template-columns: minmax(0, 1fr); }
     }
     @media (max-width: 620px) {
@@ -499,6 +521,7 @@
       .career-panel-content { padding: 18px 16px; }
       .career-panel .section-heading { padding: 18px 16px 0; }
       .career-panel-content .engineering-list { grid-template-columns: minmax(0, 1fr); }
+      .skill-tree { grid-template-columns: minmax(0, 1fr); }
       .career-toolbar { grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
       .career-toolbar .notice { padding: 7px; font-size: 10px; }
       .career-toolbar .notice:empty { display: none; }
@@ -604,6 +627,7 @@
       <div class="career-nav" role="navigation" aria-label="Telas da carreira">
         <button class="career-nav-button" type="button" data-screen="overview" aria-current="page">Visão geral</button>
         <button class="career-nav-button" type="button" data-screen="engineering">Projeto</button>
+        <button class="career-nav-button" type="button" data-screen="skills">Habilidades</button>
         <button class="career-nav-button" type="button" data-screen="fundraising">Finanças</button>
         <button class="career-nav-button" type="button" data-screen="rivals">Rivais</button>
         <button class="career-nav-button" type="button" data-screen="championship">Campeonato</button>
@@ -633,6 +657,7 @@
               <div class="section-heading"><div><h2>Status do avião</h2><p>Indicadores do projeto atual</p></div></div>
               <h3 class="aircraft-name"><span id="aircraftName">Aurora</span> <span id="designYear"></span></h3>
               <p class="aircraft-summary">Estimativas do regulamento</p>
+              <p class="aircraft-concept" id="aircraftConcept">Conceito: ainda não escolhido</p>
               <div id="aircraftStats"></div>
               <div class="derived-grid" id="derivedStats"></div>
               <div class="milestone-list" id="milestoneList"></div>
@@ -660,6 +685,16 @@
               <section id="pane-engineering">
                 <div class="engineering-list" id="engineeringList"></div>
               </section>
+            </div>
+          </section>
+        </section>
+        <section class="career-screen" id="screen-skills" data-screen-panel="skills" aria-label="Árvore de habilidades">
+          <section class="panel career-panel">
+            <div class="section-heading"><div><h3>Centro de desenvolvimento</h3><p>Pesquisas consomem semanas e créditos, mas seus efeitos acompanham a equipe entre temporadas.</p></div><div class="hint">Escolhas permanentes</div></div>
+            <div class="career-panel-content">
+              <p class="skill-tree-intro">Escolha uma arquitetura para o avião e desenvolva engenharia e gestão. O conceito do avião é exclusivo; pesquisas concluídas permanecem na carreira.</p>
+              <div class="skill-tree-summary" id="skillTreeSummary"></div>
+              <div class="skill-tree" id="skillTree"></div>
             </div>
           </section>
         </section>

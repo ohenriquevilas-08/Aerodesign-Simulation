@@ -28,18 +28,19 @@
       }
 
       const teams = [
-        { name: state.teamName, isPlayer: true, attributes: { ...state.attributes } },
+        { name: state.teamName, isPlayer: true, attributes: { ...state.attributes }, skills: [...(state.skills || [])] },
         ...state.rivals.map((rival) => ({
           name: rival.name,
           isPlayer: false,
           philosophy: rival.philosophy,
           weights: { ...rival.weights },
-          attributes: { ...rival.attributes }
+          attributes: { ...rival.attributes },
+          skills: []
         }))
       ];
       const standings = teams.map((team) => ({
         ...team,
-        report: Aircraft.reportScore(team.attributes.report, scope.reportMultiplier),
+        report: Aircraft.reportScore(team.attributes.report, scope.reportMultiplier, team.skills),
         flights: [],
         total: 0
       }));
@@ -71,7 +72,7 @@
           ? playerStrategyId
           : Rivals.flightStrategy(team, roundWeather);
         const strategy = strategies[strategyId];
-        const design = Aircraft.derive(team.attributes);
+        const design = Aircraft.derive(team.attributes, team.skills);
         const effectiveReliability = clamp(
           design.reliability + roundWeather.reliabilityModifier + strategy.reliabilityModifier + scope.reliabilityModifier,
           0.35,

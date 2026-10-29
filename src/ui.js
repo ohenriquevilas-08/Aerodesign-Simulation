@@ -25,6 +25,7 @@
   const careerScreens = Object.freeze([
     { id: "overview", title: "Visão geral", subtitle: "Acompanhe o momento da equipe e a temporada." },
     { id: "engineering", title: "Desenvolvimento do projeto", subtitle: "Transforme tempo e créditos em desempenho para o campeonato." },
+    { id: "skills", title: "Árvore de habilidades", subtitle: "Defina o conceito do avião e desenvolva engenharia e gestão da equipe." },
     { id: "fundraising", title: "Finanças da equipe", subtitle: "Escolha como financiar o projeto sem perder semanas de preparação." },
     { id: "rivals", title: "Central de rivais", subtitle: "Analise as equipes e descubra como pretendem disputar o título." },
     { id: "championship", title: "Campeonato", subtitle: "Acompanhe a abertura, as baterias e a classificação da temporada." }
@@ -70,6 +71,10 @@
 
   function renderCareerNavigation(activeScreen) {
     const activeIndex = screenIndexes[activeScreen] ?? 0;
+    const panels = document.querySelectorAll(".career-screen");
+    const screenWidth = 100 / panels.length;
+    document.getElementById("careerTrack").style.width = `${panels.length * 100}%`;
+    panels.forEach((panel) => { panel.style.flexBasis = `${screenWidth}%`; });
     document.querySelectorAll(".career-nav-button").forEach((button) => {
       const selected = button.dataset.screen === careerScreens[activeIndex].id;
       if (selected) button.setAttribute("aria-current", "page");
@@ -82,18 +87,86 @@
     });
     document.getElementById("careerTrack").style.transform = activeIndex === 0
       ? "translateX(0%)"
-      : `translateX(-${activeIndex * 20}%)`;
+      : `translateX(-${activeIndex * screenWidth}%)`;
     document.getElementById("careerPosition").textContent =
-      `${String(activeIndex + 1).padStart(2, "0")} / ${String(careerScreens.length).padStart(2, "0")}`;
+      `${String(activeIndex + 1).padStart(2, "0")} / ${String(panels.length).padStart(2, "0")}`;
     document.querySelector('[data-action="previous-screen"]').disabled = activeIndex === 0;
     document.querySelector('[data-action="next-screen"]').disabled = activeIndex === careerScreens.length - 1;
+  }
+
+  function renderSkillTree(state) {
+    const selectedConcept = state.skills.find((id) =>
+      game.Content.skillNodes.find((node) => node.id === id)?.concept
+    );
+    const groups = game.Content.skillBranches.map((branch) => {
+      const nodes = game.Content.skillNodes.filter((node) => node.branch === branch.id);
+      return `
+        <section class="skill-branch">
+          <div class="skill-branch-heading"><h4>${escapeHtml(branch.title)}</h4><p>${escapeHtml(branch.description)}</p></div>
+          <div class="skill-node-list">${nodes.map((node) => {
+            const unlocked = state.skills.includes(node.id);
+            const prerequisites = [
+              ...(node.requires || []),
+              ...(node.requiresAny && !node.requiresAny.some((required) => state.skills.includes(required))
+                ? [node.requiresAny.map((id) => game.Content.skillNodes.find((entry) => entry.id === id)?.title).join(" ou ")]
+                : [])
+            ];
+            const missingPrerequisite = prerequisites.some((id) =>
+              !state.skills.includes(id) && !id.includes(" ou ")
+            );
+            const conceptLocked = node.concept && selectedConcept && selectedConcept !== node.id;
+            const cost = game.Aircraft.researchCost(node, state.skills);
+            const weeksUnavailable = state.week + node.weeks > weeksPerSeason;
+            const disabled = unlocked || missingPrerequisite || conceptLocked ||
+              state.phase !== "preparation" || weeksUnavailable || state.cash < cost;
+            const prerequisiteLabel = prerequisites.length
+              ? `Pré-requisito: ${prerequisites.map((id) =>
+                id.includes(" ou ")
+                  ? id
+                  : escapeHtml(game.Content.skillNodes.find((entry) => entry.id === id)?.title || id)
+              ).join(" · ")}`
+              : node.concept ? "Escolha exclusiva de conceito" : "Disponível desde o início";
+            const effects = Object.entries(node.effects).map(([key, value]) => {
+              const labels = {
+                payloadMultiplier: `Carga ${signedPercent(value - 1)}`,
+                reliabilityModifier: `Confiabilidade ${value > 0 ? "+" : ""}${Math.round(value * 100)} p.p.`,
+                emptyWeightReduction: `Peso vazio −${value.toFixed(1).replace(".", ",")} kg`,
+                upgradeGainMultiplier: `Melhorias +${Math.round((value - 1) * 100)}%`,
+                upgradeCostMultiplier: `Custo das melhorias ${signedPercent(value - 1)}`,
+                researchCostMultiplier: `Pesquisas ${signedPercent(value - 1)}`,
+                reportBonus: `Relatório +${value} pontos`
+              };
+              return labels[key];
+            }).join(" · ");
+            const stateLabel = unlocked ? "PESQUISADA"
+              : conceptLocked ? "CONCEITO DEFINIDO"
+                : missingPrerequisite ? "BLOQUEADA"
+                  : weeksUnavailable ? "SEM SEMANAS"
+                    : state.cash < cost ? "SEM CRÉDITOS" : "DISPONÍVEL";
+            return `
+              <article class="skill-node ${unlocked ? "skill-unlocked" : ""} ${disabled ? "skill-disabled" : ""}">
+                <div class="skill-node-heading"><strong>${escapeHtml(node.title)}</strong><span>${stateLabel}</span></div>
+                <p>${escapeHtml(node.description)}</p>
+                <div class="skill-node-effects">${escapeHtml(effects)}</div>
+                <div class="skill-node-footer"><span>${prerequisiteLabel}</span><strong>${node.weeks} sem. · ${credits(cost)}</strong></div>
+                <button class="button button-subtle" type="button" data-action="research-skill" data-skill="${node.id}" ${disabled ? "disabled" : ""}>${unlocked ? "Pesquisada" : "Pesquisar"}</button>
+              </article>`;
+          }).join("")}</div>
+        </section>`;
+    }).join("");
+    const selected = selectedConcept
+      ? game.Content.skillNodes.find((node) => node.id === selectedConcept)?.title
+      : "Ainda não definido";
+    document.getElementById("skillTreeSummary").textContent =
+      `Conceito atual: ${selected}. Habilidades pesquisadas: ${state.skills.length}/${game.Content.skillNodes.length}.`;
+    document.getElementById("skillTree").innerHTML = groups;
   }
 
   function renderEngineering(state) {
     document.getElementById("engineeringList").innerHTML = attributes.map((attribute) => {
       const level = state.attributes[attribute.key];
-      const gain = game.Aircraft.upgradeGain(attribute, level);
-      const cost = game.Aircraft.upgradeCost(attribute, level);
+      const gain = game.Aircraft.upgradeGain(attribute, level, state.skills);
+      const cost = game.Aircraft.upgradeCost(attribute, level, state.skills);
       const disabled = state.week >= weeksPerSeason || state.cash < cost || gain <= 0;
       return `
         <article class="engineering-item">
@@ -157,7 +230,13 @@
         <div class="aircraft-stat-top"><span>${label}</span><strong>${Math.round(state.attributes[key])}</strong></div>
         <div class="mini-track"><div class="mini-fill" style="width:${state.attributes[key]}%"></div></div>
       </div>`).join("");
-    const design = game.Aircraft.derive(state.attributes);
+    const design = game.Aircraft.derive(state.attributes, state.skills);
+    const concept = state.skills
+      .map((id) => game.Content.skillNodes.find((node) => node.id === id))
+      .find((node) => node?.concept);
+    document.getElementById("aircraftConcept").textContent = concept
+      ? `Conceito: ${concept.title.replace("Conceito · ", "")}`
+      : "Conceito: ainda não escolhido";
     document.getElementById("derivedStats").innerHTML = `
       <div class="derived-stat"><span>Peso vazio</span><strong>${design.emptyWeight.toFixed(1).replace(".", ",")} kg</strong></div>
       <div class="derived-stat"><span>Carga estimada</span><strong>${design.payload.toFixed(1).replace(".", ",")} kg</strong></div>
@@ -401,6 +480,7 @@
     render(state, activeScreen, notice) {
       renderHeader(state, activeScreen);
       renderEngineering(state);
+      renderSkillTree(state);
       renderFundraising(state);
       renderScouting(state);
       renderAircraft(state);

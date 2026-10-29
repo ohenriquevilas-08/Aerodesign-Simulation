@@ -1,7 +1,20 @@
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear } = game.Content;
+  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear, skillNodes } = game.Content;
   const strategyIds = Object.keys(strategies);
+  const skillNodeIds = skillNodes.map((node) => node.id);
+
+  function validSkills(skills) {
+    if (!Array.isArray(skills) || new Set(skills).size !== skills.length ||
+      !skills.every((skill) => skillNodeIds.includes(skill))) return false;
+    const selectedConcepts = skills.filter((skill) => skillNodes.find((node) => node.id === skill).concept);
+    if (selectedConcepts.length > 1) return false;
+    return skills.every((skill) => {
+      const node = skillNodes.find((entry) => entry.id === skill);
+      return (node.requires || []).every((required) => skills.includes(required)) &&
+        (!node.requiresAny || node.requiresAny.some((required) => skills.includes(required)));
+    });
+  }
 
   function isNumber(value) {
     return Number.isFinite(value);
@@ -18,6 +31,7 @@
         aircraftName: aircraftName || "Aurora",
         difficulty,
         seasonScope: seasonScopeForYear(1).id,
+        skills: [],
         year: 1,
         week: 0,
         cash: difficulties[difficulty].startingCash,
@@ -61,6 +75,7 @@
         candidate.event.standings.filter((team) => team?.isPlayer).length === 1 &&
         candidate.event.standings.every((team) => team && typeof team.name === "string" &&
           typeof team.isPlayer === "boolean" && isNumber(team.report) && isNumber(team.total) &&
+          validSkills(team.skills) &&
           team.attributes && attributes.every(({ key }) => isNumber(team.attributes[key])) &&
           Array.isArray(team.flights) && team.flights.length <= 3 &&
           team.flights.every((flight) => flight && isNumber(flight.score) && typeof flight.crashed === "boolean")) &&
@@ -79,7 +94,7 @@
         isNumber(candidate.cash) && candidate.cash >= 0 &&
         isNumber(candidate.prestige) && candidate.prestige >= 0 &&
         Number.isInteger(candidate.rngState) && candidate.rngState >= 0 && candidate.rngState <= 0xffffffff &&
-        validAttributes && validRivals &&
+        validAttributes && validSkills(candidate.skills) && validRivals &&
         Array.isArray(candidate.history) && Array.isArray(candidate.log) &&
         candidate.scouted && typeof candidate.scouted === "object" &&
         validStrategies && validEvent &&
@@ -87,7 +102,7 @@
         validEventPhase;
     },
     migrate(candidate) {
-      if (!candidate || ![1, 2, 3].includes(candidate.version)) return candidate;
+      if (!candidate || ![1, 2, 3, 4].includes(candidate.version)) return candidate;
       let migrated = { ...candidate };
 
       if (candidate.version === 1) {
@@ -160,6 +175,9 @@
       migrated = {
         ...migrated,
         version: saveVersion,
+        skills: Array.isArray(migrated.skills)
+          ? migrated.skills.filter((skill) => skillNodeIds.includes(skill)).filter((skill, index, list) => list.indexOf(skill) === index)
+          : [],
         teamName: typeof migrated.teamName === "string" && migrated.teamName.trim()
           ? migrated.teamName.trim()
           : "Projeto Aurora",
@@ -173,6 +191,15 @@
       };
       if (migrated.event && !migrated.event.scope) {
         migrated.event.scope = { ...seasonScopes.find((scope) => scope.id === migrated.seasonScope) };
+      }
+      if (migrated.event) {
+        migrated.event = {
+          ...migrated.event,
+          standings: migrated.event.standings.map((team) => ({
+            ...team,
+            skills: Array.isArray(team.skills) ? team.skills.filter((skill) => skillNodeIds.includes(skill)) : []
+          }))
+        };
       }
       return migrated;
     }

@@ -5,7 +5,7 @@
   let notice = { text: "", kind: "" };
   let appView = "home";
   let hubNotice = { text: "", kind: "" };
-  const careerScreens = ["overview", "engineering", "fundraising", "rivals", "championship"];
+  const careerScreens = ["overview", "engineering", "skills", "fundraising", "rivals", "championship"];
   let swipeStart = null;
   let flightLaunching = false;
 
@@ -131,6 +131,7 @@
         return;
       }
       case "upgrade": return apply({ type: "upgrade", key: button.dataset.attribute });
+      case "research-skill": return apply({ type: "research-skill", id: button.dataset.skill });
       case "fundraise": return apply({ type: "fundraise", id: button.dataset.fundraiser });
       case "scout": return apply({ type: "scout", index: Number(button.dataset.rival) });
       case "advance-week": return apply({ type: "advance-week" });

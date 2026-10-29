@@ -246,7 +246,7 @@
     }
     .career-track {
       display: flex;
-      width: 500%;
+      width: 600%;
       height: 100%;
       align-items: stretch;
       transition: transform .42s cubic-bezier(.22, .72, .24, 1);
@@ -283,6 +283,26 @@
     .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .career-panel-content .engineering-item { min-height: 170px; grid-template-columns: minmax(0, 1fr); align-content: space-between; }
     .career-panel-content .engineering-actions { justify-items: start; }
+    .skill-tree-intro { margin: 0 0 14px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .skill-tree-summary { margin: 0 0 14px; padding: 10px 12px; border: 1px solid rgb(82 211 162 / 25%); border-radius: 8px; background: rgb(82 211 162 / 6%); color: #b6e8d2; font-size: 11px; }
+    .skill-tree { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
+    .skill-branch { min-width: 0; padding: 12px; border: 1px solid var(--border); border-radius: 11px; background: rgb(0 0 0 / 10%); }
+    .skill-branch-heading { min-height: 65px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .skill-branch-heading h4 { margin: 0; font-size: 12px; }
+    .skill-branch-heading p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .skill-node-list { display: grid; gap: 9px; margin-top: 10px; }
+    .skill-node { display: grid; gap: 7px; padding: 11px; border: 1px solid #394b5e; border-radius: 8px; background: #192532; }
+    .skill-node.skill-unlocked { border-color: rgb(82 211 162 / 42%); background: rgb(82 211 162 / 6%); }
+    .skill-node.skill-disabled:not(.skill-unlocked) { opacity: .76; }
+    .skill-node-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
+    .skill-node-heading strong { font-size: 11px; line-height: 1.4; }
+    .skill-node-heading span { flex-shrink: 0; color: var(--muted); font-size: 8px; font-weight: 750; letter-spacing: .06em; }
+    .skill-unlocked .skill-node-heading span { color: var(--accent); }
+    .skill-node > p { min-height: 42px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .skill-node-effects { color: #b6e8d2; font-size: 9px; line-height: 1.4; }
+    .skill-node-footer { display: grid; gap: 4px; padding-top: 7px; border-top: 1px solid var(--border); color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .skill-node-footer strong { color: #d7e0e9; font-size: 10px; }
+    .skill-node .button { justify-self: start; }
     .rivals-screen-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
     .rivals-screen-grid > .panel { overflow: auto; }
     .championship-preview {
@@ -339,6 +359,7 @@
     .aircraft-card { padding: 18px; }
     .aircraft-name { margin: 0 0 3px; font-size: 14px; }
     .aircraft-summary { margin: 0 0 17px; color: var(--muted); font-size: 11px; }
+    .aircraft-concept { margin: -8px 0 14px; color: #b6e8d2; font-size: 10px; }
     .aircraft-stat { margin-top: 13px; }
     .aircraft-stat-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 7px; font-size: 11px; }
     .aircraft-stat-top span:first-child { color: #c8d1dc; }
@@ -475,6 +496,7 @@
       .hub-menu { max-width: none; }
       .career-viewport { height: clamp(500px, calc(100vh - 370px), 790px); }
       .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(240px, .9fr); }
+      .skill-tree { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .rivals-screen-grid { grid-template-columns: minmax(0, 1fr); }
     }
     @media (max-width: 620px) {
@@ -499,6 +521,7 @@
       .career-panel-content { padding: 18px 16px; }
       .career-panel .section-heading { padding: 18px 16px 0; }
       .career-panel-content .engineering-list { grid-template-columns: minmax(0, 1fr); }
+      .skill-tree { grid-template-columns: minmax(0, 1fr); }
       .career-toolbar { grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
       .career-toolbar .notice { padding: 7px; font-size: 10px; }
       .career-toolbar .notice:empty { display: none; }
@@ -604,6 +627,7 @@
       <div class="career-nav" role="navigation" aria-label="Telas da carreira">
         <button class="career-nav-button" type="button" data-screen="overview" aria-current="page">Visão geral</button>
         <button class="career-nav-button" type="button" data-screen="engineering">Projeto</button>
+        <button class="career-nav-button" type="button" data-screen="skills">Habilidades</button>
         <button class="career-nav-button" type="button" data-screen="fundraising">Finanças</button>
         <button class="career-nav-button" type="button" data-screen="rivals">Rivais</button>
         <button class="career-nav-button" type="button" data-screen="championship">Campeonato</button>
@@ -633,6 +657,7 @@
               <div class="section-heading"><div><h2>Status do avião</h2><p>Indicadores do projeto atual</p></div></div>
               <h3 class="aircraft-name"><span id="aircraftName">Aurora</span> <span id="designYear"></span></h3>
               <p class="aircraft-summary">Estimativas do regulamento</p>
+              <p class="aircraft-concept" id="aircraftConcept">Conceito: ainda não escolhido</p>
               <div id="aircraftStats"></div>
               <div class="derived-grid" id="derivedStats"></div>
               <div class="milestone-list" id="milestoneList"></div>
@@ -660,6 +685,16 @@
               <section id="pane-engineering">
                 <div class="engineering-list" id="engineeringList"></div>
               </section>
+            </div>
+          </section>
+        </section>
+        <section class="career-screen" id="screen-skills" data-screen-panel="skills" aria-label="Árvore de habilidades">
+          <section class="panel career-panel">
+            <div class="section-heading"><div><h3>Centro de desenvolvimento</h3><p>Pesquisas consomem semanas e créditos, mas seus efeitos acompanham a equipe entre temporadas.</p></div><div class="hint">Escolhas permanentes</div></div>
+            <div class="career-panel-content">
+              <p class="skill-tree-intro">Escolha uma arquitetura para o avião e desenvolva engenharia e gestão. O conceito do avião é exclusivo; pesquisas concluídas permanecem na carreira.</p>
+              <div class="skill-tree-summary" id="skillTreeSummary"></div>
+              <div class="skill-tree" id="skillTree"></div>
             </div>
           </section>
         </section>
@@ -750,12 +785,90 @@
     })
   ]);
   const seasonScopeForYear = (year) => seasonScopes[(Math.max(1, year) - 1) % seasonScopes.length];
+  const conceptSkillIds = ["concept-lift", "concept-light", "concept-stable"];
+  const skillNodes = Object.freeze([
+    Object.freeze({
+      id: "concept-lift",
+      branch: "aircraft",
+      title: "Conceito · Carga máxima",
+      description: "Asa de grande sustentação prioriza carga, com maior exigência de estabilidade.",
+      weeks: 2,
+      cost: 420,
+      concept: true,
+      effects: Object.freeze({ payloadMultiplier: 1.1, reliabilityModifier: -0.04 })
+    }),
+    Object.freeze({
+      id: "concept-light",
+      branch: "aircraft",
+      title: "Conceito · Estrutura leve",
+      description: "Uma estrutura enxuta reduz o peso vazio e melhora a eficiência de carga.",
+      weeks: 2,
+      cost: 380,
+      concept: true,
+      effects: Object.freeze({ emptyWeightReduction: 1.1 })
+    }),
+    Object.freeze({
+      id: "concept-stable",
+      branch: "aircraft",
+      title: "Conceito · Estabilidade",
+      description: "Um projeto previsível prioriza confiabilidade em vez de desempenho máximo.",
+      weeks: 2,
+      cost: 400,
+      concept: true,
+      effects: Object.freeze({ payloadMultiplier: 0.95, reliabilityModifier: 0.08 })
+    }),
+    Object.freeze({
+      id: "design-method",
+      branch: "engineering",
+      title: "Método de projeto",
+      description: "Revisões integradas tornam cada melhoria de engenharia mais eficiente.",
+      weeks: 2,
+      cost: 500,
+      requiresAny: conceptSkillIds,
+      effects: Object.freeze({ upgradeGainMultiplier: 1.1 })
+    }),
+    Object.freeze({
+      id: "advanced-manufacturing",
+      branch: "engineering",
+      title: "Manufatura avançada",
+      description: "Processos repetíveis reduzem peso e aumentam a confiabilidade estrutural.",
+      weeks: 2,
+      cost: 650,
+      requires: ["design-method"],
+      effects: Object.freeze({ emptyWeightReduction: 0.35, reliabilityModifier: 0.05 })
+    }),
+    Object.freeze({
+      id: "team-coordination",
+      branch: "team",
+      title: "Coordenação da equipe",
+      description: "Rituais de integração diminuem o custo das pesquisas seguintes.",
+      weeks: 1,
+      cost: 300,
+      effects: Object.freeze({ researchCostMultiplier: 0.85 })
+    }),
+    Object.freeze({
+      id: "technical-integration",
+      branch: "team",
+      title: "Integração técnica",
+      description: "Revisões entre áreas elevam a qualidade do relatório e evitam incompatibilidades.",
+      weeks: 2,
+      cost: 520,
+      requires: ["team-coordination"],
+      effects: Object.freeze({ reportBonus: 6, reliabilityModifier: 0.02 })
+    })
+  ]);
 
   game.Content = Object.freeze({
     saveKey: "aerodesign-manager-save-v1",
-    saveVersion: 4,
+    saveVersion: 5,
     seasonScopes,
     seasonScopeForYear,
+    skillNodes,
+    skillBranches: Object.freeze([
+      Object.freeze({ id: "aircraft", title: "Conceito do avião", description: "Escolha uma identidade de projeto. Os conceitos são mutuamente exclusivos." }),
+      Object.freeze({ id: "engineering", title: "Engenharia e manufatura", description: "Desenvolva métodos para extrair mais de cada semana de projeto." }),
+      Object.freeze({ id: "team", title: "Gestão da equipe", description: "Invista em integração e qualidade do trabalho entre áreas." })
+    ]),
     difficulties: Object.freeze({
       freshman: { label: "Calouro", startingCash: 1400, rivalProgress: 0.75, description: "Mais créditos iniciais; as rivais evoluem com calma." },
       standard: { label: "Intermediário", startingCash: 1000, rivalProgress: 1, description: "Recursos e evolução das rivais em equilíbrio." },
@@ -826,33 +939,64 @@
 /* aircraft.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { milestones: milestoneConfig, milestoneLevel } = game.Content;
+  const { milestones: milestoneConfig, milestoneLevel, skillNodes } = game.Content;
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+  function skillEffects(skills = []) {
+    return skills.reduce((total, skillId) => {
+      const effects = skillNodes.find((node) => node.id === skillId)?.effects;
+      if (!effects) return total;
+      Object.entries(effects).forEach(([key, value]) => {
+        if (key.endsWith("Multiplier")) total[key] = (total[key] ?? 1) * value;
+        else total[key] = (total[key] ?? 0) + value;
+      });
+      return total;
+    }, {});
+  }
+
   game.Aircraft = Object.freeze({
-    derive(attributes) {
+    derive(attributes, skills = []) {
+      const effects = skillEffects(skills);
       const milestones = Object.fromEntries(milestoneConfig.map(({ key }) => [key, attributes[key] >= milestoneLevel]));
       const emptyWeightBase = 15.8 - attributes.structures * 0.07 + attributes.systems * 0.018;
       const payloadBase = 0.8 + attributes.aerodynamics * 0.052 + attributes.systems * 0.017 + attributes.structures * 0.006;
-      const emptyWeight = clamp(emptyWeightBase * (milestones.structures ? 0.92 : 1), 7.5, 16);
-      const payload = clamp(payloadBase * (milestones.aerodynamics ? 1.08 : 1), 1, 10.5);
+      const emptyWeight = clamp(
+        (emptyWeightBase * (milestones.structures ? 0.92 : 1)) - (effects.emptyWeightReduction ?? 0),
+        7.5,
+        16
+      );
+      const payload = clamp(
+        payloadBase * (milestones.aerodynamics ? 1.08 : 1) * (effects.payloadMultiplier ?? 1),
+        1,
+        10.5
+      );
       const reliability = clamp(
         0.58 + attributes.structures * 0.0028 + attributes.systems * 0.0025 -
-          attributes.aerodynamics * 0.00055 + (milestones.systems ? 0.06 : 0),
+          attributes.aerodynamics * 0.00055 + (milestones.systems ? 0.06 : 0) +
+          (effects.reliabilityModifier ?? 0),
         0.55,
         0.97
       );
       const payloadPotential = clamp(payload * 9.2 + (16 - emptyWeight) * 3.2, 0, 100);
-      return { emptyWeight, payload, reliability, payloadPotential, milestones };
+      return { emptyWeight, payload, reliability, payloadPotential, milestones, effects };
     },
-    reportScore(report, multiplier = 1) {
-      return Math.round(clamp((28 + report * 0.72 + (report >= milestoneLevel ? 8 : 0)) * multiplier, 0, 100));
+    reportScore(report, multiplier = 1, skills = []) {
+      const effects = skillEffects(skills);
+      return Math.round(clamp((28 + report * 0.72 + (report >= milestoneLevel ? 8 : 0) +
+        (effects.reportBonus ?? 0)) * multiplier, 0, 100));
     },
-    upgradeCost(attribute, level) {
-      return Math.round(attribute.baseCost * (1 + level / 100));
+    upgradeCost(attribute, level, skills = []) {
+      const effects = skillEffects(skills);
+      return Math.round(attribute.baseCost * (1 + level / 100) * (effects.upgradeCostMultiplier ?? 1));
     },
-    upgradeGain(attribute, level) {
-      return Math.min(100 - level, attribute.baseGain * (1 - level / 135));
+    upgradeGain(attribute, level, skills = []) {
+      const effects = skillEffects(skills);
+      return Math.min(100 - level, attribute.baseGain * (1 - level / 135) *
+        (effects.upgradeGainMultiplier ?? 1));
+    },
+    researchCost(node, skills = []) {
+      const effects = skillEffects(skills);
+      return Math.round(node.cost * (effects.researchCostMultiplier ?? 1));
     }
   });
 })();
@@ -956,18 +1100,19 @@
       }
 
       const teams = [
-        { name: state.teamName, isPlayer: true, attributes: { ...state.attributes } },
+        { name: state.teamName, isPlayer: true, attributes: { ...state.attributes }, skills: [...(state.skills || [])] },
         ...state.rivals.map((rival) => ({
           name: rival.name,
           isPlayer: false,
           philosophy: rival.philosophy,
           weights: { ...rival.weights },
-          attributes: { ...rival.attributes }
+          attributes: { ...rival.attributes },
+          skills: []
         }))
       ];
       const standings = teams.map((team) => ({
         ...team,
-        report: Aircraft.reportScore(team.attributes.report, scope.reportMultiplier),
+        report: Aircraft.reportScore(team.attributes.report, scope.reportMultiplier, team.skills),
         flights: [],
         total: 0
       }));
@@ -999,7 +1144,7 @@
           ? playerStrategyId
           : Rivals.flightStrategy(team, roundWeather);
         const strategy = strategies[strategyId];
-        const design = Aircraft.derive(team.attributes);
+        const design = Aircraft.derive(team.attributes, team.skills);
         const effectiveReliability = clamp(
           design.reliability + roundWeather.reliabilityModifier + strategy.reliabilityModifier + scope.reliabilityModifier,
           0.35,
@@ -1083,8 +1228,21 @@
 /* state.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear } = game.Content;
+  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear, skillNodes } = game.Content;
   const strategyIds = Object.keys(strategies);
+  const skillNodeIds = skillNodes.map((node) => node.id);
+
+  function validSkills(skills) {
+    if (!Array.isArray(skills) || new Set(skills).size !== skills.length ||
+      !skills.every((skill) => skillNodeIds.includes(skill))) return false;
+    const selectedConcepts = skills.filter((skill) => skillNodes.find((node) => node.id === skill).concept);
+    if (selectedConcepts.length > 1) return false;
+    return skills.every((skill) => {
+      const node = skillNodes.find((entry) => entry.id === skill);
+      return (node.requires || []).every((required) => skills.includes(required)) &&
+        (!node.requiresAny || node.requiresAny.some((required) => skills.includes(required)));
+    });
+  }
 
   function isNumber(value) {
     return Number.isFinite(value);
@@ -1101,6 +1259,7 @@
         aircraftName: aircraftName || "Aurora",
         difficulty,
         seasonScope: seasonScopeForYear(1).id,
+        skills: [],
         year: 1,
         week: 0,
         cash: difficulties[difficulty].startingCash,
@@ -1144,6 +1303,7 @@
         candidate.event.standings.filter((team) => team?.isPlayer).length === 1 &&
         candidate.event.standings.every((team) => team && typeof team.name === "string" &&
           typeof team.isPlayer === "boolean" && isNumber(team.report) && isNumber(team.total) &&
+          validSkills(team.skills) &&
           team.attributes && attributes.every(({ key }) => isNumber(team.attributes[key])) &&
           Array.isArray(team.flights) && team.flights.length <= 3 &&
           team.flights.every((flight) => flight && isNumber(flight.score) && typeof flight.crashed === "boolean")) &&
@@ -1162,7 +1322,7 @@
         isNumber(candidate.cash) && candidate.cash >= 0 &&
         isNumber(candidate.prestige) && candidate.prestige >= 0 &&
         Number.isInteger(candidate.rngState) && candidate.rngState >= 0 && candidate.rngState <= 0xffffffff &&
-        validAttributes && validRivals &&
+        validAttributes && validSkills(candidate.skills) && validRivals &&
         Array.isArray(candidate.history) && Array.isArray(candidate.log) &&
         candidate.scouted && typeof candidate.scouted === "object" &&
         validStrategies && validEvent &&
@@ -1170,7 +1330,7 @@
         validEventPhase;
     },
     migrate(candidate) {
-      if (!candidate || ![1, 2, 3].includes(candidate.version)) return candidate;
+      if (!candidate || ![1, 2, 3, 4].includes(candidate.version)) return candidate;
       let migrated = { ...candidate };
 
       if (candidate.version === 1) {
@@ -1243,6 +1403,9 @@
       migrated = {
         ...migrated,
         version: saveVersion,
+        skills: Array.isArray(migrated.skills)
+          ? migrated.skills.filter((skill) => skillNodeIds.includes(skill)).filter((skill, index, list) => list.indexOf(skill) === index)
+          : [],
         teamName: typeof migrated.teamName === "string" && migrated.teamName.trim()
           ? migrated.teamName.trim()
           : "Projeto Aurora",
@@ -1257,6 +1420,15 @@
       if (migrated.event && !migrated.event.scope) {
         migrated.event.scope = { ...seasonScopes.find((scope) => scope.id === migrated.seasonScope) };
       }
+      if (migrated.event) {
+        migrated.event = {
+          ...migrated.event,
+          standings: migrated.event.standings.map((team) => ({
+            ...team,
+            skills: Array.isArray(team.skills) ? team.skills.filter((skill) => skillNodeIds.includes(skill)) : []
+          }))
+        };
+      }
       return migrated;
     }
   });
@@ -1266,7 +1438,7 @@
 /* game.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, attributes, fundraisers, prizes, prestigeAwards, weeksPerSeason } = game.Content;
+  const { attributes, fundraisers, prizes, prestigeAwards, weeksPerSeason, skillNodes } = game.Content;
   const clone = (value) => JSON.parse(JSON.stringify(value));
 
   function failure(state, message, kind = "warning") {
@@ -1337,8 +1509,8 @@
           const attribute = attributes.find((entry) => entry.key === action.key);
           if (!attribute) return failure(state, "Área de engenharia desconhecida.", "error");
           const level = state.attributes[attribute.key];
-          const cost = game.Aircraft.upgradeCost(attribute, level);
-          const gain = game.Aircraft.upgradeGain(attribute, level);
+          const cost = game.Aircraft.upgradeCost(attribute, level, state.skills);
+          const gain = game.Aircraft.upgradeGain(attribute, level, state.skills);
           if (state.cash < cost) return failure(state, "Créditos insuficientes para essa melhoria.");
           if (gain <= 0) return failure(state, "Essa área já atingiu o nível máximo.");
           return advancePreparation(state, 1, "Engenharia", `${attribute.name} evoluiu ${gain.toFixed(1).replace(".", ",")} pontos por ${cost.toLocaleString("pt-BR")} créditos.`, (next) => {
@@ -1366,6 +1538,26 @@
               estimate[key] = Math.max(0, Math.min(100, Math.round(noisyValue / 10) * 10));
             });
             next.scouted[action.index] = estimate;
+          });
+        }
+        case "research-skill": {
+          const node = skillNodes.find((entry) => entry.id === action.id);
+          if (!node) return failure(state, "Pesquisa desconhecida.", "error");
+          if (state.skills.includes(node.id)) return failure(state, "Esta habilidade já foi pesquisada.");
+          if ((node.requires || []).some((required) => !state.skills.includes(required)) ||
+            (node.requiresAny && !node.requiresAny.some((required) => state.skills.includes(required)))) {
+            return failure(state, "Pesquise os pré-requisitos antes de avançar nesta trilha.");
+          }
+          if (node.concept && state.skills.some((skill) =>
+            skillNodes.find((entry) => entry.id === skill)?.concept
+          )) {
+            return failure(state, "A equipe já escolheu um conceito de avião. Essa decisão define a arquitetura do projeto.");
+          }
+          const cost = game.Aircraft.researchCost(node, state.skills);
+          if (state.cash < cost) return failure(state, "Créditos insuficientes para esta pesquisa.");
+          return advancePreparation(state, node.weeks, "Pesquisa", `${node.title} concluída.`, (next) => {
+            next.cash -= cost;
+            next.skills.push(node.id);
           });
         }
         case "advance-week":
@@ -1492,6 +1684,7 @@
   const careerScreens = Object.freeze([
     { id: "overview", title: "Visão geral", subtitle: "Acompanhe o momento da equipe e a temporada." },
     { id: "engineering", title: "Desenvolvimento do projeto", subtitle: "Transforme tempo e créditos em desempenho para o campeonato." },
+    { id: "skills", title: "Árvore de habilidades", subtitle: "Defina o conceito do avião e desenvolva engenharia e gestão da equipe." },
     { id: "fundraising", title: "Finanças da equipe", subtitle: "Escolha como financiar o projeto sem perder semanas de preparação." },
     { id: "rivals", title: "Central de rivais", subtitle: "Analise as equipes e descubra como pretendem disputar o título." },
     { id: "championship", title: "Campeonato", subtitle: "Acompanhe a abertura, as baterias e a classificação da temporada." }
@@ -1537,6 +1730,10 @@
 
   function renderCareerNavigation(activeScreen) {
     const activeIndex = screenIndexes[activeScreen] ?? 0;
+    const panels = document.querySelectorAll(".career-screen");
+    const screenWidth = 100 / panels.length;
+    document.getElementById("careerTrack").style.width = `${panels.length * 100}%`;
+    panels.forEach((panel) => { panel.style.flexBasis = `${screenWidth}%`; });
     document.querySelectorAll(".career-nav-button").forEach((button) => {
       const selected = button.dataset.screen === careerScreens[activeIndex].id;
       if (selected) button.setAttribute("aria-current", "page");
@@ -1549,18 +1746,86 @@
     });
     document.getElementById("careerTrack").style.transform = activeIndex === 0
       ? "translateX(0%)"
-      : `translateX(-${activeIndex * 20}%)`;
+      : `translateX(-${activeIndex * screenWidth}%)`;
     document.getElementById("careerPosition").textContent =
-      `${String(activeIndex + 1).padStart(2, "0")} / ${String(careerScreens.length).padStart(2, "0")}`;
+      `${String(activeIndex + 1).padStart(2, "0")} / ${String(panels.length).padStart(2, "0")}`;
     document.querySelector('[data-action="previous-screen"]').disabled = activeIndex === 0;
     document.querySelector('[data-action="next-screen"]').disabled = activeIndex === careerScreens.length - 1;
+  }
+
+  function renderSkillTree(state) {
+    const selectedConcept = state.skills.find((id) =>
+      game.Content.skillNodes.find((node) => node.id === id)?.concept
+    );
+    const groups = game.Content.skillBranches.map((branch) => {
+      const nodes = game.Content.skillNodes.filter((node) => node.branch === branch.id);
+      return `
+        <section class="skill-branch">
+          <div class="skill-branch-heading"><h4>${escapeHtml(branch.title)}</h4><p>${escapeHtml(branch.description)}</p></div>
+          <div class="skill-node-list">${nodes.map((node) => {
+            const unlocked = state.skills.includes(node.id);
+            const prerequisites = [
+              ...(node.requires || []),
+              ...(node.requiresAny && !node.requiresAny.some((required) => state.skills.includes(required))
+                ? [node.requiresAny.map((id) => game.Content.skillNodes.find((entry) => entry.id === id)?.title).join(" ou ")]
+                : [])
+            ];
+            const missingPrerequisite = prerequisites.some((id) =>
+              !state.skills.includes(id) && !id.includes(" ou ")
+            );
+            const conceptLocked = node.concept && selectedConcept && selectedConcept !== node.id;
+            const cost = game.Aircraft.researchCost(node, state.skills);
+            const weeksUnavailable = state.week + node.weeks > weeksPerSeason;
+            const disabled = unlocked || missingPrerequisite || conceptLocked ||
+              state.phase !== "preparation" || weeksUnavailable || state.cash < cost;
+            const prerequisiteLabel = prerequisites.length
+              ? `Pré-requisito: ${prerequisites.map((id) =>
+                id.includes(" ou ")
+                  ? id
+                  : escapeHtml(game.Content.skillNodes.find((entry) => entry.id === id)?.title || id)
+              ).join(" · ")}`
+              : node.concept ? "Escolha exclusiva de conceito" : "Disponível desde o início";
+            const effects = Object.entries(node.effects).map(([key, value]) => {
+              const labels = {
+                payloadMultiplier: `Carga ${signedPercent(value - 1)}`,
+                reliabilityModifier: `Confiabilidade ${value > 0 ? "+" : ""}${Math.round(value * 100)} p.p.`,
+                emptyWeightReduction: `Peso vazio −${value.toFixed(1).replace(".", ",")} kg`,
+                upgradeGainMultiplier: `Melhorias +${Math.round((value - 1) * 100)}%`,
+                upgradeCostMultiplier: `Custo das melhorias ${signedPercent(value - 1)}`,
+                researchCostMultiplier: `Pesquisas ${signedPercent(value - 1)}`,
+                reportBonus: `Relatório +${value} pontos`
+              };
+              return labels[key];
+            }).join(" · ");
+            const stateLabel = unlocked ? "PESQUISADA"
+              : conceptLocked ? "CONCEITO DEFINIDO"
+                : missingPrerequisite ? "BLOQUEADA"
+                  : weeksUnavailable ? "SEM SEMANAS"
+                    : state.cash < cost ? "SEM CRÉDITOS" : "DISPONÍVEL";
+            return `
+              <article class="skill-node ${unlocked ? "skill-unlocked" : ""} ${disabled ? "skill-disabled" : ""}">
+                <div class="skill-node-heading"><strong>${escapeHtml(node.title)}</strong><span>${stateLabel}</span></div>
+                <p>${escapeHtml(node.description)}</p>
+                <div class="skill-node-effects">${escapeHtml(effects)}</div>
+                <div class="skill-node-footer"><span>${prerequisiteLabel}</span><strong>${node.weeks} sem. · ${credits(cost)}</strong></div>
+                <button class="button button-subtle" type="button" data-action="research-skill" data-skill="${node.id}" ${disabled ? "disabled" : ""}>${unlocked ? "Pesquisada" : "Pesquisar"}</button>
+              </article>`;
+          }).join("")}</div>
+        </section>`;
+    }).join("");
+    const selected = selectedConcept
+      ? game.Content.skillNodes.find((node) => node.id === selectedConcept)?.title
+      : "Ainda não definido";
+    document.getElementById("skillTreeSummary").textContent =
+      `Conceito atual: ${selected}. Habilidades pesquisadas: ${state.skills.length}/${game.Content.skillNodes.length}.`;
+    document.getElementById("skillTree").innerHTML = groups;
   }
 
   function renderEngineering(state) {
     document.getElementById("engineeringList").innerHTML = attributes.map((attribute) => {
       const level = state.attributes[attribute.key];
-      const gain = game.Aircraft.upgradeGain(attribute, level);
-      const cost = game.Aircraft.upgradeCost(attribute, level);
+      const gain = game.Aircraft.upgradeGain(attribute, level, state.skills);
+      const cost = game.Aircraft.upgradeCost(attribute, level, state.skills);
       const disabled = state.week >= weeksPerSeason || state.cash < cost || gain <= 0;
       return `
         <article class="engineering-item">
@@ -1624,7 +1889,13 @@
         <div class="aircraft-stat-top"><span>${label}</span><strong>${Math.round(state.attributes[key])}</strong></div>
         <div class="mini-track"><div class="mini-fill" style="width:${state.attributes[key]}%"></div></div>
       </div>`).join("");
-    const design = game.Aircraft.derive(state.attributes);
+    const design = game.Aircraft.derive(state.attributes, state.skills);
+    const concept = state.skills
+      .map((id) => game.Content.skillNodes.find((node) => node.id === id))
+      .find((node) => node?.concept);
+    document.getElementById("aircraftConcept").textContent = concept
+      ? `Conceito: ${concept.title.replace("Conceito · ", "")}`
+      : "Conceito: ainda não escolhido";
     document.getElementById("derivedStats").innerHTML = `
       <div class="derived-stat"><span>Peso vazio</span><strong>${design.emptyWeight.toFixed(1).replace(".", ",")} kg</strong></div>
       <div class="derived-stat"><span>Carga estimada</span><strong>${design.payload.toFixed(1).replace(".", ",")} kg</strong></div>
@@ -1868,6 +2139,7 @@
     render(state, activeScreen, notice) {
       renderHeader(state, activeScreen);
       renderEngineering(state);
+      renderSkillTree(state);
       renderFundraising(state);
       renderScouting(state);
       renderAircraft(state);
@@ -1890,7 +2162,7 @@
   let notice = { text: "", kind: "" };
   let appView = "home";
   let hubNotice = { text: "", kind: "" };
-  const careerScreens = ["overview", "engineering", "fundraising", "rivals", "championship"];
+  const careerScreens = ["overview", "engineering", "skills", "fundraising", "rivals", "championship"];
   let swipeStart = null;
   let flightLaunching = false;
 
@@ -2016,6 +2288,7 @@
         return;
       }
       case "upgrade": return apply({ type: "upgrade", key: button.dataset.attribute });
+      case "research-skill": return apply({ type: "research-skill", id: button.dataset.skill });
       case "fundraise": return apply({ type: "fundraise", id: button.dataset.fundraiser });
       case "scout": return apply({ type: "scout", index: Number(button.dataset.rival) });
       case "advance-week": return apply({ type: "advance-week" });

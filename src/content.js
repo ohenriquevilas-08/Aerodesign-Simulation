@@ -35,12 +35,90 @@
     })
   ]);
   const seasonScopeForYear = (year) => seasonScopes[(Math.max(1, year) - 1) % seasonScopes.length];
+  const conceptSkillIds = ["concept-lift", "concept-light", "concept-stable"];
+  const skillNodes = Object.freeze([
+    Object.freeze({
+      id: "concept-lift",
+      branch: "aircraft",
+      title: "Conceito · Carga máxima",
+      description: "Asa de grande sustentação prioriza carga, com maior exigência de estabilidade.",
+      weeks: 2,
+      cost: 420,
+      concept: true,
+      effects: Object.freeze({ payloadMultiplier: 1.1, reliabilityModifier: -0.04 })
+    }),
+    Object.freeze({
+      id: "concept-light",
+      branch: "aircraft",
+      title: "Conceito · Estrutura leve",
+      description: "Uma estrutura enxuta reduz o peso vazio e melhora a eficiência de carga.",
+      weeks: 2,
+      cost: 380,
+      concept: true,
+      effects: Object.freeze({ emptyWeightReduction: 1.1 })
+    }),
+    Object.freeze({
+      id: "concept-stable",
+      branch: "aircraft",
+      title: "Conceito · Estabilidade",
+      description: "Um projeto previsível prioriza confiabilidade em vez de desempenho máximo.",
+      weeks: 2,
+      cost: 400,
+      concept: true,
+      effects: Object.freeze({ payloadMultiplier: 0.95, reliabilityModifier: 0.08 })
+    }),
+    Object.freeze({
+      id: "design-method",
+      branch: "engineering",
+      title: "Método de projeto",
+      description: "Revisões integradas tornam cada melhoria de engenharia mais eficiente.",
+      weeks: 2,
+      cost: 500,
+      requiresAny: conceptSkillIds,
+      effects: Object.freeze({ upgradeGainMultiplier: 1.1 })
+    }),
+    Object.freeze({
+      id: "advanced-manufacturing",
+      branch: "engineering",
+      title: "Manufatura avançada",
+      description: "Processos repetíveis reduzem peso e aumentam a confiabilidade estrutural.",
+      weeks: 2,
+      cost: 650,
+      requires: ["design-method"],
+      effects: Object.freeze({ emptyWeightReduction: 0.35, reliabilityModifier: 0.05 })
+    }),
+    Object.freeze({
+      id: "team-coordination",
+      branch: "team",
+      title: "Coordenação da equipe",
+      description: "Rituais de integração diminuem o custo das pesquisas seguintes.",
+      weeks: 1,
+      cost: 300,
+      effects: Object.freeze({ researchCostMultiplier: 0.85 })
+    }),
+    Object.freeze({
+      id: "technical-integration",
+      branch: "team",
+      title: "Integração técnica",
+      description: "Revisões entre áreas elevam a qualidade do relatório e evitam incompatibilidades.",
+      weeks: 2,
+      cost: 520,
+      requires: ["team-coordination"],
+      effects: Object.freeze({ reportBonus: 6, reliabilityModifier: 0.02 })
+    })
+  ]);
 
   game.Content = Object.freeze({
     saveKey: "aerodesign-manager-save-v1",
-    saveVersion: 4,
+    saveVersion: 5,
     seasonScopes,
     seasonScopeForYear,
+    skillNodes,
+    skillBranches: Object.freeze([
+      Object.freeze({ id: "aircraft", title: "Conceito do avião", description: "Escolha uma identidade de projeto. Os conceitos são mutuamente exclusivos." }),
+      Object.freeze({ id: "engineering", title: "Engenharia e manufatura", description: "Desenvolva métodos para extrair mais de cada semana de projeto." }),
+      Object.freeze({ id: "team", title: "Gestão da equipe", description: "Invista em integração e qualidade do trabalho entre áreas." })
+    ]),
     difficulties: Object.freeze({
       freshman: { label: "Calouro", startingCash: 1400, rivalProgress: 0.75, description: "Mais créditos iniciais; as rivais evoluem com calma." },
       standard: { label: "Intermediário", startingCash: 1000, rivalProgress: 1, description: "Recursos e evolução das rivais em equilíbrio." },

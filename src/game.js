@@ -1,6 +1,6 @@
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, attributes, fundraisers, prizes, prestigeAwards, weeksPerSeason } = game.Content;
+  const { attributes, fundraisers, prizes, prestigeAwards, weeksPerSeason, skillNodes } = game.Content;
   const clone = (value) => JSON.parse(JSON.stringify(value));
 
   function failure(state, message, kind = "warning") {
@@ -71,8 +71,8 @@
           const attribute = attributes.find((entry) => entry.key === action.key);
           if (!attribute) return failure(state, "Área de engenharia desconhecida.", "error");
           const level = state.attributes[attribute.key];
-          const cost = game.Aircraft.upgradeCost(attribute, level);
-          const gain = game.Aircraft.upgradeGain(attribute, level);
+          const cost = game.Aircraft.upgradeCost(attribute, level, state.skills);
+          const gain = game.Aircraft.upgradeGain(attribute, level, state.skills);
           if (state.cash < cost) return failure(state, "Créditos insuficientes para essa melhoria.");
           if (gain <= 0) return failure(state, "Essa área já atingiu o nível máximo.");
           return advancePreparation(state, 1, "Engenharia", `${attribute.name} evoluiu ${gain.toFixed(1).replace(".", ",")} pontos por ${cost.toLocaleString("pt-BR")} créditos.`, (next) => {
@@ -100,6 +100,26 @@
               estimate[key] = Math.max(0, Math.min(100, Math.round(noisyValue / 10) * 10));
             });
             next.scouted[action.index] = estimate;
+          });
+        }
+        case "research-skill": {
+          const node = skillNodes.find((entry) => entry.id === action.id);
+          if (!node) return failure(state, "Pesquisa desconhecida.", "error");
+          if (state.skills.includes(node.id)) return failure(state, "Esta habilidade já foi pesquisada.");
+          if ((node.requires || []).some((required) => !state.skills.includes(required)) ||
+            (node.requiresAny && !node.requiresAny.some((required) => state.skills.includes(required)))) {
+            return failure(state, "Pesquise os pré-requisitos antes de avançar nesta trilha.");
+          }
+          if (node.concept && state.skills.some((skill) =>
+            skillNodes.find((entry) => entry.id === skill)?.concept
+          )) {
+            return failure(state, "A equipe já escolheu um conceito de avião. Essa decisão define a arquitetura do projeto.");
+          }
+          const cost = game.Aircraft.researchCost(node, state.skills);
+          if (state.cash < cost) return failure(state, "Créditos insuficientes para esta pesquisa.");
+          return advancePreparation(state, node.weeks, "Pesquisa", `${node.title} concluída.`, (next) => {
+            next.cash -= cost;
+            next.skills.push(node.id);
           });
         }
         case "advance-week":

@@ -21,7 +21,7 @@ const sourceFiles = [
 function createHarness() {
   const storage = new Map();
   const elements = new Map();
-  const screens = ["overview", "engineering", "fundraising", "rivals", "championship"];
+  const screens = ["overview", "engineering", "skills", "fundraising", "rivals", "championship"];
   const navButtons = screens.map((screen) => ({
     dataset: { screen },
     attributes: {},
@@ -29,7 +29,7 @@ function createHarness() {
     removeAttribute(key) { delete this.attributes[key]; },
     focus() {}
   }));
-  const screenPanels = screens.map((screen) => ({ dataset: { screenPanel: screen }, setAttribute() {}, inert: false }));
+  const screenPanels = screens.map((screen) => ({ dataset: { screenPanel: screen }, setAttribute() {}, inert: false, style: {} }));
   const createElement = () => ({
     textContent: "",
     innerHTML: "",
@@ -228,12 +228,77 @@ test("annual scopes change competition criteria without resetting aircraft level
   assert.equal(game.State.validate(migrated), true);
 });
 
+test("skill tree enforces concept choices, prerequisites, costs, and persistent effects", () => {
+  const { game, storage } = createHarness();
+  let state = game.State.create();
+  state.cash = 5000;
+  const originalDesign = game.Aircraft.derive(state.attributes);
+  const conceptResearch = game.Game.apply(state, { type: "research-skill", id: "concept-lift" });
+  state = conceptResearch.state;
+  assert.equal(state.week, 2);
+  assert.equal(state.cash, 4580);
+  assert.deepEqual(JSON.parse(JSON.stringify(state.skills)), ["concept-lift"]);
+  const liftDesign = game.Aircraft.derive(state.attributes, state.skills);
+  assert(liftDesign.payload > originalDesign.payload);
+  assert(liftDesign.reliability < originalDesign.reliability);
+  assert.equal(game.State.validate(state), true);
+
+  const conflictingConcept = game.Game.apply(state, { type: "research-skill", id: "concept-stable" });
+  assert.equal(conflictingConcept.state, state);
+  assert.equal(conflictingConcept.notice.kind, "warning");
+  const lockedResearch = game.Game.apply(state, { type: "research-skill", id: "advanced-manufacturing" });
+  assert.equal(lockedResearch.state, state);
+  assert.equal(game.State.validate({ ...state, skills: ["advanced-manufacturing"] }), false);
+  assert.equal(game.State.validate({ ...state, skills: ["concept-lift", "concept-stable"] }), false);
+
+  state = apply(game, state, "research-skill", { id: "team-coordination" });
+  assert.equal(state.week, 3);
+  assert.equal(state.cash, 4280);
+  const discountedCost = game.Aircraft.researchCost(
+    game.Content.skillNodes.find((node) => node.id === "design-method"),
+    state.skills
+  );
+  assert.equal(discountedCost, 425);
+  state = apply(game, state, "research-skill", { id: "design-method" });
+  assert(state.skills.includes("design-method"));
+  const attribute = game.Content.attributes.find((entry) => entry.key === "aerodynamics");
+  assert(game.Aircraft.upgradeGain(attribute, state.attributes.aerodynamics, state.skills) >
+    game.Aircraft.upgradeGain(attribute, state.attributes.aerodynamics));
+
+  assert.equal(game.Storage.save(state).ok, true);
+  const restored = game.Storage.load();
+  assert.equal(restored.ok, true);
+  assert.deepEqual(JSON.parse(JSON.stringify(restored.state.skills)), JSON.parse(JSON.stringify(state.skills)));
+  assert.equal(storage.has(game.Content.saveKey), true);
+
+  const nextSeason = { ...state, phase: "results" };
+  const preservedSkills = apply(game, nextSeason, "next-season");
+  assert.deepEqual(JSON.parse(JSON.stringify(preservedSkills.skills)), JSON.parse(JSON.stringify(state.skills)));
+});
+
+test("version-four careers migrate without losing in-progress event validity", () => {
+  const { game } = createHarness();
+  const state = game.State.create();
+  for (let week = 0; week < 20; week += 1) state.week += 1;
+  state.phase = "event-report";
+  state.event = game.Competition.create(state).event;
+  state.version = 4;
+  delete state.skills;
+  state.event.standings.forEach((team) => { delete team.skills; });
+  const migrated = game.State.migrate(state);
+  assert.deepEqual(JSON.parse(JSON.stringify(migrated.skills)), []);
+  assert(migrated.event.standings.every((team) => Array.isArray(team.skills)));
+  assert.equal(game.State.validate(migrated), true);
+});
+
 test("career UI keeps cash visible and presents the aircraft flight circuit", () => {
   const { game, elements } = createHarness();
   let state = game.State.create({ aircraftName: "Ventania" });
   game.UI.render(state, "overview", { text: "", kind: "" });
   assert.equal(elements.get("careerCashLabel").textContent, "1.000 cr");
   assert.match(elements.get("scopeTitle").textContent, /Ano 1/);
+  assert.match(elements.get("skillTreeSummary").textContent, /Ainda não definido/);
+  assert.match(elements.get("skillTree").innerHTML, /Conceito · Carga máxima/);
 
   for (let week = 0; week < 20; week += 1) state = apply(game, state, "advance-week");
   state = apply(game, state, "reveal-reports");
@@ -304,14 +369,14 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
   game.UI.render(state, "overview", { text: "", kind: "" });
   assert.match(elements.get("rivalryScore").innerHTML, /Campeã defensora/);
   assert.equal(elements.get("careerTrack").style.transform, "translateX(0%)");
-  assert.equal(elements.get("careerPosition").textContent, "01 / 05");
+  assert.equal(elements.get("careerPosition").textContent, "01 / 06");
   assert.equal(navButtons[0].attributes["aria-current"], "page");
   assert.equal(screenPanels[0].inert, false);
   assert.equal(screenPanels[1].inert, true);
 
   game.UI.render(state, "engineering", { text: "", kind: "" });
-  assert.equal(elements.get("careerTrack").style.transform, "translateX(-20%)");
-  assert.equal(elements.get("careerPosition").textContent, "02 / 05");
+  assert.equal(elements.get("careerTrack").style.transform, "translateX(-16.666666666666668%)");
+  assert.equal(elements.get("careerPosition").textContent, "02 / 06");
   assert.equal(navButtons[0].attributes["aria-current"], undefined);
   assert.equal(navButtons[1].attributes["aria-current"], "page");
   assert.equal(screenPanels[0].inert, true);
