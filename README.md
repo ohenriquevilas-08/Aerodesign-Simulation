@@ -32,3 +32,7 @@ O evento é salvo entre etapas. As decisões da equipe, clima, resultados já re
 ## Carreira
 
 O menu inicial permite continuar a carreira salva ou criar uma nova. Na configuração, escolha os nomes da equipe e do avião e a dificuldade: Calouro começa com mais créditos e rivais que evoluem mais devagar; Veterano começa com menos créditos e rivais mais fortes. Intermediário mantém o equilíbrio padrão. Um novo jogo exige confirmação antes de substituir um salvamento existente. Saves anteriores são migrados automaticamente.
+
+Durante a carreira, navegue horizontalmente por Visão geral, Projeto, Finanças, Rivais e Campeonato. Use as setas na interface, as teclas de direção ou deslize horizontalmente na área principal; a competição abre automaticamente na tela de Campeonato.
+
+Referência visual consultada: [EA SPORTS FC 26 — Career Mode Deep Dive](https://www.ea.com/games/ea-sports-fc/fc-26/news/pitch-notes-fc26-career-mode-deep-dive), especialmente a navegação por seções e os painéis de Manager Career.

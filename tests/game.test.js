@@ -21,13 +21,15 @@ const sourceFiles = [
 function createHarness() {
   const storage = new Map();
   const elements = new Map();
-  const tabs = ["engineering", "fundraising", "scouting"].map((tab) => ({
-    dataset: { tab },
-    setAttribute() {},
-    getAttribute() { return "false"; },
+  const screens = ["overview", "engineering", "fundraising", "rivals", "championship"];
+  const navButtons = screens.map((screen) => ({
+    dataset: { screen },
+    attributes: {},
+    setAttribute(key, value) { this.attributes[key] = value; },
+    removeAttribute(key) { delete this.attributes[key]; },
     focus() {}
   }));
-  const panes = ["engineering", "fundraising", "scouting"].map((tab) => ({ id: `pane-${tab}` }));
+  const screenPanels = screens.map((screen) => ({ dataset: { screenPanel: screen }, setAttribute() {}, inert: false }));
   const createElement = () => ({
     textContent: "",
     innerHTML: "",
@@ -43,10 +45,19 @@ function createHarness() {
       return elements.get(id);
     },
     querySelectorAll(selector) {
-      return selector === ".tab" ? tabs : selector === ".tab-pane" ? panes : [];
+      return selector === ".career-nav-button" ? navButtons : selector === ".career-screen" ? screenPanels : [];
     },
-    querySelector() { return createElement(); }
+    querySelector(selector) {
+      if (selector === '[data-action="previous-screen"]') return getElementById("previousScreen");
+      if (selector === '[data-action="next-screen"]') return getElementById("nextScreen");
+      return createElement();
+    }
   };
+  function getElementById(id) {
+    if (!elements.has(id)) elements.set(id, createElement());
+    return elements.get(id);
+  }
+  document.getElementById = getElementById;
   const localStorage = {
     getItem(key) { return storage.get(key) ?? null; },
     setItem(key, value) { storage.set(key, value); }
@@ -55,7 +66,7 @@ function createHarness() {
   for (const file of sourceFiles) {
     vm.runInContext(readFileSync(path.join(root, "src", file), "utf8"), context, { filename: file });
   }
-  return { game: context.AeroDesign, elements, storage };
+  return { game: context.AeroDesign, elements, storage, navButtons, screenPanels };
 }
 
 function apply(game, state, type, details = {}) {
@@ -232,7 +243,7 @@ test("rival strategies reflect team philosophy and flight choices trade reliabil
 });
 
 test("renderer presents rivalry, weather, the live battery decision, and accessibility state", () => {
-  const { game, elements } = createHarness();
+  const { game, elements, navButtons, screenPanels } = createHarness();
   let state = game.State.create();
   state.rngState = 24680;
   state.history = [{
@@ -245,16 +256,31 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
       { name: "Projeto Aurora", position: 2, score: 171 }
     ]
   }];
-  game.UI.render(state, "engineering", { text: "", kind: "" });
+  game.UI.render(state, "overview", { text: "", kind: "" });
   assert.match(elements.get("rivalryScore").innerHTML, /Campeã defensora/);
+  assert.equal(elements.get("careerTrack").style.transform, "translateX(0%)");
+  assert.equal(elements.get("careerPosition").textContent, "01 / 05");
+  assert.equal(navButtons[0].attributes["aria-current"], "page");
+  assert.equal(screenPanels[0].inert, false);
+  assert.equal(screenPanels[1].inert, true);
+
+  game.UI.render(state, "engineering", { text: "", kind: "" });
+  assert.equal(elements.get("careerTrack").style.transform, "translateX(-20%)");
+  assert.equal(elements.get("careerPosition").textContent, "02 / 05");
+  assert.equal(navButtons[0].attributes["aria-current"], undefined);
+  assert.equal(navButtons[1].attributes["aria-current"], "page");
+  assert.equal(screenPanels[0].inert, true);
+  assert.equal(screenPanels[1].inert, false);
 
   for (let week = 0; week < 20; week += 1) state = apply(game, state, "advance-week");
-  game.UI.render(state, "engineering", { text: "", kind: "" });
+  game.UI.render(state, "championship", { text: "", kind: "" });
   assert.match(elements.get("eventView").innerHTML, /Revelar notas do relatório/);
   assert.match(elements.get("eventView").innerHTML, /Bateria 1/);
+  assert.equal(elements.get("championshipPreparation").hidden, true);
+  assert.equal(elements.get("eventView").hidden, false);
 
   state = apply(game, state, "reveal-reports");
-  game.UI.render(state, "engineering", { text: "", kind: "" });
+  game.UI.render(state, "championship", { text: "", kind: "" });
   assert.match(elements.get("eventView").innerHTML, /Classificação parcial/);
   assert.match(elements.get("eventView").innerHTML, /data-action="choose-strategy"/);
   assert.match(elements.get("eventView").innerHTML, /aria-pressed=/);

@@ -13,7 +13,16 @@
     node.dataset.kind = notice.kind || "";
   }
 
-  function renderHeader(state) {
+  const careerScreens = Object.freeze([
+    { id: "overview", title: "Visão geral", subtitle: "Acompanhe o momento da equipe e a temporada." },
+    { id: "engineering", title: "Desenvolvimento do projeto", subtitle: "Transforme tempo e créditos em desempenho para o campeonato." },
+    { id: "fundraising", title: "Finanças da equipe", subtitle: "Escolha como financiar o projeto sem perder semanas de preparação." },
+    { id: "rivals", title: "Central de rivais", subtitle: "Analise as equipes e descubra como pretendem disputar o título." },
+    { id: "championship", title: "Campeonato", subtitle: "Acompanhe a abertura, as baterias e a classificação da temporada." }
+  ]);
+  const screenIndexes = Object.freeze(Object.fromEntries(careerScreens.map(({ id }, index) => [id, index])));
+
+  function renderHeader(state, activeScreen) {
     const remaining = weeksPerSeason - state.week;
     document.getElementById("teamNameHeader").textContent = state.teamName;
     document.getElementById("weekLabel").textContent = `Semana ${state.week} / ${weeksPerSeason}`;
@@ -32,24 +41,37 @@
       ? "Preparação para a competição"
       : state.phase === "event-report" ? "Abertura do campeonato"
         : state.phase === "event-flight" ? "Competição em andamento" : "Resultado oficial";
-    document.getElementById("mainTitle").textContent = state.phase === "preparation" ? "Centro de operações" : "Campeonato";
-    document.getElementById("mainSubtitle").textContent = state.phase === "preparation"
-      ? "Uma decisão por semana. Prepare o projeto para o dia da competição."
-      : state.phase === "event-report" ? "Cinco equipes, um título. Os relatórios estão com a arbitragem."
+    const active = careerScreens.find(({ id }) => id === activeScreen) || careerScreens[0];
+    document.getElementById("mainTitle").textContent = active.title;
+    document.getElementById("mainSubtitle").textContent = activeScreen === "championship" && state.phase !== "preparation"
+      ? state.phase === "event-report" ? "Cinco equipes, um título. Os relatórios estão com a arbitragem."
         : state.phase === "event-flight" ? "Cada bateria muda as chances. Escolha sua carga e acompanhe o placar."
-          : `Temporada ${state.year} encerrada. Confira a classificação e prepare o próximo ciclo.`;
+          : `Temporada ${state.year} encerrada. Confira a classificação e prepare o próximo ciclo.`
+      : active.subtitle;
+    document.getElementById("championshipCountdown").textContent =
+      `Semana ${state.week} de ${weeksPerSeason} · ${remaining} ${remaining === 1 ? "ação restante" : "ações restantes"} até a competição`;
     document.getElementById("weekFooter").hidden = state.phase !== "preparation";
   }
 
-  function renderTabs(activeTab) {
-    document.querySelectorAll(".tab").forEach((tab) => {
-      const selected = tab.dataset.tab === activeTab;
-      tab.setAttribute("aria-selected", String(selected));
-      tab.tabIndex = selected ? 0 : -1;
+  function renderCareerNavigation(activeScreen) {
+    const activeIndex = screenIndexes[activeScreen] ?? 0;
+    document.querySelectorAll(".career-nav-button").forEach((button) => {
+      const selected = button.dataset.screen === careerScreens[activeIndex].id;
+      if (selected) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
     });
-    document.querySelectorAll(".tab-pane").forEach((pane) => {
-      pane.hidden = pane.id !== `pane-${activeTab}`;
+    document.querySelectorAll(".career-screen").forEach((panel) => {
+      const selected = panel.dataset.screenPanel === careerScreens[activeIndex].id;
+      panel.setAttribute("aria-hidden", String(!selected));
+      panel.inert = !selected;
     });
+    document.getElementById("careerTrack").style.transform = activeIndex === 0
+      ? "translateX(0%)"
+      : `translateX(-${activeIndex * 20}%)`;
+    document.getElementById("careerPosition").textContent =
+      `${String(activeIndex + 1).padStart(2, "0")} / ${String(careerScreens.length).padStart(2, "0")}`;
+    document.querySelector('[data-action="previous-screen"]').disabled = activeIndex === 0;
+    document.querySelector('[data-action="next-screen"]').disabled = activeIndex === careerScreens.length - 1;
   }
 
   function renderEngineering(state) {
@@ -316,18 +338,19 @@
   }
 
   function renderEvent(state) {
-    const preparation = document.getElementById("preparationView");
     const host = document.getElementById("eventView");
-    preparation.hidden = state.phase !== "preparation";
-    host.hidden = state.phase === "preparation";
-    if (state.phase === "preparation") return;
+    const preview = document.getElementById("championshipPreparation");
+    const inPreparation = state.phase === "preparation";
+    preview.hidden = !inPreparation;
+    host.hidden = inPreparation;
+    if (inPreparation) return;
     host.innerHTML = state.phase === "event-report" ? renderReportPhase(state)
       : state.phase === "event-flight" ? renderFlightPhase(state) : renderResults(state);
   }
 
   game.UI = Object.freeze({
-    render(state, activeTab, notice) {
-      renderHeader(state);
+    render(state, activeScreen, notice) {
+      renderHeader(state, activeScreen);
       renderEngineering(state);
       renderFundraising(state);
       renderScouting(state);
@@ -336,7 +359,7 @@
       renderRivalry(state);
       renderLog(state);
       renderEvent(state);
-      renderTabs(activeTab);
+      renderCareerNavigation(activeScreen);
       setNotice(notice);
     }
   });
