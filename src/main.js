@@ -5,7 +5,7 @@
   let notice = { text: "", kind: "" };
   let appView = "home";
   let hubNotice = { text: "", kind: "" };
-  const careerScreens = ["overview", "engineering", "skills", "fundraising", "rivals", "championship"];
+  const careerScreens = ["overview", "engineering", "skills", "fundraising", "rivals", "team", "championship"];
   let swipeStart = null;
   let flightLaunching = false;
 
@@ -145,6 +145,12 @@
       case "research-skill": return apply({ type: "research-skill", id: button.dataset.skill });
       case "fundraise": return apply({ type: "fundraise", id: button.dataset.fundraiser });
       case "scout": return apply({ type: "scout", index: Number(button.dataset.rival) });
+      case "recruit-member": return apply({ type: "recruit-member", candidateId: button.dataset.candidate });
+      case "nominate-captain": {
+        const area = button.dataset.area;
+        const nominee = document.getElementById(`captainNominee-${area}`);
+        return apply({ type: "nominate-captain", area, memberId: nominee?.value || "" });
+      }
       case "advance-week": return apply({ type: "advance-week" });
       case "reveal-reports": return apply({ type: "reveal-reports" });
       case "choose-strategy": return apply({
@@ -155,6 +161,17 @@
       case "run-flight": return launchFlight(button);
       case "next-season": return apply({ type: "next-season" });
       default: return;
+    }
+  }
+
+  function handleChange(event) {
+    const assignment = event.target.closest("select[data-member-assignment]");
+    if (assignment) {
+      apply({
+        type: "assign-member",
+        memberId: assignment.dataset.memberAssignment,
+        assignment: assignment.value
+      });
     }
   }
 
@@ -217,8 +234,6 @@
     const duration = reducedMotion ? 1000 : 2500;
     const launchingState = state;
     const launchingRound = state.event.round;
-    circuit.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
-    if (!reducedMotion) await new Promise((resolve) => window.setTimeout(resolve, 450));
     await animateFlight(path, plane, duration);
     if (state !== launchingState || state.phase !== "event-flight" || state.event.round !== launchingRound) {
       flightLaunching = false;
@@ -252,6 +267,7 @@
   }
 
   document.addEventListener("click", handleClick);
+  document.addEventListener("change", handleChange);
   document.addEventListener("keydown", handleKeydown);
   document.getElementById("careerViewport").addEventListener("pointerdown", handlePointerDown);
   document.addEventListener("pointerup", handlePointerUp);

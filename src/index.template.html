@@ -29,7 +29,8 @@
     body {
       margin: 0;
       min-width: 320px;
-      min-height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
       background:
         radial-gradient(ellipse at 70% -15%, rgb(82 211 162 / 10%), transparent 42%),
         var(--bg);
@@ -38,7 +39,8 @@
 
     button { font: inherit; }
 
-    .shell { max-width: 1440px; margin: 0 auto; padding: 28px clamp(16px, 3vw, 40px) 48px; }
+    .shell { display: flex; width: 100%; max-width: 1440px; height: 100%; min-height: 0; flex-direction: column; margin: 0 auto; overflow: hidden; padding: 12px clamp(12px, 3vw, 40px); }
+    #gameApp { display: flex; min-height: 0; flex: 1; flex-direction: column; }
 
     .topbar, .topbar-actions, .brand, .section-heading, .action-row, .rival-heading, .event-header {
       display: flex;
@@ -89,7 +91,8 @@
 
     .hub-view {
       display: grid;
-      min-height: min(720px, calc(100vh - 130px));
+      min-height: 0;
+      flex: 1;
       grid-template-columns: minmax(0, 1.15fr) minmax(310px, .85fr);
       align-items: center;
       gap: clamp(24px, 6vw, 88px);
@@ -186,23 +189,25 @@
       gap: 18px;
       margin: 0 2px 13px;
     }
+    .career-context { flex: 0 0 auto; }
     .career-context h2 { margin: 0; font-size: clamp(18px, 2.4vw, 25px); letter-spacing: -.04em; }
     .career-context p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
     .career-indicators { display: flex; flex-shrink: 0; align-items: center; gap: 8px; }
     .career-money { padding: 8px 11px; border: 1px solid rgb(82 211 162 / 30%); border-radius: 8px; background: rgb(82 211 162 / 7%); color: var(--accent); font-size: 12px; font-weight: 750; white-space: nowrap; }
+    .career-reputation { padding: 8px 11px; border: 1px solid rgb(122 157 255 / 25%); border-radius: 8px; color: #b6c8ff; font-size: 11px; font-weight: 700; white-space: nowrap; }
     .turn-indicator { flex-shrink: 0; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; color: #c9d4df; font-size: 11px; }
-    .career-nav-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .career-nav-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex: 0 0 auto; }
     .career-nav {
       display: flex;
       min-width: 0;
       flex: 1;
       gap: 5px;
-      overflow-x: auto;
+      overflow: hidden;
       padding: 5px;
       border: 1px solid var(--border);
       background: #101822;
-      scrollbar-width: thin;
     }
+    .nav-short-label { display: none; }
     .career-nav-button {
       position: relative;
       min-height: 43px;
@@ -236,9 +241,10 @@
     .career-arrow:hover:not(:disabled), .career-arrow:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
     .career-arrow:disabled { cursor: not-allowed; opacity: .35; }
     .career-position { min-width: 43px; color: var(--muted); font-size: 10px; text-align: center; }
-    .career-context, .career-nav-wrap, .career-viewport, .career-toolbar, .footer-note { max-width: 1440px; margin-right: auto; margin-left: auto; }
+    .career-context, .career-nav-wrap, .career-viewport, .career-toolbar, .footer-note { width: 100%; max-width: 1440px; min-width: 0; margin-right: auto; margin-left: auto; }
     .career-viewport {
-      height: clamp(440px, calc(100vh - 370px), 790px);
+      min-height: 0;
+      flex: 1 1 0;
       overflow: hidden;
       border: 1px solid #293849;
       background: rgb(7 13 20 / 30%);
@@ -256,16 +262,13 @@
       min-width: 0;
       flex: 0 0 20%;
       height: 100%;
-      overflow-x: hidden;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding: 12px;
-      scrollbar-color: #405365 transparent;
-      scrollbar-width: thin;
+      overflow: hidden;
+      padding: 8px;
     }
     .career-screen:focus { outline: none; }
     .career-screen[aria-hidden="true"] { pointer-events: none; }
-    .overview-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: auto auto 1fr; gap: 12px; }
+    .overview-grid { display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: auto auto 1fr; gap: 8px; }
+    .overview-grid > .panel { min-height: 0; overflow: hidden; }
     .overview-grid .season-card { grid-column: 1; }
     .overview-grid .aircraft-card { grid-column: 1; grid-row: 2 / 4; }
     .overview-grid .rivalry-panel { grid-column: 2; grid-row: 1; }
@@ -275,39 +278,78 @@
     .scope-card h2 { margin: 5px 0 6px; font-size: 14px; }
     .scope-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
     .scope-impact { display: block; margin-top: 9px; color: #b6e8d2; font-size: 10px; line-height: 1.45; }
-    .main-panel { min-height: 100%; overflow: hidden; }
-    .career-panel { min-height: 100%; overflow: hidden; }
-    .career-panel .section-heading { padding: 21px 24px 0; }
-    .career-panel-content { padding: 20px 24px 24px; }
+    .campaign-goals { display: grid; gap: 5px; margin-top: 10px; }
+    .campaign-label { color: #b6e8d2; font-size: 9px; font-weight: 750; letter-spacing: .03em; }
+    .campaign-goal { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .campaign-goal strong { color: #d7e0e9; }
+    .main-panel { height: 100%; min-height: 0; overflow: hidden; }
+    #eventView { height: 100%; }
+    .career-panel { display: flex; height: 100%; min-height: 0; flex-direction: column; overflow: hidden; }
+    .career-panel .section-heading { flex: 0 0 auto; padding: 12px 16px 0; }
+    .career-panel-content { min-height: 0; flex: 1; overflow: hidden; padding: 10px 16px 12px; }
     .career-panel-content > .intro-row { margin-bottom: 16px; }
     .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .career-panel-content .engineering-item { min-height: 170px; grid-template-columns: minmax(0, 1fr); align-content: space-between; }
+    .career-panel-content .engineering-item { min-height: 0; grid-template-columns: minmax(0, 1fr); align-content: space-between; }
     .career-panel-content .engineering-actions { justify-items: start; }
-    .skill-tree-intro { margin: 0 0 14px; color: var(--muted); font-size: 11px; line-height: 1.5; }
-    .skill-tree-summary { margin: 0 0 14px; padding: 10px 12px; border: 1px solid rgb(82 211 162 / 25%); border-radius: 8px; background: rgb(82 211 162 / 6%); color: #b6e8d2; font-size: 11px; }
+    .skill-tree-intro { margin: 0 0 8px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .skill-tree-summary { margin: 0 0 8px; padding: 7px 9px; border: 1px solid rgb(82 211 162 / 25%); border-radius: 8px; background: rgb(82 211 162 / 6%); color: #b6e8d2; font-size: 10px; }
     .skill-tree { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
     .skill-branch { min-width: 0; padding: 12px; border: 1px solid var(--border); border-radius: 11px; background: rgb(0 0 0 / 10%); }
-    .skill-branch-heading { min-height: 65px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .skill-branch-heading { min-height: 48px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
     .skill-branch-heading h4 { margin: 0; font-size: 12px; }
     .skill-branch-heading p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
-    .skill-node-list { display: grid; gap: 9px; margin-top: 10px; }
-    .skill-node { display: grid; gap: 7px; padding: 11px; border: 1px solid #394b5e; border-radius: 8px; background: #192532; }
+    .skill-node-list { display: grid; gap: 6px; margin-top: 7px; }
+    .skill-node { display: grid; gap: 4px; padding: 8px; border: 1px solid #394b5e; border-radius: 8px; background: #192532; }
     .skill-node.skill-unlocked { border-color: rgb(82 211 162 / 42%); background: rgb(82 211 162 / 6%); }
     .skill-node.skill-disabled:not(.skill-unlocked) { opacity: .76; }
     .skill-node-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
     .skill-node-heading strong { font-size: 11px; line-height: 1.4; }
     .skill-node-heading span { flex-shrink: 0; color: var(--muted); font-size: 8px; font-weight: 750; letter-spacing: .06em; }
     .skill-unlocked .skill-node-heading span { color: var(--accent); }
-    .skill-node > p { min-height: 42px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
-    .skill-node-effects { color: #b6e8d2; font-size: 9px; line-height: 1.4; }
-    .skill-node-footer { display: grid; gap: 4px; padding-top: 7px; border-top: 1px solid var(--border); color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .skill-node > p { min-height: 0; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .skill-node-effects { color: #b6e8d2; font-size: 8px; line-height: 1.35; }
+    .skill-node-footer { display: grid; gap: 3px; padding-top: 5px; border-top: 1px solid var(--border); color: var(--muted); font-size: 8px; line-height: 1.35; }
     .skill-node-footer strong { color: #d7e0e9; font-size: 10px; }
     .skill-node .button { justify-self: start; }
     .rivals-screen-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
-    .rivals-screen-grid > .panel { overflow: auto; }
+    .rivals-screen-grid > .panel { min-height: 0; overflow: hidden; }
+    .rivals-screen-grid .scouting-list { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 6px; }
+    .rivals-screen-grid .scouting-item { padding: 6px 12px; }
+    .team-screen-grid { display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 12px; }
+    .team-screen-grid > .panel { min-height: 0; overflow: hidden; }
+    .team-screen-grid .career-panel-content { display: flex; flex-direction: column; gap: 8px; }
+    .team-summary { display: grid; gap: 4px; padding: 8px 10px; border: 1px solid rgb(82 211 162 / 20%); border-radius: 8px; background: rgb(82 211 162 / 5%); color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .team-summary strong { color: var(--accent); font-size: 11px; }
+    .team-roster { display: grid; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 6px; }
+    .team-member { display: grid; min-width: 0; gap: 4px; padding: 7px; border: 1px solid var(--border); border-radius: 8px; background: rgb(255 255 255 / 1.2%); }
+    .team-member-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
+    .team-member-heading > strong { min-width: 0; font-size: 10px; }
+    .team-role-tag { flex-shrink: 0; color: var(--accent); font-size: 7px; font-weight: 750; }
+    .team-member-meta, .team-tenure { color: var(--muted); font-size: 8px; line-height: 1.3; }
+    .team-motivation-track { height: 3px; overflow: hidden; border-radius: 5px; background: #101822; }
+    .team-motivation-track span { display: block; height: 100%; border-radius: inherit; background: #70d7ae; }
+    .team-assignment { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 5px; color: var(--muted); font-size: 8px; }
+    .team-assignment select, .succession-row select { min-width: 0; min-height: 25px; padding: 3px 5px; border: 1px solid var(--border); border-radius: 5px; background: #111b26; color: var(--text); font-size: 8px; }
+    .team-assignment-label { color: #b6e8d2; font-size: 8px; }
+    .team-guidance { margin: 0; padding: 7px 8px; border-left: 2px solid var(--accent); background: rgb(82 211 162 / 5%); color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .team-succession { display: grid; gap: 5px; }
+    .succession-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(100px, 1.2fr) auto; align-items: center; gap: 5px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 7px; }
+    .succession-row > div { display: grid; gap: 2px; }
+    .succession-row > div strong { font-size: 9px; }
+    .succession-row > div span { color: var(--muted); font-size: 7px; }
+    .succession-row .button { min-height: 25px; padding: 0 6px; font-size: 8px; }
+    .team-candidates { display: grid; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 5px; }
+    .team-candidate { display: grid; min-width: 0; gap: 4px; padding: 7px; border: 1px solid var(--border); border-radius: 8px; background: rgb(255 255 255 / 1.2%); }
+    .team-candidate > div { display: flex; justify-content: space-between; gap: 4px; }
+    .team-candidate > div strong { font-size: 9px; }
+    .team-candidate > div span { flex-shrink: 0; color: var(--muted); font-size: 7px; font-weight: 750; }
+    .team-candidate p { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.3; }
+    .team-candidate .button { justify-self: start; min-height: 25px; padding: 0 6px; font-size: 8px; }
+    .candidate-disabled { opacity: .7; }
     .championship-preview {
       display: grid;
-      min-height: 100%;
+      height: 100%;
+      min-height: 0;
       place-content: center;
       gap: 14px;
       padding: 30px;
@@ -318,9 +360,9 @@
     .championship-preview .eyebrow { color: var(--accent); }
     .championship-preview h3 { margin: 0; font-size: clamp(21px, 4vw, 34px); }
     .championship-preview p { max-width: 520px; margin: 0 auto; color: var(--muted); font-size: 13px; line-height: 1.6; }
-    .career-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; margin-top: 12px; }
+    .career-toolbar { display: grid; min-height: 0; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; margin-top: 8px; flex: 0 0 auto; }
     .career-toolbar .notice { min-height: 0; margin: 0; }
-    .career-toolbar .notice:empty { display: block; min-height: 34px; border-color: transparent; background: transparent; }
+    .career-toolbar .notice:empty { display: none; }
     .career-toolbar .week-footer { margin: 0; padding: 0; border: 0; }
     .career-toolbar .week-footer p { display: none; }
     .career-toolbar .week-footer .button { min-width: 180px; }
@@ -421,6 +463,7 @@
     .cost-line strong { color: #d7e0e9; }
     .fundraising-copy strong, .scouting-copy strong { font-size: 13px; }
     .fundraising-actions { display: grid; justify-items: end; gap: 7px; }
+    .fundraising-locked { border-color: #303d4b; opacity: .8; }
     .notice { min-height: 34px; margin-top: 15px; padding: 9px 11px; border: 1px solid transparent; border-radius: 8px; color: var(--muted); font-size: 11px; line-height: 1.45; }
     .notice:empty { display: none; }
     .notice[data-kind="success"] { border-color: rgb(82 211 162 / 24%); background: rgb(82 211 162 / 7%); color: #a7e8cd; }
@@ -428,6 +471,10 @@
     .notice[data-kind="error"] { border-color: rgb(238 126 128 / 28%); background: rgb(238 126 128 / 8%); color: #f1a4a6; }
     .scouting-reveal { display: flex; gap: 5px; margin-top: 9px; flex-wrap: wrap; }
     .scouting-reveal span { padding: 4px 6px; border-radius: 5px; background: #263545; color: #c7d6e5; font-size: 9px; }
+    .scouting-intel { display: grid; gap: 3px; margin-top: 7px; }
+    .scouting-intel div { color: #c7d6e5; font-size: 9px; line-height: 1.3; }
+    .scouting-intel strong { color: #9eafbf; font-size: 8px; }
+    .scouting-list > .scouting-confidence { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.3; }
 
     .week-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 22px; padding-top: 17px; border-top: 1px solid var(--border); }
     .week-footer p { max-width: 430px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
@@ -437,24 +484,24 @@
     .log-week { color: var(--accent); font-weight: 700; }
     .empty-log { color: var(--muted); font-size: 11px; }
 
-    .event-content { padding: 25px 24px; }
+    .event-content { padding: 12px; }
     .event-hero { padding: 19px; border: 1px solid rgb(82 211 162 / 22%); border-radius: 12px; background: linear-gradient(110deg, rgb(82 211 162 / 10%), transparent 75%), #17242c; }
     .event-header { justify-content: space-between; gap: 15px; }
     .event-header h3 { margin: 0; font-size: 16px; }
     .event-header p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
-    .event-scope { margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--accent); background: rgb(82 211 162 / 6%); color: #c1e8d6; font-size: 11px; line-height: 1.5; }
+    .event-scope { margin-top: 7px; padding: 7px 9px; border-left: 3px solid var(--accent); background: rgb(82 211 162 / 6%); color: #c1e8d6; font-size: 10px; line-height: 1.4; }
     .event-scope strong { color: var(--accent); }
-    .event-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 18px 0; }
-    .event-stage { min-height: 82px; padding: 12px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 13%); }
+    .event-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin: 8px 0; }
+    .event-stage { min-height: 58px; padding: 8px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 13%); }
     .event-stage span { color: var(--muted); font-size: 10px; }
-    .event-stage strong { display: block; margin-top: 10px; font-size: 16px; }
+    .event-stage strong { display: block; margin-top: 5px; font-size: 13px; }
     .stage-current { border-color: var(--accent); background: rgb(82 211 162 / 8%); }
-    .competition-lead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 8px; }
+    .competition-lead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0 5px; }
     .competition-lead h4 { margin: 0; font-size: 12px; }
     .competition-lead span { color: var(--muted); font-size: 10px; }
-    .competition-commentary { min-height: 46px; margin: 14px 0; padding: 12px 14px; border-left: 3px solid var(--warning); border-radius: 0 8px 8px 0; background: rgb(240 189 104 / 7%); color: #f0d7aa; font-size: 11px; line-height: 1.5; }
-    .flight-circuit { margin: 16px 0; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: radial-gradient(ellipse at 50% 50%, rgb(82 211 162 / 7%), transparent 60%), #101a24; }
-    .flight-circuit svg { display: block; width: 100%; height: auto; max-height: 220px; }
+    .competition-commentary { min-height: 0; margin: 7px 0; padding: 8px 10px; border-left: 3px solid var(--warning); border-radius: 0 8px 8px 0; background: rgb(240 189 104 / 7%); color: #f0d7aa; font-size: 10px; line-height: 1.4; }
+    .flight-circuit { min-height: 0; margin: 5px 0; padding: 7px; border: 1px solid var(--border); border-radius: 12px; background: radial-gradient(ellipse at 50% 50%, rgb(82 211 162 / 7%), transparent 60%), #101a24; }
+    .flight-circuit svg { display: block; width: 100%; height: auto; max-height: 180px; }
     .circuit-track { fill: none; stroke: #39514f; stroke-width: 34; }
     .circuit-centerline { fill: none; stroke: #7a9d8b; stroke-width: 2; stroke-dasharray: 9 10; opacity: .7; }
     .circuit-pylon { fill: #f0bd68; stroke: #111822; stroke-width: 4; }
@@ -463,19 +510,19 @@
     .circuit-caption strong { color: var(--accent); font-weight: 650; }
     .strategy-detail { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
     .leader-row td { color: var(--accent) !important; }
-    .event-stage.flight-stage { min-height: 130px; }
-    .event-stage.flight-stage { min-height: 130px; }
+    .event-stage.flight-stage { min-height: 0; }
     .flight-weather { display: block; margin-top: 4px; color: #d3dee9 !important; }
-    .strategy-options { display: flex; gap: 4px; margin-top: 10px; }
-    .strategy-option { flex: 1; min-height: 28px; padding: 3px 4px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-alt); color: var(--muted); cursor: pointer; font-size: 9px; font-weight: 650; }
+    .strategy-options { display: flex; gap: 3px; margin-top: 5px; }
+    .strategy-option { min-width: 0; flex: 1; min-height: 26px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-alt); color: var(--muted); cursor: pointer; font-size: 8px; font-weight: 650; }
     .strategy-option[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-dark); color: var(--accent); }
     .strategy-option:hover { border-color: #50647b; }
     .score-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    .score-table th { padding: 10px 8px; color: var(--muted); font-size: 9px; font-weight: 750; letter-spacing: .08em; text-align: right; text-transform: uppercase; }
+    .score-table th { padding: 5px 4px; color: var(--muted); font-size: 8px; font-weight: 750; letter-spacing: .04em; text-align: right; text-transform: uppercase; }
     .score-table th:first-child, .score-table td:first-child { text-align: left; }
-    .score-table td { padding: 12px 8px; border-top: 1px solid var(--border); color: #d6dee7; text-align: right; }
+    .score-table td { padding: 6px 4px; border-top: 1px solid var(--border); color: #d6dee7; text-align: right; }
     .score-table tr:first-child td { color: var(--accent); font-weight: 750; }
-    .leaderboard-region { max-width: 100%; overflow-x: auto; }
+    .leaderboard-region { min-height: 0; max-width: 100%; overflow: hidden; }
+    .score-cell-compact { display: none; }
     .score-cell-strategy { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; font-weight: 500; }
     .score-table tbody tr { animation: standings-entry .32s ease both; }
     .score-table tbody tr:nth-child(2) { animation-delay: .035s; }
@@ -486,54 +533,290 @@
       from { opacity: .4; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .result-callout { margin: 17px 0; padding: 13px 15px; border: 1px solid var(--border); border-radius: 9px; color: #d9e3ed; font-size: 12px; line-height: 1.5; }
-    .event-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-    .footer-note { margin-top: 18px; color: var(--muted); font-size: 10px; text-align: center; }
+    .result-callout { margin: 8px 0; padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px; color: #d9e3ed; font-size: 11px; line-height: 1.4; }
+    .event-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .footer-note { display: none; }
+    .event-summary-content { display: flex; height: 100%; flex-direction: column; gap: 5px; overflow: hidden; }
+    .event-summary-content .event-hero { padding: 10px 12px; }
+    .event-summary-content .event-scope { margin: 0; }
+    .event-summary-content .event-stages { margin: 0; }
+    .event-summary-content .event-stage { min-height: 0; padding: 6px; }
+    .event-summary-content .event-stage span { font-size: 8px; }
+    .event-summary-content .event-stage strong { margin-top: 3px; font-size: 11px; }
+    .event-summary-content .event-stage .flight-weather,
+    .event-summary-content .event-stage .strategy-detail { display: none; }
+    .event-summary-content .competition-commentary { max-height: 40px; margin: 0; padding: 6px 8px; overflow: hidden; }
+    .event-summary-content .competition-commentary > div:not(:first-child) { display: none; }
+    .event-summary-content .competition-lead { margin: 0; }
+    .event-summary-content .leaderboard-region { flex: 1; }
+    .event-summary-content .score-table th,
+    .event-summary-content .score-table td { padding-top: 4px; padding-bottom: 4px; }
+    .event-summary-content .event-actions { margin-top: 0; }
+    .event-flight-content { display: flex; height: 100%; flex-direction: column; overflow: hidden; }
+    .event-flight-content .event-hero { flex: 0 0 auto; padding: 10px 12px; }
+    .event-flight-content .event-scope { flex: 0 0 auto; margin: 6px 0 0; }
+    .event-flight-content .event-stages { flex: 0 0 auto; grid-template-columns: .7fr repeat(3, minmax(0, 1fr)); gap: 5px; margin: 6px 0; }
+    .event-flight-content .event-stage { padding: 6px; }
+    .event-flight-content .event-stage span { font-size: 8px; }
+    .event-flight-content .event-stage strong { margin-top: 3px; font-size: 11px; }
+    .event-flight-content .flight-weather { font-size: 8px; line-height: 1.25; }
+    .event-flight-content .strategy-detail { font-size: 8px; }
+    .flight-display { min-height: 0; flex: 1; }
+    .flight-primary { display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 10px; }
+    .flight-primary-display { display: flex; min-width: 0; min-height: 0; flex-direction: column; }
+    .flight-primary-display .flight-circuit { flex: 0 0 auto; }
+    .flight-primary-display .flight-launch-actions { flex: 0 0 auto; margin: 0; }
+    .flight-primary-display .competition-commentary { flex: 0 1 auto; margin: 5px 0 0; }
+    .flight-standings { display: flex; min-width: 0; min-height: 0; flex-direction: column; }
+    .flight-standings .competition-lead { flex: 0 0 auto; margin: 0 0 4px; }
+    .flight-standings .competition-lead span { display: none; }
+    .flight-standings .leaderboard-region { flex: 1; }
+    .flight-standings .score-table th,
+    .flight-standings .score-table td { padding: 5px 3px; font-size: 9px; }
 
     @media (max-width: 920px) {
-      .hub-view { min-height: auto; grid-template-columns: 1fr; gap: 28px; padding: clamp(22px, 5vw, 48px); }
-      .hub-blueprint { height: 130px; margin-top: 32px; }
-      .hub-menu { max-width: none; }
-      .career-viewport { height: clamp(500px, calc(100vh - 370px), 790px); }
-      .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(240px, .9fr); }
-      .skill-tree { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .rivals-screen-grid { grid-template-columns: minmax(0, 1fr); }
+      .hub-view { grid-template-columns: minmax(0, 1fr) minmax(260px, .9fr); gap: 18px; padding: clamp(18px, 3vw, 32px); }
+      .hub-menu { max-width: none; padding: 18px; }
+      .hub-title { font-size: clamp(36px, 6vw, 58px); }
+      .hub-blueprint { height: 120px; margin-top: 24px; }
+      .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(220px, .9fr); }
+      .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .rivals-screen-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .team-screen-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
     }
     @media (max-width: 620px) {
-      .shell { padding: 18px 12px 12px; }
-      .topbar { align-items: flex-start; margin-bottom: 12px; }
-      .topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
-      .topbar-actions .button { min-height: 34px; font-size: 11px; }
-      .career-context { align-items: flex-start; flex-wrap: wrap; }
-      .career-context p { max-width: 250px; line-height: 1.45; }
-      .career-indicators { width: 100%; justify-content: space-between; }
-      .career-money, .turn-indicator { flex: 1; text-align: center; }
-      .career-nav-wrap { gap: 4px; }
-      .career-arrow { width: 32px; flex-basis: 32px; }
-      .career-position { min-width: 35px; }
+      .shell { padding: 7px; }
+      .hub-view { grid-template-columns: minmax(0, 1fr); align-content: center; gap: 8px; padding: 10px; }
+      .hub-showcase { text-align: center; }
+      .hub-title { margin: 7px 0; font-size: clamp(28px, 9vw, 38px); }
+      .hub-description { display: none; }
+      .hub-blueprint { width: 70%; height: 55px; margin: 4px auto; }
+      .hub-menu { padding: 10px; }
+      .hub-menu h3 { margin-bottom: 8px; font-size: 17px; }
+      .hub-save-summary { min-height: 0; margin-bottom: 8px; }
+      .hub-menu-actions, .hub-form { gap: 7px; }
+      .hub-button { min-height: 38px; }
+      .hub-field { gap: 4px; }
+      .hub-field input, .hub-field select { min-height: 36px; padding: 6px 8px; font-size: 11px; }
+      .hub-status { margin-top: 5px; }
+      .topbar { min-height: 34px; gap: 5px; margin-bottom: 6px; }
+      .brand { min-width: 0; gap: 6px; }
+      .brand-mark { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 9px; font-size: 15px; }
+      .brand h1 { font-size: 14px; }
+      .brand p { display: none; }
+      .topbar-actions { flex-wrap: nowrap; gap: 4px; }
+      .topbar-actions .button { min-height: 30px; padding: 0 6px; font-size: 9px; }
+      .career-context { align-items: center; gap: 5px; margin: 0 0 6px; }
+      .career-context h2 { font-size: 15px; }
+      .career-context p { display: none; }
+      .career-indicators { gap: 4px; }
+      .career-money, .career-reputation, .turn-indicator { padding: 6px; font-size: 9px; }
+      .career-nav-wrap { gap: 4px; margin-bottom: 6px; }
+      .career-arrow { width: 28px; height: 36px; flex-basis: 28px; }
+      .career-position { min-width: 32px; font-size: 9px; }
       .career-nav { gap: 2px; }
-      .career-nav-button { min-height: 38px; padding: 0 12px; font-size: 10px; }
-      .career-viewport { height: clamp(400px, calc(100vh - 430px), 650px); min-height: 0; }
-      .career-track { min-height: 0; height: 100%; }
-      .career-screen { min-height: 0; height: 100%; padding: 7px; overflow-y: auto; }
-      .overview-grid { height: auto; min-height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; align-content: start; }
-      .overview-grid .season-card, .overview-grid .aircraft-card, .overview-grid .rivalry-panel, .overview-grid .scope-card, .overview-grid .season-log { grid-column: 1; grid-row: auto; }
-      .career-panel-content { padding: 18px 16px; }
-      .career-panel .section-heading { padding: 18px 16px 0; }
-      .career-panel-content .engineering-list { grid-template-columns: minmax(0, 1fr); }
-      .skill-tree { grid-template-columns: minmax(0, 1fr); }
-      .career-toolbar { grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
-      .career-toolbar .notice { padding: 7px; font-size: 10px; }
+      .career-nav-button { min-width: 0; min-height: 32px; flex: 1 1 0; padding: 0 2px; font-size: 9px; white-space: nowrap; }
+      .nav-full-label { display: none; }
+      .nav-short-label { display: inline; }
+      .career-screen { padding: 5px; }
+      .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, .65fr) minmax(0, 1fr) minmax(0, .75fr); gap: 5px; }
+      .overview-grid .season-card { grid-column: 1; grid-row: 1; }
+      .overview-grid .rivalry-panel { grid-column: 2; grid-row: 1; }
+      .overview-grid .aircraft-card { grid-column: 1; grid-row: 2 / 4; padding: 8px; }
+      .overview-grid .scope-card { grid-column: 2; grid-row: 2; padding: 8px; }
+      .overview-grid .season-log { grid-column: 2; grid-row: 3; padding: 8px; }
+      .season-top { padding: 8px; }
+      .season-label { font-size: 9px; }
+      .season-number { margin: 4px 0 2px; font-size: 19px; }
+      .season-caption { font-size: 9px; }
+      .progress-track { height: 5px; margin-top: 7px; }
+      .metric { padding: 6px 8px; }
+      .metric-label { font-size: 8px; }
+      .metric-value { margin-top: 2px; font-size: 12px; }
+      .overview-grid .rivalry-panel .section-heading,
+      .overview-grid .season-log .section-heading { margin-bottom: 5px; }
+      .overview-grid .rivalry-panel .panel-pad,
+      .overview-grid .rivalry-panel { padding: 8px; }
+      .overview-grid .section-heading h2 { font-size: 11px; }
+      .overview-grid .section-heading p { display: none; }
+      .rivalry-score p { font-size: 9px; line-height: 1.3; }
+      .aircraft-card .section-heading { margin-bottom: 5px; }
+      .aircraft-card .section-heading p, .aircraft-summary { display: none; }
+      .aircraft-name { margin-bottom: 2px; font-size: 11px; }
+      .aircraft-concept { margin: 0 0 5px; font-size: 8px; }
+      .aircraft-stat { margin-top: 5px; }
+      .aircraft-stat-top { margin-bottom: 3px; font-size: 9px; }
+      .mini-track { height: 4px; }
+      .derived-grid { gap: 4px; margin-top: 7px; }
+      .derived-stat { padding: 5px; }
+      .derived-stat span { font-size: 8px; }
+      .derived-stat strong { margin-top: 2px; font-size: 10px; }
+      .milestone-list { gap: 3px; margin-top: 5px; }
+      .milestone { padding: 4px 5px; font-size: 7px; }
+      .milestone strong { font-size: 7px; }
+      .scope-card .eyebrow { font-size: 7px; }
+      .scope-card h2 { margin: 3px 0; font-size: 10px; }
+      .scope-card p, .scope-impact { font-size: 8px; line-height: 1.3; }
+      .scope-impact { margin-top: 4px; }
+      .season-log .log-entry { grid-template-columns: 35px minmax(0, 1fr); gap: 4px; font-size: 8px; line-height: 1.3; }
+      .season-log .log-entry:nth-child(n+3) { display: none; }
+      .season-log .log-list { gap: 4px; }
+      .career-panel .section-heading { gap: 5px; margin-bottom: 6px; padding: 7px 8px 0; }
+      .career-panel .section-heading h3 { font-size: 12px; }
+      .career-panel .section-heading p { display: none; }
+      .career-panel-content { padding: 6px 8px 8px; }
+      .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 5px; }
+      .engineering-item, .fundraising-item, .scouting-item { min-width: 0; grid-template-columns: minmax(0, 1fr); gap: 5px; padding: 7px; }
+      .engineering-name { gap: 5px; font-size: 10px; }
+      .engineering-icon { width: 22px; height: 22px; flex-basis: 22px; font-size: 10px; }
+      .engineering-copy p, .fundraising-copy p, .scouting-copy p { margin-top: 3px; font-size: 9px; line-height: 1.3; }
+      .engineering-progress { margin-top: 5px; }
+      .engineering-actions, .fundraising-actions { justify-items: start; gap: 3px; }
+      .cost-line { font-size: 8px; }
+      .engineering-item .button, .fundraising-item .button, .scouting-item .button { min-height: 28px; padding: 0 7px; font-size: 9px; }
+      .skill-tree-intro { display: none; }
+      .skill-tree-summary { margin-bottom: 5px; padding: 5px 7px; font-size: 9px; }
+      .skill-tree { height: calc(100% - 34px); grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+      .skill-branch { min-width: 0; padding: 5px; }
+      .skill-branch-heading { min-height: 0; padding-bottom: 4px; }
+      .skill-branch-heading h4 { font-size: 9px; }
+      .skill-branch-heading p, .skill-node > p, .skill-node-footer > span { display: none; }
+      .skill-node-list { gap: 4px; margin-top: 4px; }
+      .skill-node { gap: 3px; padding: 5px; }
+      .skill-node-heading { gap: 2px; }
+      .skill-node-heading strong { font-size: 8px; line-height: 1.2; }
+      .skill-node-heading span { font-size: 6px; }
+      .skill-node-effects { font-size: 7px; line-height: 1.2; }
+      .skill-node-footer { padding-top: 3px; font-size: 7px; }
+      .skill-node-footer strong { font-size: 7px; }
+      .skill-node .button { min-height: 24px; padding: 0 5px; font-size: 8px; }
+      .rivals-screen-grid { grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); gap: 5px; }
+      .rivals-screen-grid > .panel { padding: 8px; }
+      .rivals-screen-grid .section-heading { margin-bottom: 5px; }
+      .rivals-screen-grid .section-heading p { display: none; }
+      .rival-list { gap: 5px; }
+      .rivals-screen-grid .scouting-list { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+      .rival-item { padding: 6px; }
+      .rival-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
+      .rival-heading strong { font-size: 9px; }
+      .rival-tag { padding: 3px 5px; font-size: 7px; }
+      .rival-detail { margin-top: 3px; font-size: 8px; line-height: 1.25; }
+      .scouting-item { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px; padding: 5px; }
+      .scouting-copy strong { font-size: 9px; }
+      .scouting-copy p { display: none; }
+      .scouting-intel { gap: 2px; margin-top: 3px; }
+      .scouting-intel div { font-size: 7px; line-height: 1.2; }
+      .scouting-intel strong { font-size: 7px; }
+      .scouting-list > .scouting-confidence { margin: 0; font-size: 7px; line-height: 1.2; }
+      .team-screen-grid { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 5px; }
+      .team-screen-grid > .panel { padding: 0; }
+      .team-screen-grid .career-panel .section-heading { padding: 7px 6px 0; }
+      .team-screen-grid .career-panel .section-heading h3 { font-size: 10px; }
+      .team-screen-grid .career-panel-content { gap: 4px; padding: 5px; }
+      .team-summary { gap: 2px; padding: 5px; font-size: 7px; line-height: 1.2; }
+      .team-summary strong { font-size: 9px; }
+      .team-summary span:nth-child(2) { display: none; }
+      .team-roster { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+      .team-member { gap: 2px; padding: 4px; }
+      .team-member-heading > strong { font-size: 8px; }
+      .team-role-tag { font-size: 6px; }
+      .team-member-meta, .team-tenure { font-size: 7px; line-height: 1.15; }
+      .team-motivation-track { height: 2px; }
+      .team-assignment { grid-template-columns: 35px minmax(0, 1fr); gap: 2px; font-size: 7px; }
+      .team-assignment select { min-height: 21px; padding: 2px; font-size: 7px; }
+      .team-assignment-label { font-size: 7px; }
+      .team-guidance { padding: 5px; font-size: 7px; line-height: 1.25; }
+      .team-succession { gap: 3px; }
+      .succession-row { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) auto; gap: 2px; padding: 3px; }
+      .succession-row > div strong { font-size: 7px; }
+      .succession-row > div span { font-size: 6px; }
+      .succession-row select { min-height: 21px; padding: 2px; font-size: 7px; }
+      .succession-row .button { min-height: 21px; padding: 0 3px; font-size: 7px; }
+      .team-candidates { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+      .team-candidate { gap: 2px; padding: 4px; }
+      .team-candidate > div strong { font-size: 8px; }
+      .team-candidate > div span { font-size: 6px; }
+      .team-candidate p { display: none; }
+      .team-candidate .button { min-height: 21px; padding: 0 4px; font-size: 7px; }
+      .career-toolbar { grid-template-columns: minmax(0, 1fr) auto; gap: 4px; margin-top: 6px; }
+      .career-toolbar .notice { padding: 5px; font-size: 9px; line-height: 1.2; }
       .career-toolbar .notice:empty { display: none; }
       .career-toolbar .week-footer .button { width: auto; min-width: 0; padding: 0 9px; white-space: nowrap; }
-      .event-content { padding-right: 12px; padding-left: 12px; }
-      .engineering-item, .fundraising-item, .scouting-item { grid-template-columns: minmax(0, 1fr); }
-      .engineering-actions, .fundraising-actions { justify-items: start; }
-      .event-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .score-table th, .score-table td { padding-right: 4px; padding-left: 4px; font-size: 9px; }
-      .intro-row, .week-footer { align-items: flex-start; flex-direction: column; }
-      .hint { text-align: left; }
-      .footer-note { display: none; }
+      .event-content { padding: 8px; }
+      .event-hero { padding: 8px; }
+      .event-header { gap: 5px; }
+      .event-header h3 { font-size: 12px; }
+      .event-header p { margin-top: 3px; font-size: 9px; }
+      .event-header .rival-tag { white-space: nowrap; }
+      .event-summary-content .competition-lead span { display: none; }
+      .score-table { table-layout: fixed; }
+      .score-table th, .score-table td { padding: 4px 3px; font-size: 8px; }
+      .score-table th:first-child, .score-table td:first-child { width: 28px; }
+      .score-table th:nth-child(3), .score-table td:nth-child(3),
+      .score-table th:nth-child(4), .score-table td:nth-child(4),
+      .score-table th:nth-child(5), .score-table td:nth-child(5),
+      .score-table th:nth-child(6), .score-table td:nth-child(6) { display: none; }
+      .score-cell-compact { display: block; margin-top: 2px; color: var(--muted); font-size: 7px; font-weight: 500; line-height: 1.2; }
+      .score-cell-strategy { display: none; }
+      .event-flight-content .event-stages { grid-template-columns: .65fr repeat(3, minmax(0, 1fr)); }
+      .event-flight-content .flight-weather { display: none; }
+      .event-flight-content .event-stage { padding: 5px 3px; }
+      .event-flight-content .event-stage span { font-size: 7px; }
+      .event-flight-content .strategy-detail { display: none; }
+      .event-flight-content .flight-display { flex: 1; }
+      .event-flight-content .flight-primary { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 5px; }
+      .flight-primary-display .flight-circuit { padding: 4px; }
+      .flight-circuit svg { max-height: 140px; }
+      .circuit-caption { font-size: 7px; }
+      .flight-standings .competition-lead h4 { font-size: 10px; }
+      .flight-standings .score-table th, .flight-standings .score-table td { padding: 4px 2px; font-size: 8px; }
+      .flight-primary-display .competition-commentary { padding: 5px; font-size: 8px; }
+      .flight-primary-display .competition-commentary > div:not(:first-child) { display: none; }
+      .event-actions .button, .flight-launch-actions .button { min-height: 32px; padding: 0 8px; font-size: 10px; }
+      .championship-preview { padding: 12px; gap: 8px; }
+      .championship-preview h3 { font-size: 18px; }
+      .championship-preview p { font-size: 10px; line-height: 1.4; }
+    }
+    @media (max-height: 720px) {
+      .shell { padding-top: 6px; padding-bottom: 6px; }
+      .hub-blueprint { display: none; }
+      .hub-title { margin-top: 8px; }
+      .career-context { margin-bottom: 4px; }
+      .career-nav-wrap { margin-bottom: 4px; }
+      .career-toolbar { margin-top: 4px; }
+      .rivals-screen-grid .scouting-list { gap: 5px; }
+      .scouting-intel { gap: 2px; margin-top: 4px; }
+      .event-summary-content .event-stages { gap: 3px; }
+      .event-flight-content .event-scope { max-height: 38px; overflow: hidden; }
+      .event-flight-content .event-stage { min-height: 0; }
+      .flight-primary-display .competition-commentary { max-height: 44px; overflow: hidden; }
+    }
+    @media (max-height: 600px) {
+      .event-summary-content .competition-commentary { display: none; }
+      .event-summary-content .event-hero { padding: 7px 9px; }
+      .event-summary-content .event-header h3 { font-size: 13px; }
+      .event-summary-content .event-header p { margin-top: 2px; font-size: 9px; }
+      .event-summary-content .event-scope { padding: 5px 7px; font-size: 9px; }
+      .event-summary-content .event-stages { gap: 3px; }
+      .event-summary-content .event-stage { padding: 4px; }
+      .event-summary-content .competition-lead { display: none; }
+      .event-summary-content .leaderboard-region { margin-top: 2px; }
+      .event-summary-content .score-table th,
+      .event-summary-content .score-table td { padding-top: 3px; padding-bottom: 3px; }
+      .event-summary-content .event-actions .button { min-height: 28px; }
+    }
+    @media (max-width: 420px) {
+      .career-context h2 { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .career-money, .career-reputation, .turn-indicator { padding: 5px 4px; font-size: 8px; }
+      .career-position { min-width: 27px; }
+      .career-nav-button { padding: 0 1px; font-size: 8px; }
+      .event-flight-content .event-stages { grid-template-columns: .55fr repeat(3, minmax(0, 1fr)); gap: 3px; }
+      .event-flight-content .event-stage span { font-size: 6px; }
+      .strategy-option { font-size: 7px; }
+    }
+    @media (max-width: 360px) {
+      .career-nav-button { font-size: 7px; }
+      .career-position { min-width: 24px; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -619,18 +902,20 @@
       </div>
       <div class="career-indicators">
         <div class="career-money" id="careerCashLabel" role="status" aria-label="Saldo atual">0 cr</div>
+        <div class="career-reputation" id="careerReputationLabel" role="status" aria-label="Reputação institucional">Reputação 0</div>
         <div class="turn-indicator" id="turnIndicator">20 ações restantes</div>
       </div>
     </header>
     <nav class="career-nav-wrap" aria-label="Navegação da carreira">
       <button class="career-arrow" type="button" data-action="previous-screen" aria-label="Tela anterior">‹</button>
       <div class="career-nav" role="navigation" aria-label="Telas da carreira">
-        <button class="career-nav-button" type="button" data-screen="overview" aria-current="page">Visão geral</button>
-        <button class="career-nav-button" type="button" data-screen="engineering">Projeto</button>
-        <button class="career-nav-button" type="button" data-screen="skills">Habilidades</button>
-        <button class="career-nav-button" type="button" data-screen="fundraising">Finanças</button>
-        <button class="career-nav-button" type="button" data-screen="rivals">Rivais</button>
-        <button class="career-nav-button" type="button" data-screen="championship">Campeonato</button>
+        <button class="career-nav-button" type="button" data-screen="overview" aria-label="Visão geral" aria-current="page"><span class="nav-full-label" aria-hidden="true">Visão geral</span><span class="nav-short-label" aria-hidden="true">Geral</span></button>
+        <button class="career-nav-button" type="button" data-screen="engineering" aria-label="Projeto"><span class="nav-full-label" aria-hidden="true">Projeto</span><span class="nav-short-label" aria-hidden="true">Projeto</span></button>
+        <button class="career-nav-button" type="button" data-screen="skills" aria-label="Habilidades"><span class="nav-full-label" aria-hidden="true">Habilidades</span><span class="nav-short-label" aria-hidden="true">Hab.</span></button>
+        <button class="career-nav-button" type="button" data-screen="fundraising" aria-label="Finanças"><span class="nav-full-label" aria-hidden="true">Finanças</span><span class="nav-short-label" aria-hidden="true">Caixa</span></button>
+        <button class="career-nav-button" type="button" data-screen="rivals" aria-label="Rivais"><span class="nav-full-label" aria-hidden="true">Rivais</span><span class="nav-short-label" aria-hidden="true">Rivais</span></button>
+        <button class="career-nav-button" type="button" data-screen="team" aria-label="Equipe"><span class="nav-full-label" aria-hidden="true">Equipe</span><span class="nav-short-label" aria-hidden="true">Time</span></button>
+        <button class="career-nav-button" type="button" data-screen="championship" aria-label="Campeonato"><span class="nav-full-label" aria-hidden="true">Campeonato</span><span class="nav-short-label" aria-hidden="true">Evento</span></button>
       </div>
       <span class="career-position" id="careerPosition" aria-live="polite">01 / 05</span>
       <button class="career-arrow" type="button" data-action="next-screen" aria-label="Próxima tela">›</button>
@@ -671,6 +956,7 @@
               <h2 id="scopeTitle">Escopo da temporada</h2>
               <p id="scopeCriteria"></p>
               <strong class="scope-impact" id="scopeImpact"></strong>
+              <div class="campaign-goals" id="campaignGoals"></div>
             </section>
             <section class="panel panel-pad season-log">
               <div class="section-heading"><div><h2>Diário da equipe</h2><p>Últimos acontecimentos da temporada</p></div></div>
@@ -709,13 +995,31 @@
         <section class="career-screen" id="screen-rivals" data-screen-panel="rivals" aria-label="Observação das equipes rivais">
           <div class="rivals-screen-grid">
             <section class="panel panel-pad">
-              <div class="section-heading"><div><h2>Equipes rivais</h2><p>Filosofias e status de scouting</p></div></div>
+              <div class="section-heading"><div><h2>Equipes rivais</h2><p>Planos distintos · progresso público a cada semana</p></div></div>
               <div class="rival-list" id="rivalList"></div>
             </section>
             <section class="panel career-panel">
-              <div class="section-heading"><div><h3>Scouting</h3><p>Revele estimativas aproximadas das equipes. Cada análise ocupa 1 semana.</p></div></div>
+              <div class="section-heading"><div><h3>Scouting</h3><p>Leituras táticas aproximadas por 150 créditos; sem consumir a semana.</p></div></div>
               <div class="career-panel-content">
                 <section id="pane-scouting"><div class="scouting-list" id="scoutingList"></div></section>
+              </div>
+            </section>
+          </div>
+        </section>
+        <section class="career-screen" id="screen-team" data-screen-panel="team" aria-label="Gestão e continuidade da equipe">
+          <div class="team-screen-grid">
+            <section class="panel career-panel">
+              <div class="section-heading"><div><h3>Equipe atual</h3><p>Alocação persistente · trabalho delegado em segundo plano</p></div></div>
+              <div class="career-panel-content">
+                <div class="team-summary" id="teamSummary"></div>
+                <div class="team-roster" id="teamRoster"></div>
+              </div>
+            </section>
+            <section class="panel career-panel">
+              <div class="section-heading"><div><h3>Recrutamento e sucessão</h3><p>Prepare as duas capitanias sem interromper o projeto.</p></div></div>
+              <div class="career-panel-content">
+                <div class="team-succession" id="teamSuccession"></div>
+                <div class="team-candidates" id="teamCandidates"></div>
               </div>
             </section>
           </div>

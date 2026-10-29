@@ -7,6 +7,7 @@ const sourceFiles = [
   "content.js",
   "random.js",
   "aircraft.js",
+  "team.js",
   "rivals.js",
   "competition.js",
   "state.js",

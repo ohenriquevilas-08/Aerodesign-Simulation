@@ -29,7 +29,8 @@
     body {
       margin: 0;
       min-width: 320px;
-      min-height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
       background:
         radial-gradient(ellipse at 70% -15%, rgb(82 211 162 / 10%), transparent 42%),
         var(--bg);
@@ -38,7 +39,8 @@
 
     button { font: inherit; }
 
-    .shell { max-width: 1440px; margin: 0 auto; padding: 28px clamp(16px, 3vw, 40px) 48px; }
+    .shell { display: flex; width: 100%; max-width: 1440px; height: 100%; min-height: 0; flex-direction: column; margin: 0 auto; overflow: hidden; padding: 12px clamp(12px, 3vw, 40px); }
+    #gameApp { display: flex; min-height: 0; flex: 1; flex-direction: column; }
 
     .topbar, .topbar-actions, .brand, .section-heading, .action-row, .rival-heading, .event-header {
       display: flex;
@@ -89,7 +91,8 @@
 
     .hub-view {
       display: grid;
-      min-height: min(720px, calc(100vh - 130px));
+      min-height: 0;
+      flex: 1;
       grid-template-columns: minmax(0, 1.15fr) minmax(310px, .85fr);
       align-items: center;
       gap: clamp(24px, 6vw, 88px);
@@ -186,23 +189,25 @@
       gap: 18px;
       margin: 0 2px 13px;
     }
+    .career-context { flex: 0 0 auto; }
     .career-context h2 { margin: 0; font-size: clamp(18px, 2.4vw, 25px); letter-spacing: -.04em; }
     .career-context p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
     .career-indicators { display: flex; flex-shrink: 0; align-items: center; gap: 8px; }
     .career-money { padding: 8px 11px; border: 1px solid rgb(82 211 162 / 30%); border-radius: 8px; background: rgb(82 211 162 / 7%); color: var(--accent); font-size: 12px; font-weight: 750; white-space: nowrap; }
+    .career-reputation { padding: 8px 11px; border: 1px solid rgb(122 157 255 / 25%); border-radius: 8px; color: #b6c8ff; font-size: 11px; font-weight: 700; white-space: nowrap; }
     .turn-indicator { flex-shrink: 0; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; color: #c9d4df; font-size: 11px; }
-    .career-nav-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .career-nav-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex: 0 0 auto; }
     .career-nav {
       display: flex;
       min-width: 0;
       flex: 1;
       gap: 5px;
-      overflow-x: auto;
+      overflow: hidden;
       padding: 5px;
       border: 1px solid var(--border);
       background: #101822;
-      scrollbar-width: thin;
     }
+    .nav-short-label { display: none; }
     .career-nav-button {
       position: relative;
       min-height: 43px;
@@ -236,9 +241,10 @@
     .career-arrow:hover:not(:disabled), .career-arrow:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
     .career-arrow:disabled { cursor: not-allowed; opacity: .35; }
     .career-position { min-width: 43px; color: var(--muted); font-size: 10px; text-align: center; }
-    .career-context, .career-nav-wrap, .career-viewport, .career-toolbar, .footer-note { max-width: 1440px; margin-right: auto; margin-left: auto; }
+    .career-context, .career-nav-wrap, .career-viewport, .career-toolbar, .footer-note { width: 100%; max-width: 1440px; min-width: 0; margin-right: auto; margin-left: auto; }
     .career-viewport {
-      height: clamp(440px, calc(100vh - 370px), 790px);
+      min-height: 0;
+      flex: 1 1 0;
       overflow: hidden;
       border: 1px solid #293849;
       background: rgb(7 13 20 / 30%);
@@ -256,16 +262,13 @@
       min-width: 0;
       flex: 0 0 20%;
       height: 100%;
-      overflow-x: hidden;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding: 12px;
-      scrollbar-color: #405365 transparent;
-      scrollbar-width: thin;
+      overflow: hidden;
+      padding: 8px;
     }
     .career-screen:focus { outline: none; }
     .career-screen[aria-hidden="true"] { pointer-events: none; }
-    .overview-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: auto auto 1fr; gap: 12px; }
+    .overview-grid { display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: auto auto 1fr; gap: 8px; }
+    .overview-grid > .panel { min-height: 0; overflow: hidden; }
     .overview-grid .season-card { grid-column: 1; }
     .overview-grid .aircraft-card { grid-column: 1; grid-row: 2 / 4; }
     .overview-grid .rivalry-panel { grid-column: 2; grid-row: 1; }
@@ -275,39 +278,78 @@
     .scope-card h2 { margin: 5px 0 6px; font-size: 14px; }
     .scope-card p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
     .scope-impact { display: block; margin-top: 9px; color: #b6e8d2; font-size: 10px; line-height: 1.45; }
-    .main-panel { min-height: 100%; overflow: hidden; }
-    .career-panel { min-height: 100%; overflow: hidden; }
-    .career-panel .section-heading { padding: 21px 24px 0; }
-    .career-panel-content { padding: 20px 24px 24px; }
+    .campaign-goals { display: grid; gap: 5px; margin-top: 10px; }
+    .campaign-label { color: #b6e8d2; font-size: 9px; font-weight: 750; letter-spacing: .03em; }
+    .campaign-goal { display: flex; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .campaign-goal strong { color: #d7e0e9; }
+    .main-panel { height: 100%; min-height: 0; overflow: hidden; }
+    #eventView { height: 100%; }
+    .career-panel { display: flex; height: 100%; min-height: 0; flex-direction: column; overflow: hidden; }
+    .career-panel .section-heading { flex: 0 0 auto; padding: 12px 16px 0; }
+    .career-panel-content { min-height: 0; flex: 1; overflow: hidden; padding: 10px 16px 12px; }
     .career-panel-content > .intro-row { margin-bottom: 16px; }
     .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .career-panel-content .engineering-item { min-height: 170px; grid-template-columns: minmax(0, 1fr); align-content: space-between; }
+    .career-panel-content .engineering-item { min-height: 0; grid-template-columns: minmax(0, 1fr); align-content: space-between; }
     .career-panel-content .engineering-actions { justify-items: start; }
-    .skill-tree-intro { margin: 0 0 14px; color: var(--muted); font-size: 11px; line-height: 1.5; }
-    .skill-tree-summary { margin: 0 0 14px; padding: 10px 12px; border: 1px solid rgb(82 211 162 / 25%); border-radius: 8px; background: rgb(82 211 162 / 6%); color: #b6e8d2; font-size: 11px; }
+    .skill-tree-intro { margin: 0 0 8px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .skill-tree-summary { margin: 0 0 8px; padding: 7px 9px; border: 1px solid rgb(82 211 162 / 25%); border-radius: 8px; background: rgb(82 211 162 / 6%); color: #b6e8d2; font-size: 10px; }
     .skill-tree { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
     .skill-branch { min-width: 0; padding: 12px; border: 1px solid var(--border); border-radius: 11px; background: rgb(0 0 0 / 10%); }
-    .skill-branch-heading { min-height: 65px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .skill-branch-heading { min-height: 48px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
     .skill-branch-heading h4 { margin: 0; font-size: 12px; }
     .skill-branch-heading p { margin: 5px 0 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
-    .skill-node-list { display: grid; gap: 9px; margin-top: 10px; }
-    .skill-node { display: grid; gap: 7px; padding: 11px; border: 1px solid #394b5e; border-radius: 8px; background: #192532; }
+    .skill-node-list { display: grid; gap: 6px; margin-top: 7px; }
+    .skill-node { display: grid; gap: 4px; padding: 8px; border: 1px solid #394b5e; border-radius: 8px; background: #192532; }
     .skill-node.skill-unlocked { border-color: rgb(82 211 162 / 42%); background: rgb(82 211 162 / 6%); }
     .skill-node.skill-disabled:not(.skill-unlocked) { opacity: .76; }
     .skill-node-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
     .skill-node-heading strong { font-size: 11px; line-height: 1.4; }
     .skill-node-heading span { flex-shrink: 0; color: var(--muted); font-size: 8px; font-weight: 750; letter-spacing: .06em; }
     .skill-unlocked .skill-node-heading span { color: var(--accent); }
-    .skill-node > p { min-height: 42px; margin: 0; color: var(--muted); font-size: 10px; line-height: 1.45; }
-    .skill-node-effects { color: #b6e8d2; font-size: 9px; line-height: 1.4; }
-    .skill-node-footer { display: grid; gap: 4px; padding-top: 7px; border-top: 1px solid var(--border); color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .skill-node > p { min-height: 0; margin: 0; color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .skill-node-effects { color: #b6e8d2; font-size: 8px; line-height: 1.35; }
+    .skill-node-footer { display: grid; gap: 3px; padding-top: 5px; border-top: 1px solid var(--border); color: var(--muted); font-size: 8px; line-height: 1.35; }
     .skill-node-footer strong { color: #d7e0e9; font-size: 10px; }
     .skill-node .button { justify-self: start; }
     .rivals-screen-grid { display: grid; height: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
-    .rivals-screen-grid > .panel { overflow: auto; }
+    .rivals-screen-grid > .panel { min-height: 0; overflow: hidden; }
+    .rivals-screen-grid .scouting-list { grid-template-columns: minmax(0, 1fr); align-content: start; gap: 6px; }
+    .rivals-screen-grid .scouting-item { padding: 6px 12px; }
+    .team-screen-grid { display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 12px; }
+    .team-screen-grid > .panel { min-height: 0; overflow: hidden; }
+    .team-screen-grid .career-panel-content { display: flex; flex-direction: column; gap: 8px; }
+    .team-summary { display: grid; gap: 4px; padding: 8px 10px; border: 1px solid rgb(82 211 162 / 20%); border-radius: 8px; background: rgb(82 211 162 / 5%); color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .team-summary strong { color: var(--accent); font-size: 11px; }
+    .team-roster { display: grid; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 6px; }
+    .team-member { display: grid; min-width: 0; gap: 4px; padding: 7px; border: 1px solid var(--border); border-radius: 8px; background: rgb(255 255 255 / 1.2%); }
+    .team-member-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 4px; }
+    .team-member-heading > strong { min-width: 0; font-size: 10px; }
+    .team-role-tag { flex-shrink: 0; color: var(--accent); font-size: 7px; font-weight: 750; }
+    .team-member-meta, .team-tenure { color: var(--muted); font-size: 8px; line-height: 1.3; }
+    .team-motivation-track { height: 3px; overflow: hidden; border-radius: 5px; background: #101822; }
+    .team-motivation-track span { display: block; height: 100%; border-radius: inherit; background: #70d7ae; }
+    .team-assignment { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 5px; color: var(--muted); font-size: 8px; }
+    .team-assignment select, .succession-row select { min-width: 0; min-height: 25px; padding: 3px 5px; border: 1px solid var(--border); border-radius: 5px; background: #111b26; color: var(--text); font-size: 8px; }
+    .team-assignment-label { color: #b6e8d2; font-size: 8px; }
+    .team-guidance { margin: 0; padding: 7px 8px; border-left: 2px solid var(--accent); background: rgb(82 211 162 / 5%); color: var(--muted); font-size: 9px; line-height: 1.4; }
+    .team-succession { display: grid; gap: 5px; }
+    .succession-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(100px, 1.2fr) auto; align-items: center; gap: 5px; padding: 5px 7px; border: 1px solid var(--border); border-radius: 7px; }
+    .succession-row > div { display: grid; gap: 2px; }
+    .succession-row > div strong { font-size: 9px; }
+    .succession-row > div span { color: var(--muted); font-size: 7px; }
+    .succession-row .button { min-height: 25px; padding: 0 6px; font-size: 8px; }
+    .team-candidates { display: grid; min-height: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; gap: 5px; }
+    .team-candidate { display: grid; min-width: 0; gap: 4px; padding: 7px; border: 1px solid var(--border); border-radius: 8px; background: rgb(255 255 255 / 1.2%); }
+    .team-candidate > div { display: flex; justify-content: space-between; gap: 4px; }
+    .team-candidate > div strong { font-size: 9px; }
+    .team-candidate > div span { flex-shrink: 0; color: var(--muted); font-size: 7px; font-weight: 750; }
+    .team-candidate p { margin: 0; color: var(--muted); font-size: 8px; line-height: 1.3; }
+    .team-candidate .button { justify-self: start; min-height: 25px; padding: 0 6px; font-size: 8px; }
+    .candidate-disabled { opacity: .7; }
     .championship-preview {
       display: grid;
-      min-height: 100%;
+      height: 100%;
+      min-height: 0;
       place-content: center;
       gap: 14px;
       padding: 30px;
@@ -318,9 +360,9 @@
     .championship-preview .eyebrow { color: var(--accent); }
     .championship-preview h3 { margin: 0; font-size: clamp(21px, 4vw, 34px); }
     .championship-preview p { max-width: 520px; margin: 0 auto; color: var(--muted); font-size: 13px; line-height: 1.6; }
-    .career-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; margin-top: 12px; }
+    .career-toolbar { display: grid; min-height: 0; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; margin-top: 8px; flex: 0 0 auto; }
     .career-toolbar .notice { min-height: 0; margin: 0; }
-    .career-toolbar .notice:empty { display: block; min-height: 34px; border-color: transparent; background: transparent; }
+    .career-toolbar .notice:empty { display: none; }
     .career-toolbar .week-footer { margin: 0; padding: 0; border: 0; }
     .career-toolbar .week-footer p { display: none; }
     .career-toolbar .week-footer .button { min-width: 180px; }
@@ -421,6 +463,7 @@
     .cost-line strong { color: #d7e0e9; }
     .fundraising-copy strong, .scouting-copy strong { font-size: 13px; }
     .fundraising-actions { display: grid; justify-items: end; gap: 7px; }
+    .fundraising-locked { border-color: #303d4b; opacity: .8; }
     .notice { min-height: 34px; margin-top: 15px; padding: 9px 11px; border: 1px solid transparent; border-radius: 8px; color: var(--muted); font-size: 11px; line-height: 1.45; }
     .notice:empty { display: none; }
     .notice[data-kind="success"] { border-color: rgb(82 211 162 / 24%); background: rgb(82 211 162 / 7%); color: #a7e8cd; }
@@ -428,6 +471,10 @@
     .notice[data-kind="error"] { border-color: rgb(238 126 128 / 28%); background: rgb(238 126 128 / 8%); color: #f1a4a6; }
     .scouting-reveal { display: flex; gap: 5px; margin-top: 9px; flex-wrap: wrap; }
     .scouting-reveal span { padding: 4px 6px; border-radius: 5px; background: #263545; color: #c7d6e5; font-size: 9px; }
+    .scouting-intel { display: grid; gap: 3px; margin-top: 7px; }
+    .scouting-intel div { color: #c7d6e5; font-size: 9px; line-height: 1.3; }
+    .scouting-intel strong { color: #9eafbf; font-size: 8px; }
+    .scouting-list > .scouting-confidence { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.3; }
 
     .week-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 22px; padding-top: 17px; border-top: 1px solid var(--border); }
     .week-footer p { max-width: 430px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
@@ -437,24 +484,24 @@
     .log-week { color: var(--accent); font-weight: 700; }
     .empty-log { color: var(--muted); font-size: 11px; }
 
-    .event-content { padding: 25px 24px; }
+    .event-content { padding: 12px; }
     .event-hero { padding: 19px; border: 1px solid rgb(82 211 162 / 22%); border-radius: 12px; background: linear-gradient(110deg, rgb(82 211 162 / 10%), transparent 75%), #17242c; }
     .event-header { justify-content: space-between; gap: 15px; }
     .event-header h3 { margin: 0; font-size: 16px; }
     .event-header p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
-    .event-scope { margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--accent); background: rgb(82 211 162 / 6%); color: #c1e8d6; font-size: 11px; line-height: 1.5; }
+    .event-scope { margin-top: 7px; padding: 7px 9px; border-left: 3px solid var(--accent); background: rgb(82 211 162 / 6%); color: #c1e8d6; font-size: 10px; line-height: 1.4; }
     .event-scope strong { color: var(--accent); }
-    .event-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 18px 0; }
-    .event-stage { min-height: 82px; padding: 12px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 13%); }
+    .event-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin: 8px 0; }
+    .event-stage { min-height: 58px; padding: 8px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 13%); }
     .event-stage span { color: var(--muted); font-size: 10px; }
-    .event-stage strong { display: block; margin-top: 10px; font-size: 16px; }
+    .event-stage strong { display: block; margin-top: 5px; font-size: 13px; }
     .stage-current { border-color: var(--accent); background: rgb(82 211 162 / 8%); }
-    .competition-lead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 8px; }
+    .competition-lead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0 5px; }
     .competition-lead h4 { margin: 0; font-size: 12px; }
     .competition-lead span { color: var(--muted); font-size: 10px; }
-    .competition-commentary { min-height: 46px; margin: 14px 0; padding: 12px 14px; border-left: 3px solid var(--warning); border-radius: 0 8px 8px 0; background: rgb(240 189 104 / 7%); color: #f0d7aa; font-size: 11px; line-height: 1.5; }
-    .flight-circuit { margin: 16px 0; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: radial-gradient(ellipse at 50% 50%, rgb(82 211 162 / 7%), transparent 60%), #101a24; }
-    .flight-circuit svg { display: block; width: 100%; height: auto; max-height: 220px; }
+    .competition-commentary { min-height: 0; margin: 7px 0; padding: 8px 10px; border-left: 3px solid var(--warning); border-radius: 0 8px 8px 0; background: rgb(240 189 104 / 7%); color: #f0d7aa; font-size: 10px; line-height: 1.4; }
+    .flight-circuit { min-height: 0; margin: 5px 0; padding: 7px; border: 1px solid var(--border); border-radius: 12px; background: radial-gradient(ellipse at 50% 50%, rgb(82 211 162 / 7%), transparent 60%), #101a24; }
+    .flight-circuit svg { display: block; width: 100%; height: auto; max-height: 180px; }
     .circuit-track { fill: none; stroke: #39514f; stroke-width: 34; }
     .circuit-centerline { fill: none; stroke: #7a9d8b; stroke-width: 2; stroke-dasharray: 9 10; opacity: .7; }
     .circuit-pylon { fill: #f0bd68; stroke: #111822; stroke-width: 4; }
@@ -463,19 +510,19 @@
     .circuit-caption strong { color: var(--accent); font-weight: 650; }
     .strategy-detail { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
     .leader-row td { color: var(--accent) !important; }
-    .event-stage.flight-stage { min-height: 130px; }
-    .event-stage.flight-stage { min-height: 130px; }
+    .event-stage.flight-stage { min-height: 0; }
     .flight-weather { display: block; margin-top: 4px; color: #d3dee9 !important; }
-    .strategy-options { display: flex; gap: 4px; margin-top: 10px; }
-    .strategy-option { flex: 1; min-height: 28px; padding: 3px 4px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-alt); color: var(--muted); cursor: pointer; font-size: 9px; font-weight: 650; }
+    .strategy-options { display: flex; gap: 3px; margin-top: 5px; }
+    .strategy-option { min-width: 0; flex: 1; min-height: 26px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-alt); color: var(--muted); cursor: pointer; font-size: 8px; font-weight: 650; }
     .strategy-option[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-dark); color: var(--accent); }
     .strategy-option:hover { border-color: #50647b; }
     .score-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    .score-table th { padding: 10px 8px; color: var(--muted); font-size: 9px; font-weight: 750; letter-spacing: .08em; text-align: right; text-transform: uppercase; }
+    .score-table th { padding: 5px 4px; color: var(--muted); font-size: 8px; font-weight: 750; letter-spacing: .04em; text-align: right; text-transform: uppercase; }
     .score-table th:first-child, .score-table td:first-child { text-align: left; }
-    .score-table td { padding: 12px 8px; border-top: 1px solid var(--border); color: #d6dee7; text-align: right; }
+    .score-table td { padding: 6px 4px; border-top: 1px solid var(--border); color: #d6dee7; text-align: right; }
     .score-table tr:first-child td { color: var(--accent); font-weight: 750; }
-    .leaderboard-region { max-width: 100%; overflow-x: auto; }
+    .leaderboard-region { min-height: 0; max-width: 100%; overflow: hidden; }
+    .score-cell-compact { display: none; }
     .score-cell-strategy { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; font-weight: 500; }
     .score-table tbody tr { animation: standings-entry .32s ease both; }
     .score-table tbody tr:nth-child(2) { animation-delay: .035s; }
@@ -486,54 +533,290 @@
       from { opacity: .4; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .result-callout { margin: 17px 0; padding: 13px 15px; border: 1px solid var(--border); border-radius: 9px; color: #d9e3ed; font-size: 12px; line-height: 1.5; }
-    .event-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-    .footer-note { margin-top: 18px; color: var(--muted); font-size: 10px; text-align: center; }
+    .result-callout { margin: 8px 0; padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px; color: #d9e3ed; font-size: 11px; line-height: 1.4; }
+    .event-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+    .footer-note { display: none; }
+    .event-summary-content { display: flex; height: 100%; flex-direction: column; gap: 5px; overflow: hidden; }
+    .event-summary-content .event-hero { padding: 10px 12px; }
+    .event-summary-content .event-scope { margin: 0; }
+    .event-summary-content .event-stages { margin: 0; }
+    .event-summary-content .event-stage { min-height: 0; padding: 6px; }
+    .event-summary-content .event-stage span { font-size: 8px; }
+    .event-summary-content .event-stage strong { margin-top: 3px; font-size: 11px; }
+    .event-summary-content .event-stage .flight-weather,
+    .event-summary-content .event-stage .strategy-detail { display: none; }
+    .event-summary-content .competition-commentary { max-height: 40px; margin: 0; padding: 6px 8px; overflow: hidden; }
+    .event-summary-content .competition-commentary > div:not(:first-child) { display: none; }
+    .event-summary-content .competition-lead { margin: 0; }
+    .event-summary-content .leaderboard-region { flex: 1; }
+    .event-summary-content .score-table th,
+    .event-summary-content .score-table td { padding-top: 4px; padding-bottom: 4px; }
+    .event-summary-content .event-actions { margin-top: 0; }
+    .event-flight-content { display: flex; height: 100%; flex-direction: column; overflow: hidden; }
+    .event-flight-content .event-hero { flex: 0 0 auto; padding: 10px 12px; }
+    .event-flight-content .event-scope { flex: 0 0 auto; margin: 6px 0 0; }
+    .event-flight-content .event-stages { flex: 0 0 auto; grid-template-columns: .7fr repeat(3, minmax(0, 1fr)); gap: 5px; margin: 6px 0; }
+    .event-flight-content .event-stage { padding: 6px; }
+    .event-flight-content .event-stage span { font-size: 8px; }
+    .event-flight-content .event-stage strong { margin-top: 3px; font-size: 11px; }
+    .event-flight-content .flight-weather { font-size: 8px; line-height: 1.25; }
+    .event-flight-content .strategy-detail { font-size: 8px; }
+    .flight-display { min-height: 0; flex: 1; }
+    .flight-primary { display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 10px; }
+    .flight-primary-display { display: flex; min-width: 0; min-height: 0; flex-direction: column; }
+    .flight-primary-display .flight-circuit { flex: 0 0 auto; }
+    .flight-primary-display .flight-launch-actions { flex: 0 0 auto; margin: 0; }
+    .flight-primary-display .competition-commentary { flex: 0 1 auto; margin: 5px 0 0; }
+    .flight-standings { display: flex; min-width: 0; min-height: 0; flex-direction: column; }
+    .flight-standings .competition-lead { flex: 0 0 auto; margin: 0 0 4px; }
+    .flight-standings .competition-lead span { display: none; }
+    .flight-standings .leaderboard-region { flex: 1; }
+    .flight-standings .score-table th,
+    .flight-standings .score-table td { padding: 5px 3px; font-size: 9px; }
 
     @media (max-width: 920px) {
-      .hub-view { min-height: auto; grid-template-columns: 1fr; gap: 28px; padding: clamp(22px, 5vw, 48px); }
-      .hub-blueprint { height: 130px; margin-top: 32px; }
-      .hub-menu { max-width: none; }
-      .career-viewport { height: clamp(500px, calc(100vh - 370px), 790px); }
-      .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(240px, .9fr); }
-      .skill-tree { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .rivals-screen-grid { grid-template-columns: minmax(0, 1fr); }
+      .hub-view { grid-template-columns: minmax(0, 1fr) minmax(260px, .9fr); gap: 18px; padding: clamp(18px, 3vw, 32px); }
+      .hub-menu { max-width: none; padding: 18px; }
+      .hub-title { font-size: clamp(36px, 6vw, 58px); }
+      .hub-blueprint { height: 120px; margin-top: 24px; }
+      .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(220px, .9fr); }
+      .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .rivals-screen-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .team-screen-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
     }
     @media (max-width: 620px) {
-      .shell { padding: 18px 12px 12px; }
-      .topbar { align-items: flex-start; margin-bottom: 12px; }
-      .topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
-      .topbar-actions .button { min-height: 34px; font-size: 11px; }
-      .career-context { align-items: flex-start; flex-wrap: wrap; }
-      .career-context p { max-width: 250px; line-height: 1.45; }
-      .career-indicators { width: 100%; justify-content: space-between; }
-      .career-money, .turn-indicator { flex: 1; text-align: center; }
-      .career-nav-wrap { gap: 4px; }
-      .career-arrow { width: 32px; flex-basis: 32px; }
-      .career-position { min-width: 35px; }
+      .shell { padding: 7px; }
+      .hub-view { grid-template-columns: minmax(0, 1fr); align-content: center; gap: 8px; padding: 10px; }
+      .hub-showcase { text-align: center; }
+      .hub-title { margin: 7px 0; font-size: clamp(28px, 9vw, 38px); }
+      .hub-description { display: none; }
+      .hub-blueprint { width: 70%; height: 55px; margin: 4px auto; }
+      .hub-menu { padding: 10px; }
+      .hub-menu h3 { margin-bottom: 8px; font-size: 17px; }
+      .hub-save-summary { min-height: 0; margin-bottom: 8px; }
+      .hub-menu-actions, .hub-form { gap: 7px; }
+      .hub-button { min-height: 38px; }
+      .hub-field { gap: 4px; }
+      .hub-field input, .hub-field select { min-height: 36px; padding: 6px 8px; font-size: 11px; }
+      .hub-status { margin-top: 5px; }
+      .topbar { min-height: 34px; gap: 5px; margin-bottom: 6px; }
+      .brand { min-width: 0; gap: 6px; }
+      .brand-mark { width: 32px; height: 32px; flex: 0 0 32px; border-radius: 9px; font-size: 15px; }
+      .brand h1 { font-size: 14px; }
+      .brand p { display: none; }
+      .topbar-actions { flex-wrap: nowrap; gap: 4px; }
+      .topbar-actions .button { min-height: 30px; padding: 0 6px; font-size: 9px; }
+      .career-context { align-items: center; gap: 5px; margin: 0 0 6px; }
+      .career-context h2 { font-size: 15px; }
+      .career-context p { display: none; }
+      .career-indicators { gap: 4px; }
+      .career-money, .career-reputation, .turn-indicator { padding: 6px; font-size: 9px; }
+      .career-nav-wrap { gap: 4px; margin-bottom: 6px; }
+      .career-arrow { width: 28px; height: 36px; flex-basis: 28px; }
+      .career-position { min-width: 32px; font-size: 9px; }
       .career-nav { gap: 2px; }
-      .career-nav-button { min-height: 38px; padding: 0 12px; font-size: 10px; }
-      .career-viewport { height: clamp(400px, calc(100vh - 430px), 650px); min-height: 0; }
-      .career-track { min-height: 0; height: 100%; }
-      .career-screen { min-height: 0; height: 100%; padding: 7px; overflow-y: auto; }
-      .overview-grid { height: auto; min-height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; align-content: start; }
-      .overview-grid .season-card, .overview-grid .aircraft-card, .overview-grid .rivalry-panel, .overview-grid .scope-card, .overview-grid .season-log { grid-column: 1; grid-row: auto; }
-      .career-panel-content { padding: 18px 16px; }
-      .career-panel .section-heading { padding: 18px 16px 0; }
-      .career-panel-content .engineering-list { grid-template-columns: minmax(0, 1fr); }
-      .skill-tree { grid-template-columns: minmax(0, 1fr); }
-      .career-toolbar { grid-template-columns: minmax(0, 1fr) auto; gap: 5px; }
-      .career-toolbar .notice { padding: 7px; font-size: 10px; }
+      .career-nav-button { min-width: 0; min-height: 32px; flex: 1 1 0; padding: 0 2px; font-size: 9px; white-space: nowrap; }
+      .nav-full-label { display: none; }
+      .nav-short-label { display: inline; }
+      .career-screen { padding: 5px; }
+      .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, .65fr) minmax(0, 1fr) minmax(0, .75fr); gap: 5px; }
+      .overview-grid .season-card { grid-column: 1; grid-row: 1; }
+      .overview-grid .rivalry-panel { grid-column: 2; grid-row: 1; }
+      .overview-grid .aircraft-card { grid-column: 1; grid-row: 2 / 4; padding: 8px; }
+      .overview-grid .scope-card { grid-column: 2; grid-row: 2; padding: 8px; }
+      .overview-grid .season-log { grid-column: 2; grid-row: 3; padding: 8px; }
+      .season-top { padding: 8px; }
+      .season-label { font-size: 9px; }
+      .season-number { margin: 4px 0 2px; font-size: 19px; }
+      .season-caption { font-size: 9px; }
+      .progress-track { height: 5px; margin-top: 7px; }
+      .metric { padding: 6px 8px; }
+      .metric-label { font-size: 8px; }
+      .metric-value { margin-top: 2px; font-size: 12px; }
+      .overview-grid .rivalry-panel .section-heading,
+      .overview-grid .season-log .section-heading { margin-bottom: 5px; }
+      .overview-grid .rivalry-panel .panel-pad,
+      .overview-grid .rivalry-panel { padding: 8px; }
+      .overview-grid .section-heading h2 { font-size: 11px; }
+      .overview-grid .section-heading p { display: none; }
+      .rivalry-score p { font-size: 9px; line-height: 1.3; }
+      .aircraft-card .section-heading { margin-bottom: 5px; }
+      .aircraft-card .section-heading p, .aircraft-summary { display: none; }
+      .aircraft-name { margin-bottom: 2px; font-size: 11px; }
+      .aircraft-concept { margin: 0 0 5px; font-size: 8px; }
+      .aircraft-stat { margin-top: 5px; }
+      .aircraft-stat-top { margin-bottom: 3px; font-size: 9px; }
+      .mini-track { height: 4px; }
+      .derived-grid { gap: 4px; margin-top: 7px; }
+      .derived-stat { padding: 5px; }
+      .derived-stat span { font-size: 8px; }
+      .derived-stat strong { margin-top: 2px; font-size: 10px; }
+      .milestone-list { gap: 3px; margin-top: 5px; }
+      .milestone { padding: 4px 5px; font-size: 7px; }
+      .milestone strong { font-size: 7px; }
+      .scope-card .eyebrow { font-size: 7px; }
+      .scope-card h2 { margin: 3px 0; font-size: 10px; }
+      .scope-card p, .scope-impact { font-size: 8px; line-height: 1.3; }
+      .scope-impact { margin-top: 4px; }
+      .season-log .log-entry { grid-template-columns: 35px minmax(0, 1fr); gap: 4px; font-size: 8px; line-height: 1.3; }
+      .season-log .log-entry:nth-child(n+3) { display: none; }
+      .season-log .log-list { gap: 4px; }
+      .career-panel .section-heading { gap: 5px; margin-bottom: 6px; padding: 7px 8px 0; }
+      .career-panel .section-heading h3 { font-size: 12px; }
+      .career-panel .section-heading p { display: none; }
+      .career-panel-content { padding: 6px 8px 8px; }
+      .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 5px; }
+      .engineering-item, .fundraising-item, .scouting-item { min-width: 0; grid-template-columns: minmax(0, 1fr); gap: 5px; padding: 7px; }
+      .engineering-name { gap: 5px; font-size: 10px; }
+      .engineering-icon { width: 22px; height: 22px; flex-basis: 22px; font-size: 10px; }
+      .engineering-copy p, .fundraising-copy p, .scouting-copy p { margin-top: 3px; font-size: 9px; line-height: 1.3; }
+      .engineering-progress { margin-top: 5px; }
+      .engineering-actions, .fundraising-actions { justify-items: start; gap: 3px; }
+      .cost-line { font-size: 8px; }
+      .engineering-item .button, .fundraising-item .button, .scouting-item .button { min-height: 28px; padding: 0 7px; font-size: 9px; }
+      .skill-tree-intro { display: none; }
+      .skill-tree-summary { margin-bottom: 5px; padding: 5px 7px; font-size: 9px; }
+      .skill-tree { height: calc(100% - 34px); grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+      .skill-branch { min-width: 0; padding: 5px; }
+      .skill-branch-heading { min-height: 0; padding-bottom: 4px; }
+      .skill-branch-heading h4 { font-size: 9px; }
+      .skill-branch-heading p, .skill-node > p, .skill-node-footer > span { display: none; }
+      .skill-node-list { gap: 4px; margin-top: 4px; }
+      .skill-node { gap: 3px; padding: 5px; }
+      .skill-node-heading { gap: 2px; }
+      .skill-node-heading strong { font-size: 8px; line-height: 1.2; }
+      .skill-node-heading span { font-size: 6px; }
+      .skill-node-effects { font-size: 7px; line-height: 1.2; }
+      .skill-node-footer { padding-top: 3px; font-size: 7px; }
+      .skill-node-footer strong { font-size: 7px; }
+      .skill-node .button { min-height: 24px; padding: 0 5px; font-size: 8px; }
+      .rivals-screen-grid { grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); gap: 5px; }
+      .rivals-screen-grid > .panel { padding: 8px; }
+      .rivals-screen-grid .section-heading { margin-bottom: 5px; }
+      .rivals-screen-grid .section-heading p { display: none; }
+      .rival-list { gap: 5px; }
+      .rivals-screen-grid .scouting-list { grid-template-columns: minmax(0, 1fr); gap: 5px; }
+      .rival-item { padding: 6px; }
+      .rival-heading { align-items: flex-start; flex-direction: column; gap: 3px; }
+      .rival-heading strong { font-size: 9px; }
+      .rival-tag { padding: 3px 5px; font-size: 7px; }
+      .rival-detail { margin-top: 3px; font-size: 8px; line-height: 1.25; }
+      .scouting-item { grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px; padding: 5px; }
+      .scouting-copy strong { font-size: 9px; }
+      .scouting-copy p { display: none; }
+      .scouting-intel { gap: 2px; margin-top: 3px; }
+      .scouting-intel div { font-size: 7px; line-height: 1.2; }
+      .scouting-intel strong { font-size: 7px; }
+      .scouting-list > .scouting-confidence { margin: 0; font-size: 7px; line-height: 1.2; }
+      .team-screen-grid { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 5px; }
+      .team-screen-grid > .panel { padding: 0; }
+      .team-screen-grid .career-panel .section-heading { padding: 7px 6px 0; }
+      .team-screen-grid .career-panel .section-heading h3 { font-size: 10px; }
+      .team-screen-grid .career-panel-content { gap: 4px; padding: 5px; }
+      .team-summary { gap: 2px; padding: 5px; font-size: 7px; line-height: 1.2; }
+      .team-summary strong { font-size: 9px; }
+      .team-summary span:nth-child(2) { display: none; }
+      .team-roster { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+      .team-member { gap: 2px; padding: 4px; }
+      .team-member-heading > strong { font-size: 8px; }
+      .team-role-tag { font-size: 6px; }
+      .team-member-meta, .team-tenure { font-size: 7px; line-height: 1.15; }
+      .team-motivation-track { height: 2px; }
+      .team-assignment { grid-template-columns: 35px minmax(0, 1fr); gap: 2px; font-size: 7px; }
+      .team-assignment select { min-height: 21px; padding: 2px; font-size: 7px; }
+      .team-assignment-label { font-size: 7px; }
+      .team-guidance { padding: 5px; font-size: 7px; line-height: 1.25; }
+      .team-succession { gap: 3px; }
+      .succession-row { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) auto; gap: 2px; padding: 3px; }
+      .succession-row > div strong { font-size: 7px; }
+      .succession-row > div span { font-size: 6px; }
+      .succession-row select { min-height: 21px; padding: 2px; font-size: 7px; }
+      .succession-row .button { min-height: 21px; padding: 0 3px; font-size: 7px; }
+      .team-candidates { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+      .team-candidate { gap: 2px; padding: 4px; }
+      .team-candidate > div strong { font-size: 8px; }
+      .team-candidate > div span { font-size: 6px; }
+      .team-candidate p { display: none; }
+      .team-candidate .button { min-height: 21px; padding: 0 4px; font-size: 7px; }
+      .career-toolbar { grid-template-columns: minmax(0, 1fr) auto; gap: 4px; margin-top: 6px; }
+      .career-toolbar .notice { padding: 5px; font-size: 9px; line-height: 1.2; }
       .career-toolbar .notice:empty { display: none; }
       .career-toolbar .week-footer .button { width: auto; min-width: 0; padding: 0 9px; white-space: nowrap; }
-      .event-content { padding-right: 12px; padding-left: 12px; }
-      .engineering-item, .fundraising-item, .scouting-item { grid-template-columns: minmax(0, 1fr); }
-      .engineering-actions, .fundraising-actions { justify-items: start; }
-      .event-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .score-table th, .score-table td { padding-right: 4px; padding-left: 4px; font-size: 9px; }
-      .intro-row, .week-footer { align-items: flex-start; flex-direction: column; }
-      .hint { text-align: left; }
-      .footer-note { display: none; }
+      .event-content { padding: 8px; }
+      .event-hero { padding: 8px; }
+      .event-header { gap: 5px; }
+      .event-header h3 { font-size: 12px; }
+      .event-header p { margin-top: 3px; font-size: 9px; }
+      .event-header .rival-tag { white-space: nowrap; }
+      .event-summary-content .competition-lead span { display: none; }
+      .score-table { table-layout: fixed; }
+      .score-table th, .score-table td { padding: 4px 3px; font-size: 8px; }
+      .score-table th:first-child, .score-table td:first-child { width: 28px; }
+      .score-table th:nth-child(3), .score-table td:nth-child(3),
+      .score-table th:nth-child(4), .score-table td:nth-child(4),
+      .score-table th:nth-child(5), .score-table td:nth-child(5),
+      .score-table th:nth-child(6), .score-table td:nth-child(6) { display: none; }
+      .score-cell-compact { display: block; margin-top: 2px; color: var(--muted); font-size: 7px; font-weight: 500; line-height: 1.2; }
+      .score-cell-strategy { display: none; }
+      .event-flight-content .event-stages { grid-template-columns: .65fr repeat(3, minmax(0, 1fr)); }
+      .event-flight-content .flight-weather { display: none; }
+      .event-flight-content .event-stage { padding: 5px 3px; }
+      .event-flight-content .event-stage span { font-size: 7px; }
+      .event-flight-content .strategy-detail { display: none; }
+      .event-flight-content .flight-display { flex: 1; }
+      .event-flight-content .flight-primary { grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 5px; }
+      .flight-primary-display .flight-circuit { padding: 4px; }
+      .flight-circuit svg { max-height: 140px; }
+      .circuit-caption { font-size: 7px; }
+      .flight-standings .competition-lead h4 { font-size: 10px; }
+      .flight-standings .score-table th, .flight-standings .score-table td { padding: 4px 2px; font-size: 8px; }
+      .flight-primary-display .competition-commentary { padding: 5px; font-size: 8px; }
+      .flight-primary-display .competition-commentary > div:not(:first-child) { display: none; }
+      .event-actions .button, .flight-launch-actions .button { min-height: 32px; padding: 0 8px; font-size: 10px; }
+      .championship-preview { padding: 12px; gap: 8px; }
+      .championship-preview h3 { font-size: 18px; }
+      .championship-preview p { font-size: 10px; line-height: 1.4; }
+    }
+    @media (max-height: 720px) {
+      .shell { padding-top: 6px; padding-bottom: 6px; }
+      .hub-blueprint { display: none; }
+      .hub-title { margin-top: 8px; }
+      .career-context { margin-bottom: 4px; }
+      .career-nav-wrap { margin-bottom: 4px; }
+      .career-toolbar { margin-top: 4px; }
+      .rivals-screen-grid .scouting-list { gap: 5px; }
+      .scouting-intel { gap: 2px; margin-top: 4px; }
+      .event-summary-content .event-stages { gap: 3px; }
+      .event-flight-content .event-scope { max-height: 38px; overflow: hidden; }
+      .event-flight-content .event-stage { min-height: 0; }
+      .flight-primary-display .competition-commentary { max-height: 44px; overflow: hidden; }
+    }
+    @media (max-height: 600px) {
+      .event-summary-content .competition-commentary { display: none; }
+      .event-summary-content .event-hero { padding: 7px 9px; }
+      .event-summary-content .event-header h3 { font-size: 13px; }
+      .event-summary-content .event-header p { margin-top: 2px; font-size: 9px; }
+      .event-summary-content .event-scope { padding: 5px 7px; font-size: 9px; }
+      .event-summary-content .event-stages { gap: 3px; }
+      .event-summary-content .event-stage { padding: 4px; }
+      .event-summary-content .competition-lead { display: none; }
+      .event-summary-content .leaderboard-region { margin-top: 2px; }
+      .event-summary-content .score-table th,
+      .event-summary-content .score-table td { padding-top: 3px; padding-bottom: 3px; }
+      .event-summary-content .event-actions .button { min-height: 28px; }
+    }
+    @media (max-width: 420px) {
+      .career-context h2 { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .career-money, .career-reputation, .turn-indicator { padding: 5px 4px; font-size: 8px; }
+      .career-position { min-width: 27px; }
+      .career-nav-button { padding: 0 1px; font-size: 8px; }
+      .event-flight-content .event-stages { grid-template-columns: .55fr repeat(3, minmax(0, 1fr)); gap: 3px; }
+      .event-flight-content .event-stage span { font-size: 6px; }
+      .strategy-option { font-size: 7px; }
+    }
+    @media (max-width: 360px) {
+      .career-nav-button { font-size: 7px; }
+      .career-position { min-width: 24px; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -619,18 +902,20 @@
       </div>
       <div class="career-indicators">
         <div class="career-money" id="careerCashLabel" role="status" aria-label="Saldo atual">0 cr</div>
+        <div class="career-reputation" id="careerReputationLabel" role="status" aria-label="Reputação institucional">Reputação 0</div>
         <div class="turn-indicator" id="turnIndicator">20 ações restantes</div>
       </div>
     </header>
     <nav class="career-nav-wrap" aria-label="Navegação da carreira">
       <button class="career-arrow" type="button" data-action="previous-screen" aria-label="Tela anterior">‹</button>
       <div class="career-nav" role="navigation" aria-label="Telas da carreira">
-        <button class="career-nav-button" type="button" data-screen="overview" aria-current="page">Visão geral</button>
-        <button class="career-nav-button" type="button" data-screen="engineering">Projeto</button>
-        <button class="career-nav-button" type="button" data-screen="skills">Habilidades</button>
-        <button class="career-nav-button" type="button" data-screen="fundraising">Finanças</button>
-        <button class="career-nav-button" type="button" data-screen="rivals">Rivais</button>
-        <button class="career-nav-button" type="button" data-screen="championship">Campeonato</button>
+        <button class="career-nav-button" type="button" data-screen="overview" aria-label="Visão geral" aria-current="page"><span class="nav-full-label" aria-hidden="true">Visão geral</span><span class="nav-short-label" aria-hidden="true">Geral</span></button>
+        <button class="career-nav-button" type="button" data-screen="engineering" aria-label="Projeto"><span class="nav-full-label" aria-hidden="true">Projeto</span><span class="nav-short-label" aria-hidden="true">Projeto</span></button>
+        <button class="career-nav-button" type="button" data-screen="skills" aria-label="Habilidades"><span class="nav-full-label" aria-hidden="true">Habilidades</span><span class="nav-short-label" aria-hidden="true">Hab.</span></button>
+        <button class="career-nav-button" type="button" data-screen="fundraising" aria-label="Finanças"><span class="nav-full-label" aria-hidden="true">Finanças</span><span class="nav-short-label" aria-hidden="true">Caixa</span></button>
+        <button class="career-nav-button" type="button" data-screen="rivals" aria-label="Rivais"><span class="nav-full-label" aria-hidden="true">Rivais</span><span class="nav-short-label" aria-hidden="true">Rivais</span></button>
+        <button class="career-nav-button" type="button" data-screen="team" aria-label="Equipe"><span class="nav-full-label" aria-hidden="true">Equipe</span><span class="nav-short-label" aria-hidden="true">Time</span></button>
+        <button class="career-nav-button" type="button" data-screen="championship" aria-label="Campeonato"><span class="nav-full-label" aria-hidden="true">Campeonato</span><span class="nav-short-label" aria-hidden="true">Evento</span></button>
       </div>
       <span class="career-position" id="careerPosition" aria-live="polite">01 / 05</span>
       <button class="career-arrow" type="button" data-action="next-screen" aria-label="Próxima tela">›</button>
@@ -671,6 +956,7 @@
               <h2 id="scopeTitle">Escopo da temporada</h2>
               <p id="scopeCriteria"></p>
               <strong class="scope-impact" id="scopeImpact"></strong>
+              <div class="campaign-goals" id="campaignGoals"></div>
             </section>
             <section class="panel panel-pad season-log">
               <div class="section-heading"><div><h2>Diário da equipe</h2><p>Últimos acontecimentos da temporada</p></div></div>
@@ -709,13 +995,31 @@
         <section class="career-screen" id="screen-rivals" data-screen-panel="rivals" aria-label="Observação das equipes rivais">
           <div class="rivals-screen-grid">
             <section class="panel panel-pad">
-              <div class="section-heading"><div><h2>Equipes rivais</h2><p>Filosofias e status de scouting</p></div></div>
+              <div class="section-heading"><div><h2>Equipes rivais</h2><p>Planos distintos · progresso público a cada semana</p></div></div>
               <div class="rival-list" id="rivalList"></div>
             </section>
             <section class="panel career-panel">
-              <div class="section-heading"><div><h3>Scouting</h3><p>Revele estimativas aproximadas das equipes. Cada análise ocupa 1 semana.</p></div></div>
+              <div class="section-heading"><div><h3>Scouting</h3><p>Leituras táticas aproximadas por 150 créditos; sem consumir a semana.</p></div></div>
               <div class="career-panel-content">
                 <section id="pane-scouting"><div class="scouting-list" id="scoutingList"></div></section>
+              </div>
+            </section>
+          </div>
+        </section>
+        <section class="career-screen" id="screen-team" data-screen-panel="team" aria-label="Gestão e continuidade da equipe">
+          <div class="team-screen-grid">
+            <section class="panel career-panel">
+              <div class="section-heading"><div><h3>Equipe atual</h3><p>Alocação persistente · trabalho delegado em segundo plano</p></div></div>
+              <div class="career-panel-content">
+                <div class="team-summary" id="teamSummary"></div>
+                <div class="team-roster" id="teamRoster"></div>
+              </div>
+            </section>
+            <section class="panel career-panel">
+              <div class="section-heading"><div><h3>Recrutamento e sucessão</h3><p>Prepare as duas capitanias sem interromper o projeto.</p></div></div>
+              <div class="career-panel-content">
+                <div class="team-succession" id="teamSuccession"></div>
+                <div class="team-candidates" id="teamCandidates"></div>
               </div>
             </section>
           </div>
@@ -785,6 +1089,46 @@
     })
   ]);
   const seasonScopeForYear = (year) => seasonScopes[(Math.max(1, year) - 1) % seasonScopes.length];
+  const seasonGoalsForYear = (year, attributes) => {
+    const scope = seasonScopeForYear(year);
+    const technicalAttribute = {
+      payload: "aerodynamics",
+      reliability: "structures",
+      "technical-report": "report",
+      "balanced-efficiency": "systems"
+    }[scope.id];
+    const baseline = attributes[technicalAttribute];
+    return {
+      year,
+      placement: {
+        targetPosition: [4, 4, 3, 2, 1][Math.min(year, 5) - 1],
+        reputationReward: 4
+      },
+      technical: {
+        attribute: technicalAttribute,
+        baseline,
+        target: Math.min(100, baseline + 6),
+        reputationReward: 4
+      },
+      result: null
+    };
+  };
+  const teamRoles = Object.freeze(["aerodynamics", "structures"]);
+  const teamAssignments = Object.freeze([
+    { id: "aerodynamics", label: "Projeto · Aerodinâmica", attribute: "aerodynamics" },
+    { id: "structures", label: "Projeto · Estruturas", attribute: "structures" },
+    { id: "systems", label: "Projeto · Sistemas", attribute: "systems" },
+    { id: "report", label: "Projeto · Relatório", attribute: "report" },
+    { id: "fundraising", label: "Captação", weeklyCredits: 18 },
+    { id: "mentoring", label: "Mentoria", reputationReward: 0 }
+  ]);
+  const teamCandidates = Object.freeze([
+    { specialty: "aerodynamics", label: "Aerodinâmica", cost: 320, reputationRequired: 0, experience: 0.35 },
+    { specialty: "structures", label: "Estruturas", cost: 340, reputationRequired: 0, experience: 0.4 },
+    { specialty: "systems", label: "Sistemas", cost: 360, reputationRequired: 10, experience: 0.3 },
+    { specialty: "report", label: "Relatório", cost: 330, reputationRequired: 10, experience: 0.45 },
+    { specialty: "fundraising", label: "Captação", cost: 300, reputationRequired: 20, experience: 0.5 }
+  ]);
   const conceptSkillIds = ["concept-lift", "concept-light", "concept-stable"];
   const skillNodes = Object.freeze([
     Object.freeze({
@@ -860,9 +1204,20 @@
 
   game.Content = Object.freeze({
     saveKey: "aerodesign-manager-save-v1",
-    saveVersion: 5,
+    saveVersion: 7,
     seasonScopes,
     seasonScopeForYear,
+    seasonGoalsForYear,
+    teamRoles,
+    teamAssignments,
+    teamCandidates,
+    teamCapacityForReputation(reputation) {
+      return reputation >= 60 ? 7 : reputation >= 30 ? 6 : 5;
+    },
+    teamMemberCost: 300,
+    campaignSeasons: 5,
+    placementReputation: Object.freeze([12, 9, 7, 5, 3]),
+    scoutingCost: 150,
     skillNodes,
     skillBranches: Object.freeze([
       Object.freeze({ id: "aircraft", title: "Conceito do avião", description: "Escolha uma identidade de projeto. Os conceitos são mutuamente exclusivos." }),
@@ -890,8 +1245,11 @@
       { name: "Escola Técnica do Litoral", philosophy: "Sistemas e captação", weights: { aerodynamics: 0.17, structures: 0.18, systems: 0.30, report: 0.15, funding: 0.20 } }
     ]),
     fundraisers: Object.freeze([
-      { id: "raffle", name: "Organizar rifa", weeks: 1, reward: 420, description: "Uma ação rápida para reforçar o caixa sem interromper o projeto por muito tempo." },
-      { id: "sponsorship", name: "Buscar patrocínio", weeks: 2, reward: 1120, description: "Uma rodada de contatos com retorno maior, mas consome duas semanas de preparação." }
+      { id: "raffle", name: "Organizar rifa", weeks: 1, reward: 420, reputationRequired: 0, description: "Uma ação rápida para reforçar o caixa sem interromper o projeto por muito tempo." },
+      { id: "sponsorship", name: "Buscar patrocínio", weeks: 2, reward: 1120, reputationRequired: 0, description: "Uma rodada de contatos com retorno maior, mas consome duas semanas de preparação." },
+      { id: "science-fair", name: "Feira de ciência", weeks: 1, reward: 650, reputationRequired: 15, description: "A reputação da equipe abre espaço para uma ação em evento universitário." },
+      { id: "university-grant", name: "Edital universitário", weeks: 2, reward: 1800, reputationRequired: 35, description: "Um projeto consistente pode conquistar recursos institucionais." },
+      { id: "industry-sponsor", name: "Patrocínio industrial", weeks: 2, reward: 2500, reputationRequired: 60, description: "Resultados reconhecidos atraem empresas do setor aeronáutico." }
     ]),
     strategies: Object.freeze({
       conservative: { label: "Segura", loadMultiplier: 0.72, reliabilityModifier: 0.16 },
@@ -1002,11 +1360,323 @@
 })();
 
 
+/* team.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
+  const { teamRoles, teamAssignments, teamCandidates, teamCapacityForReputation } = game.Content;
+  const areas = new Set(teamRoles);
+  const assignments = new Set(teamAssignments.map(({ id }) => id));
+  const specialties = new Set(teamCandidates.map(({ specialty }) => specialty));
+  const clone = (value) => JSON.parse(JSON.stringify(value));
+
+  function makeMember({
+    id, label, role, specialty, assignment, experience, motivation, joinYear, leaveYear = null,
+    captainArea = null, captainSince = null
+  }) {
+    return {
+      id, label, role, specialty, assignment, experience, motivation, joinYear, leaveYear,
+      captainArea, captainSince
+    };
+  }
+
+  function candidateOffers(year) {
+    return teamCandidates.map((candidate) => ({
+      id: `candidate-${year}-${candidate.specialty}`,
+      label: `Integrante · ${candidate.label}`,
+      specialty: candidate.specialty,
+      cost: candidate.cost,
+      reputationRequired: candidate.reputationRequired,
+      experience: candidate.experience
+    }));
+  }
+
+  function create(year = 1) {
+    const members = [
+      makeMember({
+        id: "president",
+        label: "Presidência",
+        role: "president",
+        specialty: "management",
+        assignment: "mentoring",
+        experience: 1,
+        motivation: 85,
+        joinYear: 1
+      })
+    ];
+    if (year <= 2) {
+      members.push(
+        makeMember({
+          id: "founder-aerodynamics",
+          label: "Capitão fundador A",
+          role: "founder-captain",
+          specialty: "aerodynamics",
+          assignment: "aerodynamics",
+          experience: 1,
+          motivation: 82,
+          joinYear: 1,
+          leaveYear: 3,
+          captainArea: "aerodynamics",
+          captainSince: 1
+        }),
+        makeMember({
+          id: "founder-structures",
+          label: "Capitão fundador B",
+          role: "founder-captain",
+          specialty: "structures",
+          assignment: "structures",
+          experience: 1,
+          motivation: 82,
+          joinYear: 1,
+          leaveYear: 3,
+          captainArea: "structures",
+          captainSince: 1
+        })
+      );
+    } else {
+      members.push(
+        makeMember({
+          id: `legacy-captain-aerodynamics-${year}`,
+          label: "Capitão · Aerodinâmica",
+          role: "captain",
+          specialty: "aerodynamics",
+          assignment: "aerodynamics",
+          experience: 1.5,
+          motivation: 75,
+          joinYear: Math.max(1, year - 1),
+          leaveYear: year + 2,
+          captainArea: "aerodynamics",
+          captainSince: year
+        }),
+        makeMember({
+          id: `legacy-captain-structures-${year}`,
+          label: "Capitão · Estruturas",
+          role: "captain",
+          specialty: "structures",
+          assignment: "structures",
+          experience: 1.5,
+          motivation: 75,
+          joinYear: Math.max(1, year - 1),
+          leaveYear: year + 2,
+          captainArea: "structures",
+          captainSince: year
+        })
+      );
+    }
+
+    return {
+      members,
+      candidates: candidateOffers(year),
+      nominations: { aerodynamics: null, structures: null },
+      captainHistory: year > 2
+        ? teamRoles.map((area) => ({ year, area, memberId: members.find((member) => member.captainArea === area).id }))
+        : [],
+      weekReport: { week: 0, contributions: [] }
+    };
+  }
+
+  function validate(team, year, reputation) {
+    if (!team || !Array.isArray(team.members) || !Array.isArray(team.candidates) ||
+      !team.nominations || !Array.isArray(team.captainHistory) || !team.weekReport ||
+      !Number.isInteger(team.weekReport.week) || !Array.isArray(team.weekReport.contributions)) return false;
+    const ids = new Set();
+    const validMembers = team.members.every((member) => {
+      if (!member || typeof member.id !== "string" || ids.has(member.id) ||
+        typeof member.label !== "string" || !["president", "founder-captain", "member", "captain"].includes(member.role) ||
+        !specialties.has(member.specialty) && member.specialty !== "management" ||
+        !assignments.has(member.assignment) || !Number.isFinite(member.experience) ||
+        member.experience < 0 || member.experience > 10 || !Number.isFinite(member.motivation) ||
+        member.motivation < 0 || member.motivation > 100 || !Number.isInteger(member.joinYear) ||
+        member.joinYear < 1 || (member.leaveYear !== null &&
+          (!Number.isInteger(member.leaveYear) || member.leaveYear <= member.joinYear)) ||
+        (member.captainArea !== null && !areas.has(member.captainArea)) ||
+        (member.captainSince !== null && (!Number.isInteger(member.captainSince) || member.captainSince < member.joinYear))) {
+        return false;
+      }
+      ids.add(member.id);
+      if (member.role === "president") {
+        return member.id === "president" && member.leaveYear === null && member.captainArea === null;
+      }
+      if (member.role === "founder-captain") {
+        return member.leaveYear === 3 && member.captainArea !== null &&
+          member.id === `founder-${member.captainArea}`;
+      }
+      if (member.role === "captain") return member.captainArea !== null && member.captainSince === year;
+      return member.captainArea === null;
+    });
+    const presidents = team.members.filter((member) => member.role === "president");
+    const captainAreas = team.members.filter((member) => member.captainArea !== null).map((member) => member.captainArea);
+    if (!validMembers || presidents.length !== 1 || new Set(captainAreas).size !== captainAreas.length ||
+      team.members.filter((member) => member.role === "captain" || member.role === "founder-captain").length > 2 ||
+      team.members.length > teamCapacityForReputation(reputation)) return false;
+    if (!teamRoles.every((area) => team.nominations[area] === null ||
+      (typeof team.nominations[area] === "string" && team.members.some((member) =>
+        member.id === team.nominations[area] && member.role === "member" && member.specialty === area
+      ))) || new Set(teamRoles.map((area) => team.nominations[area]).filter(Boolean)).size !==
+        teamRoles.map((area) => team.nominations[area]).filter(Boolean).length) return false;
+    const validCandidates = new Set();
+    if (!team.candidates.every((candidate) => {
+      if (!candidate || typeof candidate.id !== "string" || validCandidates.has(candidate.id) ||
+        typeof candidate.label !== "string" || !specialties.has(candidate.specialty) ||
+        !Number.isFinite(candidate.cost) || candidate.cost < 0 ||
+        !Number.isInteger(candidate.reputationRequired) || candidate.reputationRequired < 0 ||
+        !Number.isFinite(candidate.experience) || candidate.experience < 0 || candidate.experience > 10) return false;
+      validCandidates.add(candidate.id);
+      return candidate.id === `candidate-${year}-${candidate.specialty}`;
+    })) return false;
+    return team.captainHistory.every((entry) => entry && Number.isInteger(entry.year) &&
+      entry.year >= 1 && areas.has(entry.area) && typeof entry.memberId === "string") &&
+      team.weekReport.week >= 0 && team.weekReport.week <= game.Content.weeksPerSeason &&
+      team.weekReport.contributions.every((entry) => entry && typeof entry.memberId === "string" &&
+        typeof entry.text === "string");
+  }
+
+  function advance(team, attributes, cash, year, week) {
+    const next = clone(team);
+    const updatedAttributes = { ...attributes };
+    let updatedCash = cash;
+    const contributions = [];
+    for (const member of next.members) {
+      if (member.role === "president") continue;
+      member.experience = Math.min(10, member.experience + 0.04);
+      const assignment = teamAssignments.find(({ id }) => id === member.assignment);
+      const matchesSpecialty = member.specialty === member.assignment;
+      if (matchesSpecialty) member.motivation = Math.min(100, member.motivation + 0.7);
+      else if (member.assignment === "mentoring") member.motivation = Math.min(100, member.motivation + 0.3);
+      else member.motivation = Math.max(20, member.motivation - 0.2);
+
+      const motivationFactor = 0.65 + member.motivation / 300;
+      if (assignment.attribute) {
+        const fitFactor = matchesSpecialty ? 1.15 : 0.75;
+        const gain = Math.min(100 - updatedAttributes[assignment.attribute],
+          (0.18 + member.experience * 0.045) * motivationFactor * fitFactor);
+        updatedAttributes[assignment.attribute] = Math.min(100, updatedAttributes[assignment.attribute] + gain);
+        contributions.push({
+          memberId: member.id,
+          text: `${assignment.label.split(" · ")[1]} +${gain.toFixed(1).replace(".", ",")}`
+        });
+      } else if (member.assignment === "fundraising") {
+        const reward = Math.round(assignment.weeklyCredits * motivationFactor);
+        updatedCash += reward;
+        contributions.push({ memberId: member.id, text: `captação +${reward} créditos` });
+      } else {
+        const trained = next.nominations[member.specialty];
+        const successor = next.members.find((candidate) => candidate.id === trained);
+        if (successor) {
+          successor.experience = Math.min(10, successor.experience + 0.08);
+          successor.motivation = Math.min(100, successor.motivation + 0.2);
+          contributions.push({ memberId: member.id, text: `mentoria de ${successor.label}` });
+        } else {
+          contributions.push({ memberId: member.id, text: "coordenação e documentação" });
+        }
+      }
+    }
+    next.weekReport = { week, contributions };
+    return { team: next, attributes: updatedAttributes, cash: updatedCash };
+  }
+
+  function recruit(team, candidateId, year, reputation, cash) {
+    const candidate = team.candidates.find((entry) => entry.id === candidateId);
+    if (!candidate) return { ok: false, message: "Esta candidatura não está mais disponível." };
+    if (team.members.length >= teamCapacityForReputation(reputation)) {
+      return { ok: false, message: "A equipe atingiu o limite atual de integrantes." };
+    }
+    if (candidate.reputationRequired > reputation) {
+      return { ok: false, message: `Esta candidatura exige ${candidate.reputationRequired} de reputação.` };
+    }
+    if (cash < candidate.cost) return { ok: false, message: "Créditos insuficientes para integrar esta pessoa." };
+    const next = clone(team);
+    next.candidates = next.candidates.filter((entry) => entry.id !== candidateId);
+    next.members.push(makeMember({
+      id: `member-${candidate.id}`,
+      label: `${candidate.label} · Ano ${year}`,
+      role: "member",
+      specialty: candidate.specialty,
+      assignment: candidate.specialty === "fundraising" ? "fundraising" : candidate.specialty,
+      experience: candidate.experience,
+      motivation: 76,
+      joinYear: year,
+      leaveYear: year + 3
+    }));
+    return { ok: true, team: next, cash: cash - candidate.cost, member: next.members.at(-1) };
+  }
+
+  function nextSeason(team, nextYear, reputation) {
+    const next = clone(team);
+    const currentYear = nextYear - 1;
+    const departures = next.members.filter((member) =>
+      member.role !== "president" && member.leaveYear <= nextYear
+    );
+    next.members = next.members.filter((member) => !departures.includes(member));
+    next.members.forEach((member) => {
+      if (member.role === "captain") {
+        member.role = "member";
+        member.captainArea = null;
+        member.captainSince = null;
+      }
+    });
+
+    if (currentYear === 1) {
+      next.members.filter((member) => member.role === "founder-captain").forEach((member) => {
+        next.captainHistory.push({ year: nextYear, area: member.captainArea, memberId: member.id });
+      });
+    }
+
+    const promotions = [];
+    if (nextYear >= 3) {
+      for (const area of teamRoles) {
+        const nomineeId = next.nominations[area];
+        const nominee = next.members.find((member) => member.id === nomineeId &&
+          member.role === "member" && member.specialty === area &&
+          !(member.leaveYear !== null && member.leaveYear <= nextYear));
+        const servedPreviousYear = (memberId) => next.captainHistory.some((entry) =>
+          entry.memberId === memberId && entry.year === currentYear
+        );
+        const successor = nominee && !servedPreviousYear(nominee.id)
+          ? nominee
+          : next.members.filter((member) => member.role === "member" &&
+            member.specialty === area && !servedPreviousYear(member.id) &&
+            !(member.leaveYear !== null && member.leaveYear <= nextYear)
+          ).sort((first, second) =>
+            second.experience - first.experience || second.motivation - first.motivation
+          )[0];
+        if (successor) {
+          successor.role = "captain";
+          successor.captainArea = area;
+          successor.captainSince = nextYear;
+          successor.assignment = area;
+          next.captainHistory.push({ year: nextYear, area, memberId: successor.id });
+          promotions.push(`${successor.label} assumiu a capitania de ${area === "aerodynamics" ? "Aerodinâmica" : "Estruturas"}`);
+        } else {
+          promotions.push(`capitania de ${area === "aerodynamics" ? "Aerodinâmica" : "Estruturas"} vaga`);
+        }
+      }
+    }
+
+    next.nominations = { aerodynamics: null, structures: null };
+    next.candidates = candidateOffers(nextYear).filter((candidate) =>
+      candidate.reputationRequired <= reputation
+    );
+    next.weekReport = { week: 0, contributions: [] };
+    return { team: next, departures, promotions };
+  }
+
+  game.Team = Object.freeze({
+    create,
+    validate,
+    advance,
+    recruit,
+    nextSeason,
+    candidateOffers
+  });
+})();
+
+
 /* rivals.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
   const { rivalBlueprints } = game.Content;
   const { Random, Aircraft } = game;
+  const attributeLabels = Object.fromEntries(game.Content.attributes.map(({ key, name }) => [key, name]));
 
   function chooseAction(rival, seed) {
     const weights = Object.entries(rival.weights).map(([key, weight]) =>
@@ -1037,26 +1707,79 @@
             systems: base + (index === 3 ? 7 : 0),
             report: base - 4
           },
-          cash: 700 + year * 80
+          cash: 700 + year * 80,
+          lastAction: { type: "opening", text: "manteve o plano de desenvolvimento da temporada" }
         };
       });
     },
     advance(rivals, seed, difficulty = "standard") {
       let nextSeed = seed;
       const progressRate = game.Content.difficulties[difficulty]?.rivalProgress ?? 1;
+      const activities = [];
       const updated = rivals.map((rival) => {
         const result = chooseAction(rival, nextSeed);
         nextSeed = result.seed;
         const copy = { ...rival, attributes: { ...rival.attributes } };
+        let activity;
         if (result.action === "funding") {
           copy.cash += 330;
+          activity = { name: rival.name, type: "funding", text: "buscou recursos para o projeto" };
         } else {
           const current = copy.attributes[result.action];
           copy.attributes[result.action] = Math.min(100, current + 6 * progressRate * (1 - current / 135));
+          activity = {
+            name: rival.name,
+            type: "engineering",
+            attribute: result.action,
+            text: `investiu em ${attributeLabels[result.action]}`
+          };
         }
+        copy.lastAction = { type: activity.type, text: activity.text };
+        activities.push(activity);
         return copy;
       });
-      return { rivals: updated, seed: nextSeed };
+      return { rivals: updated, seed: nextSeed, activities };
+    },
+    analyze(rival, index, year, scope) {
+      const estimate = (value, dimension) => {
+        const seed = (Math.imul(year, 73856093) ^ Math.imul(index + 1, 19349663) ^ Math.imul(dimension + 1, 83492791)) >>> 0;
+        const noise = (Random.next(seed).value - 0.5) * 16;
+        return Math.max(0, Math.min(100, value + noise));
+      };
+      const design = Aircraft.derive(rival.attributes);
+      const measures = game.Content.attributes.map(({ key, name }, dimension) => ({
+        key,
+        name,
+        estimate: estimate(rival.attributes[key], dimension)
+      }));
+      const orderedMeasures = [...measures].sort((first, second) => second.estimate - first.estimate);
+      const fitByScope = {
+        payload: design.payloadPotential,
+        reliability: design.reliability * 100,
+        "technical-report": Aircraft.reportScore(rival.attributes.report),
+        "balanced-efficiency": (
+          design.payloadPotential + design.reliability * 100 + Aircraft.reportScore(rival.attributes.report)
+        ) / 3
+      };
+      const scopeFit = estimate(fitByScope[scope.id], 5);
+      const fitLabel = scopeFit >= 66 ? "vantagem provável"
+        : scopeFit >= 47 ? "competitiva"
+          : "ponto vulnerável";
+      const forecast = game.Content.weather
+        .filter((weather) => ["clear", "gusts", "turbulence"].includes(weather.id))
+        .map((weather) => ({
+          weather: weather.label,
+          strategy: this.flightStrategy(rival, weather)
+        }));
+      return {
+        year,
+        week: 0,
+        strength: orderedMeasures[0].name,
+        vulnerability: orderedMeasures[orderedMeasures.length - 1].name,
+        scopeFit: fitLabel,
+        weatherStrategies: forecast,
+        confidence: "Tendências aproximadas; não são valores oficiais."
+      };
     },
     flightStrategy(rival, weather) {
       const stability = rival.weights.structures + rival.weights.systems;
@@ -1228,7 +1951,7 @@
 /* state.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear, skillNodes } = game.Content;
+  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear, seasonGoalsForYear, skillNodes } = game.Content;
   const strategyIds = Object.keys(strategies);
   const skillNodeIds = skillNodes.map((node) => node.id);
 
@@ -1264,9 +1987,13 @@
         week: 0,
         cash: difficulties[difficulty].startingCash,
         prestige: 0,
+        reputation: 0,
+        team: game.Team.create(1),
         attributes: { ...baseStats },
         rivals: game.Rivals.create(1),
         scouted: {},
+        rivalNews: { week: 0, activities: [] },
+        annualGoals: seasonGoalsForYear(1, baseStats),
         history: [],
         log: [{ week: 0, text: "A temporada começou. Defina uma estratégia para a equipe." }],
         phase: "preparation",
@@ -1285,7 +2012,28 @@
       const validRivals = Array.isArray(candidate.rivals) && candidate.rivals.length === rivalBlueprints.length &&
         candidate.rivals.every((rival) => rival && typeof rival.name === "string" &&
           rival.attributes && attributes.every(({ key }) => isNumber(rival.attributes[key])) &&
-          rival.weights && Object.keys(rival.weights).length === 5);
+          rival.weights && Object.keys(rival.weights).length === 5 &&
+          rival.lastAction && typeof rival.lastAction.text === "string");
+      const validGoals = candidate.annualGoals && candidate.annualGoals.year === candidate.year &&
+        candidate.annualGoals.placement && Number.isInteger(candidate.annualGoals.placement.targetPosition) &&
+        candidate.annualGoals.placement.targetPosition >= 1 && candidate.annualGoals.placement.targetPosition <= 5 &&
+        candidate.annualGoals.technical && attributes.some(({ key }) => key === candidate.annualGoals.technical.attribute) &&
+        isNumber(candidate.annualGoals.technical.baseline) && candidate.annualGoals.technical.baseline >= 0 &&
+        candidate.annualGoals.technical.baseline <= 100 && isNumber(candidate.annualGoals.technical.target) &&
+        candidate.annualGoals.technical.target >= candidate.annualGoals.technical.baseline &&
+        candidate.annualGoals.technical.target <= 100 &&
+        (candidate.annualGoals.result === null || (
+          candidate.annualGoals.result && typeof candidate.annualGoals.result.technicalMet === "boolean" &&
+          typeof candidate.annualGoals.result.placementMet === "boolean" &&
+          isNumber(candidate.annualGoals.result.reputationGained) &&
+          candidate.annualGoals.result.reputationGained >= 0
+        ));
+      const validRivalNews = candidate.rivalNews && Number.isInteger(candidate.rivalNews.week) &&
+        candidate.rivalNews.week >= 0 && candidate.rivalNews.week <= weeksPerSeason &&
+        Array.isArray(candidate.rivalNews.activities) &&
+        candidate.rivalNews.activities.every((activity) =>
+          activity && typeof activity.name === "string" && typeof activity.text === "string"
+        );
       const validStrategies = Array.isArray(candidate.eventStrategies) && candidate.eventStrategies.length === 3 &&
         candidate.eventStrategies.every((strategy) => strategyIds.includes(strategy));
       const validIdentity = typeof candidate.teamName === "string" && candidate.teamName.trim().length > 0 &&
@@ -1321,8 +2069,10 @@
         (candidate.phase !== "preparation" || candidate.week < weeksPerSeason) &&
         isNumber(candidate.cash) && candidate.cash >= 0 &&
         isNumber(candidate.prestige) && candidate.prestige >= 0 &&
+        Number.isInteger(candidate.reputation) && candidate.reputation >= 0 && candidate.reputation <= 100 &&
         Number.isInteger(candidate.rngState) && candidate.rngState >= 0 && candidate.rngState <= 0xffffffff &&
-        validAttributes && validSkills(candidate.skills) && validRivals &&
+        validAttributes && validSkills(candidate.skills) && validRivals && validGoals && validRivalNews &&
+        game.Team.validate(candidate.team, candidate.year, candidate.reputation) &&
         Array.isArray(candidate.history) && Array.isArray(candidate.log) &&
         candidate.scouted && typeof candidate.scouted === "object" &&
         validStrategies && validEvent &&
@@ -1330,7 +2080,7 @@
         validEventPhase;
     },
     migrate(candidate) {
-      if (!candidate || ![1, 2, 3, 4].includes(candidate.version)) return candidate;
+      if (!candidate || ![1, 2, 3, 4, 5, 6].includes(candidate.version)) return candidate;
       let migrated = { ...candidate };
 
       if (candidate.version === 1) {
@@ -1417,6 +2167,28 @@
           ? migrated.seasonScope
           : seasonScopeForYear(migrated.year || 1).id
       };
+      migrated.reputation = Number.isInteger(migrated.reputation)
+        ? Math.max(0, Math.min(100, migrated.reputation))
+        : 0;
+      migrated.team = game.Team.create(migrated.year || 1);
+      migrated.annualGoals = migrated.annualGoals?.year === migrated.year
+        ? migrated.annualGoals
+        : seasonGoalsForYear(migrated.year || 1, migrated.attributes || baseStats);
+      migrated.rivals = (migrated.rivals || game.Rivals.create(migrated.year || 1)).map((rival) => ({
+        ...rival,
+        lastAction: rival.lastAction && typeof rival.lastAction.text === "string"
+          ? rival.lastAction
+          : { type: "opening", text: "manteve o plano de desenvolvimento da temporada" }
+      }));
+      migrated.rivalNews = migrated.rivalNews && Array.isArray(migrated.rivalNews.activities)
+        ? migrated.rivalNews
+        : { week: migrated.week || 0, activities: [] };
+      migrated.scouted = Object.fromEntries(Object.entries(migrated.scouted || {}).map(([index, analysis]) => [
+        index,
+        analysis && typeof analysis.strength === "string"
+          ? analysis
+          : { year: migrated.year || 1, week: migrated.week || 0, legacy: true, estimate: analysis }
+      ]));
       if (migrated.event && !migrated.event.scope) {
         migrated.event.scope = { ...seasonScopes.find((scope) => scope.id === migrated.seasonScope) };
       }
@@ -1438,7 +2210,7 @@
 /* game.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { attributes, fundraisers, prizes, prestigeAwards, weeksPerSeason, skillNodes } = game.Content;
+  const { attributes, fundraisers, prizes, prestigeAwards, placementReputation, scoutingCost, weeksPerSeason, skillNodes } = game.Content;
   const clone = (value) => JSON.parse(JSON.stringify(value));
 
   function failure(state, message, kind = "warning") {
@@ -1463,7 +2235,13 @@
       next.rivals = progress.rivals;
       next.rngState = progress.seed;
       next.week += 1;
-      pushLog(next, next.week, `${action}: ${message}`);
+      next.rivalNews = { week: next.week, activities: progress.activities };
+      const teamProgress = game.Team.advance(next.team, next.attributes, next.cash, next.year, next.week);
+      next.team = teamProgress.team;
+      next.attributes = teamProgress.attributes;
+      next.cash = teamProgress.cash;
+      const rivalSummary = progress.activities.map(({ name, text }) => `${name} ${text}`).join("; ");
+      pushLog(next, next.week, `${action}: ${message} Equipe delegada: ${teamProgress.team.weekReport.contributions.length} contribuição(ões). Rivais: ${rivalSummary}.`);
     }
     if (next.week === weeksPerSeason) {
       const event = game.Competition.create(next);
@@ -1484,6 +2262,15 @@
     const player = standings.find((team) => team.isPlayer);
     const reward = prizes[player.position - 1] || 0;
     const prestige = prestigeAwards[player.position - 1] || 0;
+    const technicalMet = next.attributes[next.annualGoals.technical.attribute] >= next.annualGoals.technical.target;
+    const placementMet = player.position <= next.annualGoals.placement.targetPosition;
+    const reputationBefore = next.reputation;
+    const baseReputation = placementReputation[player.position - 1] || 0;
+    const goalReputation = (technicalMet ? next.annualGoals.technical.reputationReward : 0) +
+      (placementMet ? next.annualGoals.placement.reputationReward : 0);
+    next.reputation = Math.min(100, reputationBefore + baseReputation + goalReputation);
+    const reputationGained = next.reputation - reputationBefore;
+    next.annualGoals.result = { technicalMet, placementMet, reputationGained };
     next.cash += reward;
     next.prestige += prestige;
     next.eventResult = { standings, winner: standings[0].name };
@@ -1492,11 +2279,15 @@
       position: player.position,
       score: player.total,
       winner: standings[0].name,
+      reputation: next.reputation,
+      reputationGained,
+      goals: { technicalMet, placementMet },
       standings: standings.map(({ name, position, total }) => ({ name, position, score: total }))
     });
+    const goalSummary = `Metas: projeto ${technicalMet ? "atingida" : "não atingida"}, colocação ${placementMet ? "atingida" : "não atingida"}. Reputação +${reputationGained}.`;
     const outcome = player.position === 1
-      ? `Campeões! ${next.teamName} levou o título, +${reward} créditos e ${prestige} de prestígio.`
-      : `${next.teamName} terminou em ${player.position}º lugar. Prêmio: ${reward} créditos${prestige ? ` e ${prestige} de prestígio` : ""}.`;
+      ? `Campeões! ${next.teamName} levou o título, +${reward} créditos e ${prestige} de prestígio. ${goalSummary}`
+      : `${next.teamName} terminou em ${player.position}º lugar. Prêmio: ${reward} créditos${prestige ? ` e ${prestige} de prestígio` : ""}. ${goalSummary}`;
     pushLog(next, weeksPerSeason, outcome);
     return outcome;
   }
@@ -1521,6 +2312,9 @@
         case "fundraise": {
           const option = fundraisers.find((entry) => entry.id === action.id);
           if (!option) return failure(state, "Ação de captação desconhecida.", "error");
+          if (state.reputation < option.reputationRequired) {
+            return failure(state, `Esta oportunidade exige ${option.reputationRequired} de reputação.`);
+          }
           return advancePreparation(state, option.weeks, "Captação", `${option.name} rendeu ${option.reward.toLocaleString("pt-BR")} créditos.`, (next) => {
             next.cash += option.reward;
           });
@@ -1528,17 +2322,80 @@
         case "scout": {
           const rival = state.rivals[action.index];
           if (!rival) return failure(state, "Equipe rival não encontrada.", "error");
+          if (state.phase !== "preparation") return failure(state, "O scouting só está disponível durante a preparação.");
           if (state.scouted[action.index]) return failure(state, "Esta equipe já foi analisada nesta temporada.");
-          return advancePreparation(state, 1, "Scouting", `Estimativas de ${rival.name} foram adicionadas ao relatório.`, (next) => {
-            const estimate = {};
-            attributes.forEach(({ key }) => {
-              const draw = game.Random.next(next.rngState);
-              next.rngState = draw.seed;
-              const noisyValue = rival.attributes[key] + (draw.value - 0.5) * 14;
-              estimate[key] = Math.max(0, Math.min(100, Math.round(noisyValue / 10) * 10));
-            });
-            next.scouted[action.index] = estimate;
-          });
+          if (state.cash < scoutingCost) return failure(state, "Créditos insuficientes para contratar esta análise.");
+          const next = clone(state);
+          const scope = game.Content.seasonScopes.find((entry) => entry.id === next.seasonScope);
+          const analysis = game.Rivals.analyze(rival, action.index, next.year, scope);
+          analysis.week = next.week;
+          next.cash -= scoutingCost;
+          next.scouted[action.index] = analysis;
+          pushLog(next, next.week, `Scouting: relatório tático de ${rival.name} concluído; o calendário não avançou.`);
+          return {
+            state: next,
+            notice: { text: `Análise de ${rival.name} concluída por ${scoutingCost} créditos, sem consumir a semana.`, kind: "success" }
+          };
+        }
+        case "recruit-member": {
+          if (state.phase !== "preparation") return failure(state, "O processo seletivo está fechado durante a competição.");
+          const result = game.Team.recruit(
+            state.team,
+            action.candidateId,
+            state.year,
+            state.reputation,
+            state.cash
+          );
+          if (!result.ok) return failure(state, result.message);
+          const next = clone(state);
+          next.team = result.team;
+          next.cash = result.cash;
+          pushLog(next, next.week, `${result.member.label} integrou a equipe como ${game.Content.teamCandidates.find((candidate) => candidate.specialty === result.member.specialty).label}.`);
+          return {
+            state: next,
+            notice: { text: `${result.member.label} integrou a equipe. A contratação não consome semana.`, kind: "success" }
+          };
+        }
+        case "assign-member": {
+          if (state.phase !== "preparation") return failure(state, "A alocação só pode ser alterada durante a preparação.");
+          const member = state.team.members.find((entry) => entry.id === action.memberId);
+          const assignment = game.Content.teamAssignments.find((entry) => entry.id === action.assignment);
+          if (!member || member.role === "president") return failure(state, "Integrante indisponível para esta alocação.", "error");
+          if (!assignment) return failure(state, "Área de trabalho desconhecida.", "error");
+          if (member.assignment === assignment.id) return failure(state, "Esta pessoa já está alocada a essa frente.");
+          const next = clone(state);
+          const updatedMember = next.team.members.find((entry) => entry.id === action.memberId);
+          updatedMember.assignment = assignment.id;
+          return {
+            state: next,
+            notice: { text: `${updatedMember.label} agora trabalha em ${assignment.label}.`, kind: "success" }
+          };
+        }
+        case "nominate-captain": {
+          if (state.phase !== "preparation" && state.phase !== "results") {
+            return failure(state, "Indicações de capitania são definidas entre temporadas.");
+          }
+          if (state.year < 2) return failure(state, "A preparação de sucessores começa no Ano 2.");
+          if (!game.Content.teamRoles.includes(action.area)) return failure(state, "Capitania desconhecida.", "error");
+          const member = state.team.members.find((entry) => entry.id === action.memberId);
+          if (!member || member.role !== "member" || member.specialty !== action.area) {
+            return failure(state, "Indique um integrante da especialidade correspondente.", "error");
+          }
+          if (state.team.nominations[action.area] === member.id) {
+            return failure(state, "Esta pessoa já está indicada para a capitania.");
+          }
+          if (Object.entries(state.team.nominations).some(([area, memberId]) =>
+            area !== action.area && memberId === member.id
+          )) return failure(state, "Uma pessoa só pode ser indicada para uma capitania.");
+          const next = clone(state);
+          next.team.nominations[action.area] = member.id;
+          return {
+            state: next,
+            notice: {
+              text: `${member.label} foi indicado para suceder a capitania de ${action.area === "aerodynamics" ? "Aerodinâmica" : "Estruturas"}.`,
+              kind: "success"
+            }
+          };
         }
         case "research-skill": {
           const node = skillNodes.find((entry) => entry.id === action.id);
@@ -1608,14 +2465,28 @@
             [key, Math.min(100, value + legacyBonus)]
           ));
           next.seasonScope = game.Content.seasonScopeForYear(next.year).id;
-          next.rivals = game.Rivals.create(next.year);
+          next.rivals = next.rivals.map((rival) => ({
+            ...rival,
+            lastAction: { type: "opening", text: "iniciou o novo ciclo mantendo o projeto acumulado" }
+          }));
           next.scouted = {};
+          next.rivalNews = { week: 0, activities: [] };
+          next.annualGoals = game.Content.seasonGoalsForYear(next.year, next.attributes);
+          const teamTransition = game.Team.nextSeason(next.team, next.year, next.reputation);
+          next.team = teamTransition.team;
           next.phase = "preparation";
           next.event = null;
           next.eventResult = null;
           next.eventStrategies = ["balanced", "balanced", "balanced"];
-          pushLog(next, 0, `Temporada ${next.year} iniciada. O avião preservou seus níveis${legacyBonus ? ` e a experiência da equipe concedeu +${legacyBonus} níveis` : ""}. Novo regulamento: ${game.Content.seasonScopeForYear(next.year).title}.`);
-          return { state: next, notice: { text: `Temporada ${next.year} iniciada.`, kind: "success" } };
+          const campaignMessage = next.year === game.Content.campaignSeasons + 1
+            ? "A campanha de cinco anos foi concluída; a carreira continua em modo livre."
+            : `Campanha: ano ${Math.min(next.year, game.Content.campaignSeasons)} de ${game.Content.campaignSeasons}.`;
+          const teamMessage = [
+            ...teamTransition.departures.map((member) => `${member.label} deixou a equipe conforme o ciclo planejado`),
+            ...teamTransition.promotions
+          ].join("; ");
+          pushLog(next, 0, `Temporada ${next.year} iniciada. O avião e as rivais preservaram sua evolução${legacyBonus ? `; a experiência da equipe concedeu +${legacyBonus} níveis` : ""}. ${teamMessage || "A equipe manteve sua composição."} Novo regulamento: ${game.Content.seasonScopeForYear(next.year).title}. ${campaignMessage}`);
+          return { state: next, notice: { text: `Temporada ${next.year} iniciada. ${teamMessage || "Equipe mantida."} ${campaignMessage}`, kind: "success" } };
         }
         default:
           return failure(state, `Ação não reconhecida: ${action.type}.`, "error");
@@ -1687,6 +2558,7 @@
     { id: "skills", title: "Árvore de habilidades", subtitle: "Defina o conceito do avião e desenvolva engenharia e gestão da equipe." },
     { id: "fundraising", title: "Finanças da equipe", subtitle: "Escolha como financiar o projeto sem perder semanas de preparação." },
     { id: "rivals", title: "Central de rivais", subtitle: "Analise as equipes e descubra como pretendem disputar o título." },
+    { id: "team", title: "Gestão da equipe", subtitle: "Desenvolva integrantes, delegue trabalho e prepare a sucessão." },
     { id: "championship", title: "Campeonato", subtitle: "Acompanhe a abertura, as baterias e a classificação da temporada." }
   ]);
   function renderHeader(state, activeScreen) {
@@ -1698,6 +2570,7 @@
     document.getElementById("aircraftName").textContent = state.aircraftName;
     document.getElementById("cashLabel").textContent = credits(state.cash);
     document.getElementById("careerCashLabel").textContent = credits(state.cash);
+    document.getElementById("careerReputationLabel").textContent = `Reputação ${state.reputation}`;
     document.getElementById("prestigeLabel").textContent = state.prestige;
     document.getElementById("weekProgress").style.width = `${(state.week / weeksPerSeason) * 100}%`;
     document.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", String(state.week));
@@ -1860,35 +2733,53 @@
   }
 
   function renderFundraising(state) {
-    document.getElementById("fundraisingList").innerHTML = fundraisers.map((option) => `
-      <article class="fundraising-item">
+    document.getElementById("fundraisingList").innerHTML = fundraisers.map((option) => {
+      const reputationLocked = state.reputation < option.reputationRequired;
+      const weeksUnavailable = state.week + option.weeks > weeksPerSeason;
+      return `
+      <article class="fundraising-item ${reputationLocked ? "fundraising-locked" : ""}">
         <div class="fundraising-copy">
           <strong>${option.name}</strong>
-          <p>${option.description}</p>
+          <p>${option.description}${reputationLocked ? ` Desbloqueia com ${option.reputationRequired} de reputação.` : ""}</p>
         </div>
         <div class="fundraising-actions">
           <div class="cost-line">${option.weeks} ${option.weeks === 1 ? "semana" : "semanas"} · <strong>+${credits(option.reward)}</strong></div>
-          <button class="button button-subtle" type="button" data-action="fundraise" data-fundraiser="${option.id}" ${state.week + option.weeks > weeksPerSeason ? "disabled" : ""}>Iniciar captação</button>
+          <button class="button button-subtle" type="button" data-action="fundraise" data-fundraiser="${option.id}" ${reputationLocked || weeksUnavailable ? "disabled" : ""}>${reputationLocked ? `Reputação ${option.reputationRequired}` : "Iniciar captação"}</button>
         </div>
-      </article>`).join("");
+      </article>`;
+    }).join("");
   }
 
   function renderScouting(state) {
-    document.getElementById("scoutingList").innerHTML = state.rivals.map((rival, index) => {
-      const estimate = state.scouted[index];
-      const revealed = estimate
-        ? `<div class="scouting-reveal">${attributes.map(({ key, name }) => `<span>${name}: ~${estimate[key]}</span>`).join("")}</div>`
-        : "";
+    const showDisclaimer = Object.keys(state.scouted).length > 0;
+    const rivalCards = state.rivals.map((rival, index) => {
+      const analysis = state.scouted[index];
+      const revealed = analysis?.legacy
+        ? `<div class="scouting-reveal">${attributes.map(({ key, name }) => `<span>${name}: ~${analysis.estimate[key]}</span>`).join("")}<span>Relatório antigo</span></div>`
+        : analysis
+          ? `<div class="scouting-intel">
+              <div><strong>Força</strong> ${escapeHtml(analysis.strength)} · <strong>Fragilidade</strong> ${escapeHtml(analysis.vulnerability)}</div>
+              <div><strong>Regulamento</strong> ${escapeHtml(analysis.scopeFit)}</div>
+              <div><strong>Clima</strong> ${analysis.weatherStrategies.map(({ weather, strategy }) => {
+                const shortWeather = { "Céu limpo": "Calmo", "Rajadas de vento": "Rajadas", Turbulência: "Turbulência" }[weather] || weather;
+                return `${escapeHtml(shortWeather)}: ${escapeHtml(game.Content.strategies[strategy]?.label || strategy)}`;
+              }).join(" · ")}</div>
+            </div>`
+          : "";
+      const disabled = analysis || state.phase !== "preparation" || state.cash < game.Content.scoutingCost;
       return `
-        <article class="scouting-item">
-          <div class="scouting-copy">
-            <strong>${escapeHtml(rival.name)}</strong>
-            <p>${estimate ? "Estimativa aproximada registrada nesta temporada." : `Filosofia: ${escapeHtml(rival.philosophy)}. Atributos não revelados.`}</p>
-            ${revealed}
-          </div>
-          <button class="button button-subtle" type="button" data-action="scout" data-rival="${index}" ${estimate || state.week >= weeksPerSeason ? "disabled" : ""}>${estimate ? "Analisada" : "Analisar · 1 sem."}</button>
+          <article class="scouting-item">
+            <div class="scouting-copy">
+              <strong>${escapeHtml(rival.name)}</strong>
+              ${revealed}
+            </div>
+          <button class="button button-subtle" type="button" data-action="scout" data-rival="${index}" ${disabled ? "disabled" : ""}>${analysis ? "Analisada" : `Analisar · ${credits(game.Content.scoutingCost)}`}</button>
         </article>`;
     }).join("");
+    const disclaimer = showDisclaimer
+      ? '<p class="scouting-confidence">Tendências aproximadas; não são valores oficiais.</p>'
+      : "";
+    document.getElementById("scoutingList").innerHTML = `${disclaimer}${rivalCards}`;
   }
 
   function renderAircraft(state) {
@@ -1928,14 +2819,128 @@
   function renderRivals(state) {
     const recentChampion = lastSeason(state)?.winner;
     document.getElementById("rivalList").innerHTML = state.rivals.map((rival, index) => {
-      const average = state.scouted[index]
-        ? Math.round(Object.values(state.scouted[index]).reduce((sum, value) => sum + value, 0) / 4)
-        : null;
+      const activity = state.rivalNews.activities.find((entry) => entry.name === rival.name);
       const isChampion = recentChampion === rival.name;
       return `
         <article class="rival-item">
-          <div class="rival-heading"><strong>${escapeHtml(rival.name)}</strong><span class="rival-tag">${isChampion ? "CAMPEÃ DEFENSORA" : state.scouted[index] ? "ANALISADA" : "NÃO ANALISADA"}</span></div>
-          <div class="rival-detail">${escapeHtml(rival.philosophy)}${average === null ? "" : ` · Média estimada ${average}`}</div>
+          <div class="rival-heading"><strong>${escapeHtml(rival.name)}</strong><span class="rival-tag">${isChampion ? "CAMPEÃ DEFENSORA" : "BOT ATIVO"}</span></div>
+          <div class="rival-detail">${escapeHtml(rival.philosophy)} · ${escapeHtml(activity?.text || rival.lastAction.text)}${state.rivalNews.week ? ` · Sem. ${state.rivalNews.week}` : ""}</div>
+        </article>`;
+    }).join("");
+  }
+
+  function renderAnnualGoals(state) {
+    const goals = state.annualGoals;
+    const technical = goals.technical;
+    const attribute = attributes.find(({ key }) => key === technical.attribute);
+    const current = Math.round(state.attributes[technical.attribute]);
+    const technicalStatus = goals.result
+      ? goals.result.technicalMet ? "Atingida" : "Não atingida"
+      : state.phase === "results" ? "Não registrada no save anterior"
+        : technical.target === technical.baseline ? "Nível máximo mantido"
+          : `${Math.min(current, technical.target)} / ${technical.target}`;
+    const placementStatus = goals.result
+      ? goals.result.placementMet ? "Atingida" : "Não atingida"
+      : `Meta: ${goals.placement.targetPosition}º lugar ou melhor`;
+    const campaignStatus = state.year <= game.Content.campaignSeasons
+      ? `Campanha principal · Ano ${state.year} de ${game.Content.campaignSeasons}`
+      : `Campanha concluída · Ano ${state.year} em modo livre`;
+    document.getElementById("campaignGoals").innerHTML = `
+      <div class="campaign-label">${campaignStatus} · Reputação ${state.reputation}/100</div>
+      <div class="campaign-goal"><strong>Projeto</strong><span>${escapeHtml(attribute.name)} · ${escapeHtml(technicalStatus)}${technical.target === technical.baseline ? "" : ` (meta ${technical.target})`}</span></div>
+      <div class="campaign-goal"><strong>Competição</strong><span>${escapeHtml(placementStatus)}</span></div>`;
+  }
+
+  function renderTeam(state) {
+    const team = state.team;
+    const capacity = game.Content.teamCapacityForReputation(state.reputation);
+    const specialtyLabels = Object.fromEntries(game.Content.teamCandidates.map(({ specialty, label }) => [specialty, label]));
+    const assignmentOptions = game.Content.teamAssignments;
+    const captainNames = Object.fromEntries(team.members
+      .filter((member) => member.captainArea)
+      .map((member) => [member.captainArea, member.label]));
+    const departures = team.members
+      .filter((member) => member.role !== "president" && member.leaveYear !== null)
+      .sort((first, second) => first.leaveYear - second.leaveYear);
+    document.getElementById("teamSummary").innerHTML = `
+      <strong>${team.members.length}/${capacity} integrantes</strong>
+      <span>Delegações rendem melhorias e créditos a cada semana sem gastar sua ação.</span>
+      ${departures.length
+        ? `<span>Próxima saída prevista: ${escapeHtml(departures[0].label)} · início do Ano ${departures[0].leaveYear}</span>`
+        : ""}`;
+    document.getElementById("teamRoster").innerHTML = team.members.map((member) => {
+      const roleLabel = member.role === "president" ? "PRESIDENTE"
+        : member.role === "founder-captain" ? "CAPITÃO FUNDADOR"
+          : member.role === "captain" ? "CAPITÃO · 1 TEMPORADA" : "INTEGRANTE";
+      const specialty = member.specialty === "management" ? "Gestão" : specialtyLabels[member.specialty];
+      const assignment = assignmentOptions.find(({ id }) => id === member.assignment);
+      const departure = member.leaveYear === null ? "Permanente"
+        : `Saída prevista no Ano ${member.leaveYear}`;
+      const assignControl = member.role === "president"
+        ? `<div class="team-assignment-label">${escapeHtml(assignment.label)}</div>`
+        : `<label class="team-assignment">
+            <span>Alocação</span>
+            <select data-member-assignment="${escapeHtml(member.id)}" aria-label="Alocação de ${escapeHtml(member.label)}">
+              ${assignmentOptions.map((option) => `<option value="${option.id}" ${option.id === member.assignment ? "selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
+            </select>
+          </label>`;
+      return `
+        <article class="team-member">
+          <div class="team-member-heading">
+            <strong>${escapeHtml(member.label)}</strong>
+            <span class="team-role-tag">${roleLabel}</span>
+          </div>
+          <div class="team-member-meta">${escapeHtml(specialty)} · Exp. ${member.experience.toFixed(1)} · Motivação ${Math.round(member.motivation)}%</div>
+          <div class="team-motivation-track"><span style="width:${member.motivation}%"></span></div>
+          ${assignControl}
+          <div class="team-tenure">${departure}${member.captainArea ? ` · ${escapeHtml(specialtyLabels[member.captainArea])}` : ""}</div>
+        </article>`;
+    }).join("");
+
+    const canNominate = state.year >= 2 && (state.phase === "preparation" || state.phase === "results");
+    const nominations = game.Content.teamRoles.map((area) => {
+      const candidates = team.members.filter((member) =>
+        member.role === "member" && member.specialty === area &&
+        !(member.leaveYear !== null && member.leaveYear <= state.year + 1) &&
+        !team.captainHistory.some((entry) => entry.memberId === member.id && entry.year === state.year)
+      );
+      const nominatedId = team.nominations[area];
+      const activeCaptain = captainNames[area];
+      const areaLabel = specialtyLabels[area];
+      return `
+        <div class="succession-row">
+          <div><strong>${areaLabel}</strong><span>${activeCaptain ? `Atual: ${escapeHtml(activeCaptain)}` : "Capitania sem titular"}</span></div>
+          <select id="captainNominee-${area}" aria-label="Sucessor para ${areaLabel}" ${!canNominate || !candidates.length ? "disabled" : ""}>
+            <option value="">Escolher sucessor</option>
+            ${candidates.map((member) => `<option value="${escapeHtml(member.id)}" ${member.id === nominatedId ? "selected" : ""}>${escapeHtml(member.label)} · exp. ${member.experience.toFixed(1)}</option>`).join("")}
+          </select>
+          <button class="button button-subtle" type="button" data-action="nominate-captain" data-area="${area}" ${!canNominate || !candidates.length ? "disabled" : ""}>Indicar</button>
+        </div>`;
+    }).join("");
+    document.getElementById("teamSuccession").innerHTML = state.year < 2
+      ? `<p class="team-guidance">No Ano 2, indique integrantes de Aerodinâmica e Estruturas para suceder os fundadores. Capitanias posteriores duram uma temporada.</p>`
+      : `<p class="team-guidance">${state.year === 2
+        ? "Prepare dois sucessores antes da saída dos fundadores no Ano 3."
+        : "Capitães servem por uma temporada. Prepare nomes diferentes para o próximo ciclo."}</p>${nominations}`;
+
+    document.getElementById("teamCandidates").innerHTML = game.Team.candidateOffers(state.year).map((candidate) => {
+      const offered = team.candidates.some((entry) => entry.id === candidate.id);
+      const hired = team.members.some((member) => member.id === `member-${candidate.id}`);
+      const lockedByReputation = state.reputation < candidate.reputationRequired;
+      const full = team.members.length >= capacity;
+      const unaffordable = state.cash < candidate.cost;
+      const disabled = state.phase !== "preparation" || !offered || hired ||
+        lockedByReputation || full || unaffordable;
+      const status = hired ? "INTEGRANTE"
+        : lockedByReputation ? `REPUTAÇÃO ${candidate.reputationRequired}`
+          : !offered ? "INDISPONÍVEL"
+            : full ? "EQUIPE COMPLETA"
+              : unaffordable ? "SEM CRÉDITOS" : `EXP. ${candidate.experience.toFixed(1)}`;
+      return `
+        <article class="team-candidate ${disabled ? "candidate-disabled" : ""}">
+          <div><strong>${escapeHtml(candidate.label)}</strong><span>${status}</span></div>
+          <p>Motivação inicial 76% · entrada prevista até o fim do terceiro ano na equipe.</p>
+          <button class="button button-subtle" type="button" data-action="recruit-member" data-candidate="${candidate.id}" ${disabled ? "disabled" : ""}>${hired ? "Integrada" : `Integrar · ${credits(candidate.cost)}`}</button>
         </article>`;
     }).join("");
   }
@@ -1996,7 +3001,13 @@
         <tbody>${teams.map((team) => `
           <tr class="${revealReports && team.position === 1 ? "leader-row" : ""}">
             <td>${revealReports ? `${team.position}º` : "—"}</td>
-            <td>${escapeHtml(team.name)}${team.isPlayer ? " · Você" : ""}</td>
+            <td>${escapeHtml(team.name)}${team.isPlayer ? " · Você" : ""}
+              <span class="score-cell-compact">${revealReports
+                ? `R ${team.report} · ${team.flights.map((flight, index) =>
+                  `B${index + 1} ${flight ? `${flight.score}${flight.crashed ? "Q" : flight.partial ? "P" : ""}` : "—"}`
+                ).join(" · ")}`
+                : "Notas ainda não reveladas"}</span>
+            </td>
             <td>${revealReports ? team.report : "—"}</td>
             ${[0, 1, 2].map((index) => {
               const flight = team.flights[index];
@@ -2074,7 +3085,7 @@
 
   function renderReportPhase(state) {
     return `
-      <div class="event-content">
+      <div class="event-content event-summary-content">
         <section class="event-hero">
           <div class="event-header">
             <div><h3>Campeonato · Ano ${state.year}</h3><p>${escapeHtml(state.teamName)} enfrenta quatro rivais em três baterias.</p></div>
@@ -2094,7 +3105,7 @@
     const round = state.event.round;
     const weather = state.event.weather[round];
     return `
-      <div class="event-content">
+      <div class="event-content event-flight-content">
         <section class="event-hero">
           <div class="event-header">
             <div><h3>Bateria ${round + 1} · ${escapeHtml(weather.label)}</h3><p>${escapeHtml(weather.effect)}. Escolha sua estratégia; os BOTs decidem conforme a própria filosofia.</p></div>
@@ -2103,11 +3114,19 @@
         </section>
         ${renderScopeBanner(state.event.scope)}
         ${renderStageTiles(state, "flight", true)}
-        ${renderFlightCircuit(state.aircraftName, round)}
-        <div class="event-actions flight-launch-actions"><button class="button button-primary" type="button" data-action="run-flight">Largar bateria ${round + 1} <span aria-hidden="true">→</span></button></div>
-        ${renderCommentary(state.event)}
-        <div class="competition-lead"><h4>Classificação parcial</h4><span>Atualiza depois de cada bateria</span></div>
-        ${renderLeaderboard(state, true)}
+        <div class="flight-display">
+          <div class="flight-primary">
+            <div class="flight-primary-display">
+              ${renderFlightCircuit(state.aircraftName, round)}
+              <div class="event-actions flight-launch-actions"><button class="button button-primary" type="button" data-action="run-flight">Largar bateria ${round + 1} <span aria-hidden="true">→</span></button></div>
+              ${renderCommentary(state.event)}
+            </div>
+            <aside class="flight-standings">
+              <div class="competition-lead"><h4>Classificação parcial</h4><span>Atualiza depois de cada bateria</span></div>
+              ${renderLeaderboard(state, true)}
+            </aside>
+          </div>
+        </div>
       </div>`;
   }
 
@@ -2116,7 +3135,7 @@
     const player = standings.find((team) => team.isPlayer);
     const champion = standings[0];
     return `
-      <div class="event-content">
+      <div class="event-content event-summary-content">
         <section class="event-hero">
           <div class="event-header">
             <div><h3>${escapeHtml(champion.name)} conquista o título</h3><p>${escapeHtml(state.teamName)} terminou em ${player.position}º lugar, com ${player.total} pontos.</p></div>
@@ -2153,6 +3172,8 @@
       renderAircraft(state);
       renderRivals(state);
       renderRivalry(state);
+      renderAnnualGoals(state);
+      renderTeam(state);
       renderLog(state);
       renderEvent(state);
       renderCareerNavigation(activeScreen, state);
@@ -2170,7 +3191,7 @@
   let notice = { text: "", kind: "" };
   let appView = "home";
   let hubNotice = { text: "", kind: "" };
-  const careerScreens = ["overview", "engineering", "skills", "fundraising", "rivals", "championship"];
+  const careerScreens = ["overview", "engineering", "skills", "fundraising", "rivals", "team", "championship"];
   let swipeStart = null;
   let flightLaunching = false;
 
@@ -2310,6 +3331,12 @@
       case "research-skill": return apply({ type: "research-skill", id: button.dataset.skill });
       case "fundraise": return apply({ type: "fundraise", id: button.dataset.fundraiser });
       case "scout": return apply({ type: "scout", index: Number(button.dataset.rival) });
+      case "recruit-member": return apply({ type: "recruit-member", candidateId: button.dataset.candidate });
+      case "nominate-captain": {
+        const area = button.dataset.area;
+        const nominee = document.getElementById(`captainNominee-${area}`);
+        return apply({ type: "nominate-captain", area, memberId: nominee?.value || "" });
+      }
       case "advance-week": return apply({ type: "advance-week" });
       case "reveal-reports": return apply({ type: "reveal-reports" });
       case "choose-strategy": return apply({
@@ -2320,6 +3347,17 @@
       case "run-flight": return launchFlight(button);
       case "next-season": return apply({ type: "next-season" });
       default: return;
+    }
+  }
+
+  function handleChange(event) {
+    const assignment = event.target.closest("select[data-member-assignment]");
+    if (assignment) {
+      apply({
+        type: "assign-member",
+        memberId: assignment.dataset.memberAssignment,
+        assignment: assignment.value
+      });
     }
   }
 
@@ -2382,8 +3420,6 @@
     const duration = reducedMotion ? 1000 : 2500;
     const launchingState = state;
     const launchingRound = state.event.round;
-    circuit.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
-    if (!reducedMotion) await new Promise((resolve) => window.setTimeout(resolve, 450));
     await animateFlight(path, plane, duration);
     if (state !== launchingState || state.phase !== "event-flight" || state.event.round !== launchingRound) {
       flightLaunching = false;
@@ -2417,6 +3453,7 @@
   }
 
   document.addEventListener("click", handleClick);
+  document.addEventListener("change", handleChange);
   document.addEventListener("keydown", handleKeydown);
   document.getElementById("careerViewport").addEventListener("pointerdown", handlePointerDown);
   document.addEventListener("pointerup", handlePointerUp);

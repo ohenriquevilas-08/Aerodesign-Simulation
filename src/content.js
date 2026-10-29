@@ -35,6 +35,46 @@
     })
   ]);
   const seasonScopeForYear = (year) => seasonScopes[(Math.max(1, year) - 1) % seasonScopes.length];
+  const seasonGoalsForYear = (year, attributes) => {
+    const scope = seasonScopeForYear(year);
+    const technicalAttribute = {
+      payload: "aerodynamics",
+      reliability: "structures",
+      "technical-report": "report",
+      "balanced-efficiency": "systems"
+    }[scope.id];
+    const baseline = attributes[technicalAttribute];
+    return {
+      year,
+      placement: {
+        targetPosition: [4, 4, 3, 2, 1][Math.min(year, 5) - 1],
+        reputationReward: 4
+      },
+      technical: {
+        attribute: technicalAttribute,
+        baseline,
+        target: Math.min(100, baseline + 6),
+        reputationReward: 4
+      },
+      result: null
+    };
+  };
+  const teamRoles = Object.freeze(["aerodynamics", "structures"]);
+  const teamAssignments = Object.freeze([
+    { id: "aerodynamics", label: "Projeto · Aerodinâmica", attribute: "aerodynamics" },
+    { id: "structures", label: "Projeto · Estruturas", attribute: "structures" },
+    { id: "systems", label: "Projeto · Sistemas", attribute: "systems" },
+    { id: "report", label: "Projeto · Relatório", attribute: "report" },
+    { id: "fundraising", label: "Captação", weeklyCredits: 18 },
+    { id: "mentoring", label: "Mentoria", reputationReward: 0 }
+  ]);
+  const teamCandidates = Object.freeze([
+    { specialty: "aerodynamics", label: "Aerodinâmica", cost: 320, reputationRequired: 0, experience: 0.35 },
+    { specialty: "structures", label: "Estruturas", cost: 340, reputationRequired: 0, experience: 0.4 },
+    { specialty: "systems", label: "Sistemas", cost: 360, reputationRequired: 10, experience: 0.3 },
+    { specialty: "report", label: "Relatório", cost: 330, reputationRequired: 10, experience: 0.45 },
+    { specialty: "fundraising", label: "Captação", cost: 300, reputationRequired: 20, experience: 0.5 }
+  ]);
   const conceptSkillIds = ["concept-lift", "concept-light", "concept-stable"];
   const skillNodes = Object.freeze([
     Object.freeze({
@@ -110,9 +150,20 @@
 
   game.Content = Object.freeze({
     saveKey: "aerodesign-manager-save-v1",
-    saveVersion: 5,
+    saveVersion: 7,
     seasonScopes,
     seasonScopeForYear,
+    seasonGoalsForYear,
+    teamRoles,
+    teamAssignments,
+    teamCandidates,
+    teamCapacityForReputation(reputation) {
+      return reputation >= 60 ? 7 : reputation >= 30 ? 6 : 5;
+    },
+    teamMemberCost: 300,
+    campaignSeasons: 5,
+    placementReputation: Object.freeze([12, 9, 7, 5, 3]),
+    scoutingCost: 150,
     skillNodes,
     skillBranches: Object.freeze([
       Object.freeze({ id: "aircraft", title: "Conceito do avião", description: "Escolha uma identidade de projeto. Os conceitos são mutuamente exclusivos." }),
@@ -140,8 +191,11 @@
       { name: "Escola Técnica do Litoral", philosophy: "Sistemas e captação", weights: { aerodynamics: 0.17, structures: 0.18, systems: 0.30, report: 0.15, funding: 0.20 } }
     ]),
     fundraisers: Object.freeze([
-      { id: "raffle", name: "Organizar rifa", weeks: 1, reward: 420, description: "Uma ação rápida para reforçar o caixa sem interromper o projeto por muito tempo." },
-      { id: "sponsorship", name: "Buscar patrocínio", weeks: 2, reward: 1120, description: "Uma rodada de contatos com retorno maior, mas consome duas semanas de preparação." }
+      { id: "raffle", name: "Organizar rifa", weeks: 1, reward: 420, reputationRequired: 0, description: "Uma ação rápida para reforçar o caixa sem interromper o projeto por muito tempo." },
+      { id: "sponsorship", name: "Buscar patrocínio", weeks: 2, reward: 1120, reputationRequired: 0, description: "Uma rodada de contatos com retorno maior, mas consome duas semanas de preparação." },
+      { id: "science-fair", name: "Feira de ciência", weeks: 1, reward: 650, reputationRequired: 15, description: "A reputação da equipe abre espaço para uma ação em evento universitário." },
+      { id: "university-grant", name: "Edital universitário", weeks: 2, reward: 1800, reputationRequired: 35, description: "Um projeto consistente pode conquistar recursos institucionais." },
+      { id: "industry-sponsor", name: "Patrocínio industrial", weeks: 2, reward: 2500, reputationRequired: 60, description: "Resultados reconhecidos atraem empresas do setor aeronáutico." }
     ]),
     strategies: Object.freeze({
       conservative: { label: "Segura", loadMultiplier: 0.72, reliabilityModifier: 0.16 },

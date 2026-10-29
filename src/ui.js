@@ -28,6 +28,7 @@
     { id: "skills", title: "Árvore de habilidades", subtitle: "Defina o conceito do avião e desenvolva engenharia e gestão da equipe." },
     { id: "fundraising", title: "Finanças da equipe", subtitle: "Escolha como financiar o projeto sem perder semanas de preparação." },
     { id: "rivals", title: "Central de rivais", subtitle: "Analise as equipes e descubra como pretendem disputar o título." },
+    { id: "team", title: "Gestão da equipe", subtitle: "Desenvolva integrantes, delegue trabalho e prepare a sucessão." },
     { id: "championship", title: "Campeonato", subtitle: "Acompanhe a abertura, as baterias e a classificação da temporada." }
   ]);
   function renderHeader(state, activeScreen) {
@@ -39,6 +40,7 @@
     document.getElementById("aircraftName").textContent = state.aircraftName;
     document.getElementById("cashLabel").textContent = credits(state.cash);
     document.getElementById("careerCashLabel").textContent = credits(state.cash);
+    document.getElementById("careerReputationLabel").textContent = `Reputação ${state.reputation}`;
     document.getElementById("prestigeLabel").textContent = state.prestige;
     document.getElementById("weekProgress").style.width = `${(state.week / weeksPerSeason) * 100}%`;
     document.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", String(state.week));
@@ -201,35 +203,53 @@
   }
 
   function renderFundraising(state) {
-    document.getElementById("fundraisingList").innerHTML = fundraisers.map((option) => `
-      <article class="fundraising-item">
+    document.getElementById("fundraisingList").innerHTML = fundraisers.map((option) => {
+      const reputationLocked = state.reputation < option.reputationRequired;
+      const weeksUnavailable = state.week + option.weeks > weeksPerSeason;
+      return `
+      <article class="fundraising-item ${reputationLocked ? "fundraising-locked" : ""}">
         <div class="fundraising-copy">
           <strong>${option.name}</strong>
-          <p>${option.description}</p>
+          <p>${option.description}${reputationLocked ? ` Desbloqueia com ${option.reputationRequired} de reputação.` : ""}</p>
         </div>
         <div class="fundraising-actions">
           <div class="cost-line">${option.weeks} ${option.weeks === 1 ? "semana" : "semanas"} · <strong>+${credits(option.reward)}</strong></div>
-          <button class="button button-subtle" type="button" data-action="fundraise" data-fundraiser="${option.id}" ${state.week + option.weeks > weeksPerSeason ? "disabled" : ""}>Iniciar captação</button>
+          <button class="button button-subtle" type="button" data-action="fundraise" data-fundraiser="${option.id}" ${reputationLocked || weeksUnavailable ? "disabled" : ""}>${reputationLocked ? `Reputação ${option.reputationRequired}` : "Iniciar captação"}</button>
         </div>
-      </article>`).join("");
+      </article>`;
+    }).join("");
   }
 
   function renderScouting(state) {
-    document.getElementById("scoutingList").innerHTML = state.rivals.map((rival, index) => {
-      const estimate = state.scouted[index];
-      const revealed = estimate
-        ? `<div class="scouting-reveal">${attributes.map(({ key, name }) => `<span>${name}: ~${estimate[key]}</span>`).join("")}</div>`
-        : "";
+    const showDisclaimer = Object.keys(state.scouted).length > 0;
+    const rivalCards = state.rivals.map((rival, index) => {
+      const analysis = state.scouted[index];
+      const revealed = analysis?.legacy
+        ? `<div class="scouting-reveal">${attributes.map(({ key, name }) => `<span>${name}: ~${analysis.estimate[key]}</span>`).join("")}<span>Relatório antigo</span></div>`
+        : analysis
+          ? `<div class="scouting-intel">
+              <div><strong>Força</strong> ${escapeHtml(analysis.strength)} · <strong>Fragilidade</strong> ${escapeHtml(analysis.vulnerability)}</div>
+              <div><strong>Regulamento</strong> ${escapeHtml(analysis.scopeFit)}</div>
+              <div><strong>Clima</strong> ${analysis.weatherStrategies.map(({ weather, strategy }) => {
+                const shortWeather = { "Céu limpo": "Calmo", "Rajadas de vento": "Rajadas", Turbulência: "Turbulência" }[weather] || weather;
+                return `${escapeHtml(shortWeather)}: ${escapeHtml(game.Content.strategies[strategy]?.label || strategy)}`;
+              }).join(" · ")}</div>
+            </div>`
+          : "";
+      const disabled = analysis || state.phase !== "preparation" || state.cash < game.Content.scoutingCost;
       return `
-        <article class="scouting-item">
-          <div class="scouting-copy">
-            <strong>${escapeHtml(rival.name)}</strong>
-            <p>${estimate ? "Estimativa aproximada registrada nesta temporada." : `Filosofia: ${escapeHtml(rival.philosophy)}. Atributos não revelados.`}</p>
-            ${revealed}
-          </div>
-          <button class="button button-subtle" type="button" data-action="scout" data-rival="${index}" ${estimate || state.week >= weeksPerSeason ? "disabled" : ""}>${estimate ? "Analisada" : "Analisar · 1 sem."}</button>
+          <article class="scouting-item">
+            <div class="scouting-copy">
+              <strong>${escapeHtml(rival.name)}</strong>
+              ${revealed}
+            </div>
+          <button class="button button-subtle" type="button" data-action="scout" data-rival="${index}" ${disabled ? "disabled" : ""}>${analysis ? "Analisada" : `Analisar · ${credits(game.Content.scoutingCost)}`}</button>
         </article>`;
     }).join("");
+    const disclaimer = showDisclaimer
+      ? '<p class="scouting-confidence">Tendências aproximadas; não são valores oficiais.</p>'
+      : "";
+    document.getElementById("scoutingList").innerHTML = `${disclaimer}${rivalCards}`;
   }
 
   function renderAircraft(state) {
@@ -269,14 +289,128 @@
   function renderRivals(state) {
     const recentChampion = lastSeason(state)?.winner;
     document.getElementById("rivalList").innerHTML = state.rivals.map((rival, index) => {
-      const average = state.scouted[index]
-        ? Math.round(Object.values(state.scouted[index]).reduce((sum, value) => sum + value, 0) / 4)
-        : null;
+      const activity = state.rivalNews.activities.find((entry) => entry.name === rival.name);
       const isChampion = recentChampion === rival.name;
       return `
         <article class="rival-item">
-          <div class="rival-heading"><strong>${escapeHtml(rival.name)}</strong><span class="rival-tag">${isChampion ? "CAMPEÃ DEFENSORA" : state.scouted[index] ? "ANALISADA" : "NÃO ANALISADA"}</span></div>
-          <div class="rival-detail">${escapeHtml(rival.philosophy)}${average === null ? "" : ` · Média estimada ${average}`}</div>
+          <div class="rival-heading"><strong>${escapeHtml(rival.name)}</strong><span class="rival-tag">${isChampion ? "CAMPEÃ DEFENSORA" : "BOT ATIVO"}</span></div>
+          <div class="rival-detail">${escapeHtml(rival.philosophy)} · ${escapeHtml(activity?.text || rival.lastAction.text)}${state.rivalNews.week ? ` · Sem. ${state.rivalNews.week}` : ""}</div>
+        </article>`;
+    }).join("");
+  }
+
+  function renderAnnualGoals(state) {
+    const goals = state.annualGoals;
+    const technical = goals.technical;
+    const attribute = attributes.find(({ key }) => key === technical.attribute);
+    const current = Math.round(state.attributes[technical.attribute]);
+    const technicalStatus = goals.result
+      ? goals.result.technicalMet ? "Atingida" : "Não atingida"
+      : state.phase === "results" ? "Não registrada no save anterior"
+        : technical.target === technical.baseline ? "Nível máximo mantido"
+          : `${Math.min(current, technical.target)} / ${technical.target}`;
+    const placementStatus = goals.result
+      ? goals.result.placementMet ? "Atingida" : "Não atingida"
+      : `Meta: ${goals.placement.targetPosition}º lugar ou melhor`;
+    const campaignStatus = state.year <= game.Content.campaignSeasons
+      ? `Campanha principal · Ano ${state.year} de ${game.Content.campaignSeasons}`
+      : `Campanha concluída · Ano ${state.year} em modo livre`;
+    document.getElementById("campaignGoals").innerHTML = `
+      <div class="campaign-label">${campaignStatus} · Reputação ${state.reputation}/100</div>
+      <div class="campaign-goal"><strong>Projeto</strong><span>${escapeHtml(attribute.name)} · ${escapeHtml(technicalStatus)}${technical.target === technical.baseline ? "" : ` (meta ${technical.target})`}</span></div>
+      <div class="campaign-goal"><strong>Competição</strong><span>${escapeHtml(placementStatus)}</span></div>`;
+  }
+
+  function renderTeam(state) {
+    const team = state.team;
+    const capacity = game.Content.teamCapacityForReputation(state.reputation);
+    const specialtyLabels = Object.fromEntries(game.Content.teamCandidates.map(({ specialty, label }) => [specialty, label]));
+    const assignmentOptions = game.Content.teamAssignments;
+    const captainNames = Object.fromEntries(team.members
+      .filter((member) => member.captainArea)
+      .map((member) => [member.captainArea, member.label]));
+    const departures = team.members
+      .filter((member) => member.role !== "president" && member.leaveYear !== null)
+      .sort((first, second) => first.leaveYear - second.leaveYear);
+    document.getElementById("teamSummary").innerHTML = `
+      <strong>${team.members.length}/${capacity} integrantes</strong>
+      <span>Delegações rendem melhorias e créditos a cada semana sem gastar sua ação.</span>
+      ${departures.length
+        ? `<span>Próxima saída prevista: ${escapeHtml(departures[0].label)} · início do Ano ${departures[0].leaveYear}</span>`
+        : ""}`;
+    document.getElementById("teamRoster").innerHTML = team.members.map((member) => {
+      const roleLabel = member.role === "president" ? "PRESIDENTE"
+        : member.role === "founder-captain" ? "CAPITÃO FUNDADOR"
+          : member.role === "captain" ? "CAPITÃO · 1 TEMPORADA" : "INTEGRANTE";
+      const specialty = member.specialty === "management" ? "Gestão" : specialtyLabels[member.specialty];
+      const assignment = assignmentOptions.find(({ id }) => id === member.assignment);
+      const departure = member.leaveYear === null ? "Permanente"
+        : `Saída prevista no Ano ${member.leaveYear}`;
+      const assignControl = member.role === "president"
+        ? `<div class="team-assignment-label">${escapeHtml(assignment.label)}</div>`
+        : `<label class="team-assignment">
+            <span>Alocação</span>
+            <select data-member-assignment="${escapeHtml(member.id)}" aria-label="Alocação de ${escapeHtml(member.label)}">
+              ${assignmentOptions.map((option) => `<option value="${option.id}" ${option.id === member.assignment ? "selected" : ""}>${escapeHtml(option.label)}</option>`).join("")}
+            </select>
+          </label>`;
+      return `
+        <article class="team-member">
+          <div class="team-member-heading">
+            <strong>${escapeHtml(member.label)}</strong>
+            <span class="team-role-tag">${roleLabel}</span>
+          </div>
+          <div class="team-member-meta">${escapeHtml(specialty)} · Exp. ${member.experience.toFixed(1)} · Motivação ${Math.round(member.motivation)}%</div>
+          <div class="team-motivation-track"><span style="width:${member.motivation}%"></span></div>
+          ${assignControl}
+          <div class="team-tenure">${departure}${member.captainArea ? ` · ${escapeHtml(specialtyLabels[member.captainArea])}` : ""}</div>
+        </article>`;
+    }).join("");
+
+    const canNominate = state.year >= 2 && (state.phase === "preparation" || state.phase === "results");
+    const nominations = game.Content.teamRoles.map((area) => {
+      const candidates = team.members.filter((member) =>
+        member.role === "member" && member.specialty === area &&
+        !(member.leaveYear !== null && member.leaveYear <= state.year + 1) &&
+        !team.captainHistory.some((entry) => entry.memberId === member.id && entry.year === state.year)
+      );
+      const nominatedId = team.nominations[area];
+      const activeCaptain = captainNames[area];
+      const areaLabel = specialtyLabels[area];
+      return `
+        <div class="succession-row">
+          <div><strong>${areaLabel}</strong><span>${activeCaptain ? `Atual: ${escapeHtml(activeCaptain)}` : "Capitania sem titular"}</span></div>
+          <select id="captainNominee-${area}" aria-label="Sucessor para ${areaLabel}" ${!canNominate || !candidates.length ? "disabled" : ""}>
+            <option value="">Escolher sucessor</option>
+            ${candidates.map((member) => `<option value="${escapeHtml(member.id)}" ${member.id === nominatedId ? "selected" : ""}>${escapeHtml(member.label)} · exp. ${member.experience.toFixed(1)}</option>`).join("")}
+          </select>
+          <button class="button button-subtle" type="button" data-action="nominate-captain" data-area="${area}" ${!canNominate || !candidates.length ? "disabled" : ""}>Indicar</button>
+        </div>`;
+    }).join("");
+    document.getElementById("teamSuccession").innerHTML = state.year < 2
+      ? `<p class="team-guidance">No Ano 2, indique integrantes de Aerodinâmica e Estruturas para suceder os fundadores. Capitanias posteriores duram uma temporada.</p>`
+      : `<p class="team-guidance">${state.year === 2
+        ? "Prepare dois sucessores antes da saída dos fundadores no Ano 3."
+        : "Capitães servem por uma temporada. Prepare nomes diferentes para o próximo ciclo."}</p>${nominations}`;
+
+    document.getElementById("teamCandidates").innerHTML = game.Team.candidateOffers(state.year).map((candidate) => {
+      const offered = team.candidates.some((entry) => entry.id === candidate.id);
+      const hired = team.members.some((member) => member.id === `member-${candidate.id}`);
+      const lockedByReputation = state.reputation < candidate.reputationRequired;
+      const full = team.members.length >= capacity;
+      const unaffordable = state.cash < candidate.cost;
+      const disabled = state.phase !== "preparation" || !offered || hired ||
+        lockedByReputation || full || unaffordable;
+      const status = hired ? "INTEGRANTE"
+        : lockedByReputation ? `REPUTAÇÃO ${candidate.reputationRequired}`
+          : !offered ? "INDISPONÍVEL"
+            : full ? "EQUIPE COMPLETA"
+              : unaffordable ? "SEM CRÉDITOS" : `EXP. ${candidate.experience.toFixed(1)}`;
+      return `
+        <article class="team-candidate ${disabled ? "candidate-disabled" : ""}">
+          <div><strong>${escapeHtml(candidate.label)}</strong><span>${status}</span></div>
+          <p>Motivação inicial 76% · entrada prevista até o fim do terceiro ano na equipe.</p>
+          <button class="button button-subtle" type="button" data-action="recruit-member" data-candidate="${candidate.id}" ${disabled ? "disabled" : ""}>${hired ? "Integrada" : `Integrar · ${credits(candidate.cost)}`}</button>
         </article>`;
     }).join("");
   }
@@ -337,7 +471,13 @@
         <tbody>${teams.map((team) => `
           <tr class="${revealReports && team.position === 1 ? "leader-row" : ""}">
             <td>${revealReports ? `${team.position}º` : "—"}</td>
-            <td>${escapeHtml(team.name)}${team.isPlayer ? " · Você" : ""}</td>
+            <td>${escapeHtml(team.name)}${team.isPlayer ? " · Você" : ""}
+              <span class="score-cell-compact">${revealReports
+                ? `R ${team.report} · ${team.flights.map((flight, index) =>
+                  `B${index + 1} ${flight ? `${flight.score}${flight.crashed ? "Q" : flight.partial ? "P" : ""}` : "—"}`
+                ).join(" · ")}`
+                : "Notas ainda não reveladas"}</span>
+            </td>
             <td>${revealReports ? team.report : "—"}</td>
             ${[0, 1, 2].map((index) => {
               const flight = team.flights[index];
@@ -415,7 +555,7 @@
 
   function renderReportPhase(state) {
     return `
-      <div class="event-content">
+      <div class="event-content event-summary-content">
         <section class="event-hero">
           <div class="event-header">
             <div><h3>Campeonato · Ano ${state.year}</h3><p>${escapeHtml(state.teamName)} enfrenta quatro rivais em três baterias.</p></div>
@@ -435,7 +575,7 @@
     const round = state.event.round;
     const weather = state.event.weather[round];
     return `
-      <div class="event-content">
+      <div class="event-content event-flight-content">
         <section class="event-hero">
           <div class="event-header">
             <div><h3>Bateria ${round + 1} · ${escapeHtml(weather.label)}</h3><p>${escapeHtml(weather.effect)}. Escolha sua estratégia; os BOTs decidem conforme a própria filosofia.</p></div>
@@ -444,11 +584,19 @@
         </section>
         ${renderScopeBanner(state.event.scope)}
         ${renderStageTiles(state, "flight", true)}
-        ${renderFlightCircuit(state.aircraftName, round)}
-        <div class="event-actions flight-launch-actions"><button class="button button-primary" type="button" data-action="run-flight">Largar bateria ${round + 1} <span aria-hidden="true">→</span></button></div>
-        ${renderCommentary(state.event)}
-        <div class="competition-lead"><h4>Classificação parcial</h4><span>Atualiza depois de cada bateria</span></div>
-        ${renderLeaderboard(state, true)}
+        <div class="flight-display">
+          <div class="flight-primary">
+            <div class="flight-primary-display">
+              ${renderFlightCircuit(state.aircraftName, round)}
+              <div class="event-actions flight-launch-actions"><button class="button button-primary" type="button" data-action="run-flight">Largar bateria ${round + 1} <span aria-hidden="true">→</span></button></div>
+              ${renderCommentary(state.event)}
+            </div>
+            <aside class="flight-standings">
+              <div class="competition-lead"><h4>Classificação parcial</h4><span>Atualiza depois de cada bateria</span></div>
+              ${renderLeaderboard(state, true)}
+            </aside>
+          </div>
+        </div>
       </div>`;
   }
 
@@ -457,7 +605,7 @@
     const player = standings.find((team) => team.isPlayer);
     const champion = standings[0];
     return `
-      <div class="event-content">
+      <div class="event-content event-summary-content">
         <section class="event-hero">
           <div class="event-header">
             <div><h3>${escapeHtml(champion.name)} conquista o título</h3><p>${escapeHtml(state.teamName)} terminou em ${player.position}º lugar, com ${player.total} pontos.</p></div>
@@ -494,6 +642,8 @@
       renderAircraft(state);
       renderRivals(state);
       renderRivalry(state);
+      renderAnnualGoals(state);
+      renderTeam(state);
       renderLog(state);
       renderEvent(state);
       renderCareerNavigation(activeScreen, state);

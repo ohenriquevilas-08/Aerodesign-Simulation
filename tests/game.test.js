@@ -10,6 +10,7 @@ const sourceFiles = [
   "content.js",
   "random.js",
   "aircraft.js",
+  "team.js",
   "rivals.js",
   "competition.js",
   "state.js",
@@ -21,7 +22,7 @@ const sourceFiles = [
 function createHarness() {
   const storage = new Map();
   const elements = new Map();
-  const screens = ["overview", "engineering", "skills", "fundraising", "rivals", "championship"];
+  const screens = ["overview", "engineering", "skills", "fundraising", "rivals", "team", "championship"];
   const navButtons = screens.map((screen) => ({
     dataset: { screen },
     attributes: {},
@@ -141,15 +142,19 @@ test("full season persists between report and flight stages and records a champi
   assert(state.cash >= 1000 + prize);
   assert.equal(storage.has(game.Content.saveKey), true);
 
+  const seasonEndAttributes = { ...state.attributes };
+  const legacyBonus = Math.min(2, Math.floor(state.prestige / 25));
   state = apply(game, state, "next-season");
   assert.equal(state.year, 2);
   assert.equal(state.week, 0);
   assert.equal(state.phase, "preparation");
   assert.equal(state.event, null);
   assert.equal(state.history.length, 1);
-  assert.deepEqual(JSON.parse(JSON.stringify(state.attributes)), {
-    aerodynamics: 67, structures: 61, systems: 54, report: 48
-  });
+  assert.deepEqual(JSON.parse(JSON.stringify(state.attributes)), Object.fromEntries(
+    Object.entries(seasonEndAttributes).map(([key, value]) => [key, Math.min(100, value + legacyBonus)])
+  ));
+  assert(state.attributes.aerodynamics > 67);
+  assert(state.attributes.structures > 61);
   assert.equal(state.seasonScope, "reliability");
 });
 
@@ -377,16 +382,16 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
   game.UI.render(state, "overview", { text: "", kind: "" });
   assert.match(elements.get("rivalryScore").innerHTML, /Campeã defensora/);
   assert.equal(elements.get("careerTrack").style.transform, "translateX(0%)");
-  assert.equal(elements.get("careerPosition").textContent, "01 / 05");
+  assert.equal(elements.get("careerPosition").textContent, "01 / 06");
   assert.equal(navButtons[0].attributes["aria-current"], "page");
-  assert.equal(navButtons[5].hidden, true);
-  assert.equal(screenPanels[5].hidden, true);
+  assert.equal(navButtons[6].hidden, true);
+  assert.equal(screenPanels[6].hidden, true);
   assert.equal(screenPanels[0].inert, false);
   assert.equal(screenPanels[1].inert, true);
 
   game.UI.render(state, "engineering", { text: "", kind: "" });
-  assert.equal(elements.get("careerTrack").style.transform, "translateX(-20%)");
-  assert.equal(elements.get("careerPosition").textContent, "02 / 05");
+  assert.equal(elements.get("careerTrack").style.transform, "translateX(-16.666666666666668%)");
+  assert.equal(elements.get("careerPosition").textContent, "02 / 06");
   assert.equal(navButtons[0].attributes["aria-current"], undefined);
   assert.equal(navButtons[1].attributes["aria-current"], "page");
   assert.equal(screenPanels[0].inert, true);
@@ -394,9 +399,9 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
 
   for (let week = 0; week < 20; week += 1) state = apply(game, state, "advance-week");
   game.UI.render(state, "championship", { text: "", kind: "" });
-  assert.equal(navButtons[5].hidden, false);
-  assert.equal(screenPanels[5].hidden, false);
-  assert.equal(elements.get("careerPosition").textContent, "06 / 06");
+  assert.equal(navButtons[6].hidden, false);
+  assert.equal(screenPanels[6].hidden, false);
+  assert.equal(elements.get("careerPosition").textContent, "07 / 07");
   assert.match(elements.get("eventView").innerHTML, /Revelar notas do relatório/);
   assert.match(elements.get("eventView").innerHTML, /Bateria 1/);
   assert.equal(elements.get("championshipPreparation").hidden, true);
@@ -412,4 +417,253 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
   assert.match(elements.get("eventView").innerHTML, /Classificação parcial/);
   assert.match(elements.get("eventView").innerHTML, /data-action="choose-strategy"/);
   assert.match(elements.get("eventView").innerHTML, /aria-pressed=/);
+});
+
+test("annual goals award institutional reputation and preserve rival development across seasons", () => {
+  const { game } = createHarness();
+  let state = game.State.create();
+  state.attributes = { aerodynamics: 100, structures: 100, systems: 100, report: 100 };
+  for (let week = 0; week < 20; week += 1) state = apply(game, state, "advance-week");
+  state = apply(game, state, "reveal-reports");
+  while (state.phase === "event-flight") state = apply(game, state, "run-flight");
+
+  const player = state.event.standings.find((team) => team.isPlayer);
+  const baseReward = game.Content.placementReputation[player.position - 1];
+  assert.equal(state.annualGoals.result.technicalMet, true);
+  assert.equal(state.annualGoals.result.placementMet, player.position <= 4);
+  assert.equal(
+    state.reputation,
+    Math.min(100, baseReward + 4 + (player.position <= 4 ? 4 : 0))
+  );
+  assert.equal(state.history[0].reputation, state.reputation);
+  assert.equal(game.State.validate(state), true);
+
+  const seasonRivals = JSON.parse(JSON.stringify(state.rivals.map(({ attributes, cash }) => ({ attributes, cash }))));
+  state = apply(game, state, "next-season");
+  assert.equal(state.year, 2);
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(state.rivals.map(({ attributes, cash }) => ({ attributes, cash })))),
+    seasonRivals
+  );
+  assert.equal(state.annualGoals.placement.targetPosition, 4);
+  assert.equal(game.State.validate(state), true);
+  assert.deepEqual(
+    Array.from({ length: 5 }, (_, index) =>
+      game.Content.seasonGoalsForYear(index + 1, game.Content.baseStats).placement.targetPosition
+    ),
+    [4, 4, 3, 2, 1]
+  );
+});
+
+test("reputation unlocks fundraisers and scouting produces tactical intel without advancing the week", () => {
+  const { game } = createHarness();
+  let state = game.State.create();
+  const blocked = game.Game.apply(state, { type: "fundraise", id: "science-fair" });
+  assert.equal(blocked.state, state);
+  assert.equal(blocked.state.week, 0);
+
+  state.reputation = 15;
+  const fundraiser = game.Game.apply(state, { type: "fundraise", id: "science-fair" });
+  assert.equal(fundraiser.state.week, 1);
+  assert.equal(fundraiser.state.cash, state.cash + 650);
+
+  state = game.State.create();
+  const rivalsBefore = JSON.parse(JSON.stringify(state.rivals));
+  const seedBefore = state.rngState;
+  const scouting = game.Game.apply(state, { type: "scout", index: 2 });
+  assert.equal(scouting.state.week, 0);
+  assert.equal(scouting.state.cash, state.cash - game.Content.scoutingCost);
+  assert.equal(scouting.state.rngState, seedBefore);
+  assert.deepEqual(JSON.parse(JSON.stringify(scouting.state.rivals)), rivalsBefore);
+  assert.equal(scouting.state.scouted[2].year, state.year);
+  assert.equal(scouting.state.scouted[2].week, 0);
+  assert.equal(typeof scouting.state.scouted[2].strength, "string");
+  assert.equal(typeof scouting.state.scouted[2].vulnerability, "string");
+  assert.equal(scouting.state.scouted[2].weatherStrategies.length, 3);
+  assert.equal(game.State.validate(scouting.state), true);
+
+  const repeated = game.Game.apply(scouting.state, { type: "scout", index: 2 });
+  assert.equal(repeated.state, scouting.state);
+  const poor = { ...state, cash: game.Content.scoutingCost - 1 };
+  const unaffordable = game.Game.apply(poor, { type: "scout", index: 0 });
+  assert.equal(unaffordable.state, poor);
+  assert.equal(unaffordable.state.week, 0);
+});
+
+test("weekly turns publish rival activity and migrate version-five careers", () => {
+  const { game } = createHarness();
+  let state = game.State.create();
+  state = apply(game, state, "advance-week");
+  assert.equal(state.rivalNews.week, 1);
+  assert.equal(state.rivalNews.activities.length, 4);
+  assert.match(state.log[0].text, /Rivais:/);
+  state.rivalNews.activities.forEach((activity) => {
+    const rival = state.rivals.find((entry) => entry.name === activity.name);
+    assert.equal(rival.lastAction.text, activity.text);
+  });
+  assert.equal(game.State.validate(state), true);
+
+  const legacy = { ...game.State.create(), version: 5, year: 3, cash: 825 };
+  delete legacy.reputation;
+  delete legacy.annualGoals;
+  delete legacy.rivalNews;
+  legacy.scouted = { 1: { aerodynamics: 40, structures: 50, systems: 30, report: 20 } };
+  legacy.rivals.forEach((rival) => { delete rival.lastAction; });
+  const migrated = game.State.migrate(legacy);
+  assert.equal(migrated.version, game.Content.saveVersion);
+  assert.equal(migrated.year, 3);
+  assert.equal(migrated.cash, 825);
+  assert.equal(migrated.reputation, 0);
+  assert.equal(migrated.annualGoals.year, 3);
+  assert.equal(migrated.scouted[1].legacy, true);
+  assert.equal(game.State.validate(migrated), true);
+});
+
+test("career panels show goals, reputation unlocks, weekly rival news, and actionable scouting", () => {
+  const { game, elements } = createHarness();
+  let state = game.State.create();
+  state = apply(game, state, "advance-week");
+  game.UI.render(state, "overview", { text: "", kind: "" });
+
+  assert.equal(elements.get("careerReputationLabel").textContent, "Reputação 0");
+  assert.match(elements.get("campaignGoals").innerHTML, /Campanha principal · Ano 1 de 5/);
+  assert.match(elements.get("campaignGoals").innerHTML, /Meta: 4º lugar ou melhor/);
+  assert.match(elements.get("fundraisingList").innerHTML, /Desbloqueia com 15 de reputação/);
+  assert.match(elements.get("fundraisingList").innerHTML, /data-fundraiser="science-fair" disabled/);
+  assert.match(elements.get("rivalList").innerHTML, /BOT ATIVO/);
+  assert.match(elements.get("rivalList").innerHTML, /investiu em|buscou recursos/);
+
+  state = apply(game, state, "scout", { index: 0 });
+  game.UI.render(state, "rivals", { text: "", kind: "" });
+  assert.match(elements.get("scoutingList").innerHTML, /Força/);
+  assert.match(elements.get("scoutingList").innerHTML, /Fragilidade/);
+  assert.match(elements.get("scoutingList").innerHTML, /Regulamento/);
+  assert.match(elements.get("scoutingList").innerHTML, /Tendências aproximadas/);
+  assert.match(elements.get("scoutingList").innerHTML, /Analisar · 150 cr/);
+});
+
+test("the founding trio delegates background work and recruits without spending a week", () => {
+  const { game } = createHarness();
+  let state = game.State.create();
+  assert.equal(state.team.members.length, 3);
+  assert.equal(state.team.members.filter((member) => member.role === "founder-captain").length, 2);
+  assert.equal(state.team.members.find((member) => member.id === "president").leaveYear, null);
+  assert.equal(game.State.validate(state), true);
+
+  const initialCash = state.cash;
+  const initialAero = state.attributes.aerodynamics;
+  const recruitment = game.Game.apply(state, {
+    type: "recruit-member",
+    candidateId: "candidate-1-aerodynamics"
+  });
+  state = recruitment.state;
+  assert.equal(state.week, 0);
+  assert.equal(state.cash, initialCash - 320);
+  assert.equal(state.team.members.length, 4);
+  const member = state.team.members.find((entry) => entry.specialty === "aerodynamics" && entry.role === "member");
+
+  state = apply(game, state, "assign-member", {
+    memberId: member.id,
+    assignment: "fundraising"
+  });
+  assert.equal(state.week, 0);
+  const cashBeforeTurn = state.cash;
+  state = apply(game, state, "advance-week");
+  assert.equal(state.week, 1);
+  assert(state.cash > cashBeforeTurn);
+  assert(state.attributes.aerodynamics > initialAero);
+  assert(state.team.members.find((entry) => entry.id === member.id).experience > member.experience);
+  assert(state.team.weekReport.contributions.some((entry) => entry.text.includes("captação")));
+  assert.equal(game.State.validate(state), true);
+
+  const repeated = game.Game.apply(state, {
+    type: "assign-member",
+    memberId: member.id,
+    assignment: "fundraising"
+  });
+  assert.equal(repeated.state, state);
+});
+
+test("captain succession replaces founders in year three and rotates captains annually", () => {
+  const { game } = createHarness();
+  const finishSeason = (start) => {
+    let state = start;
+    while (state.phase === "preparation") state = apply(game, state, "advance-week");
+    state = apply(game, state, "reveal-reports");
+    while (state.phase === "event-flight") state = apply(game, state, "run-flight");
+    return state;
+  };
+  let state = game.State.create();
+  state = game.Game.apply(state, {
+    type: "recruit-member",
+    candidateId: "candidate-1-aerodynamics"
+  }).state;
+  state = game.Game.apply(state, {
+    type: "recruit-member",
+    candidateId: "candidate-1-structures"
+  }).state;
+  state = finishSeason(state);
+  state = apply(game, state, "next-season");
+  assert(state.team.members.some((member) => member.role === "founder-captain"));
+
+  const aeroSuccessor = state.team.members.find((member) => member.role === "member" && member.specialty === "aerodynamics");
+  const structureSuccessor = state.team.members.find((member) => member.role === "member" && member.specialty === "structures");
+  state = apply(game, state, "nominate-captain", { area: "aerodynamics", memberId: aeroSuccessor.id });
+  state = apply(game, state, "nominate-captain", { area: "structures", memberId: structureSuccessor.id });
+  assert.equal(state.week, 0);
+  state = finishSeason(state);
+  state = apply(game, state, "next-season");
+
+  assert.equal(state.year, 3);
+  assert.equal(state.team.members.some((member) => member.role === "founder-captain"), false);
+  assert.equal(state.team.members.filter((member) => member.role === "captain").length, 2);
+  assert.equal(state.team.members.find((member) => member.captainArea === "aerodynamics").id, aeroSuccessor.id);
+  assert.equal(state.team.members.find((member) => member.captainArea === "structures").id, structureSuccessor.id);
+  assert(state.team.members.filter((member) => member.role === "captain").every((member) => member.leaveYear === 4));
+
+  state = game.Game.apply(state, {
+    type: "recruit-member",
+    candidateId: "candidate-3-aerodynamics"
+  }).state;
+  state = game.Game.apply(state, {
+    type: "recruit-member",
+    candidateId: "candidate-3-structures"
+  }).state;
+  const nextAeroCaptain = state.team.members.find((member) =>
+    member.role === "member" && member.specialty === "aerodynamics" && member.joinYear === 3
+  );
+  const nextStructureCaptain = state.team.members.find((member) =>
+    member.role === "member" && member.specialty === "structures" && member.joinYear === 3
+  );
+  state = apply(game, state, "nominate-captain", { area: "aerodynamics", memberId: nextAeroCaptain.id });
+  state = apply(game, state, "nominate-captain", { area: "structures", memberId: nextStructureCaptain.id });
+  state = finishSeason(state);
+  state = apply(game, state, "next-season");
+
+  assert.equal(state.year, 4);
+  assert.equal(state.team.members.some((member) => member.id === aeroSuccessor.id), false);
+  assert.equal(state.team.members.some((member) => member.id === structureSuccessor.id), false);
+  assert.equal(state.team.members.find((member) => member.captainArea === "aerodynamics").id, nextAeroCaptain.id);
+  assert.equal(state.team.members.find((member) => member.captainArea === "structures").id, nextStructureCaptain.id);
+  assert.equal(game.State.validate(state), true);
+});
+
+test("version-six careers migrate team continuity and the new team screen presents management options", () => {
+  const { game, elements } = createHarness();
+  const legacy = { ...game.State.create(), version: 6, year: 4 };
+  delete legacy.team;
+  const migrated = game.State.migrate(legacy);
+  assert.equal(migrated.version, game.Content.saveVersion);
+  assert(migrated.team.members.some((member) => member.role === "captain"));
+  assert.equal(game.State.validate(migrated), true);
+
+  const state = game.State.create();
+  game.UI.render(state, "team", { text: "", kind: "" });
+  assert.equal(elements.get("careerPosition").textContent, "06 / 06");
+  assert.match(elements.get("teamSummary").innerHTML, /3\/5 integrantes/);
+  assert.match(elements.get("teamRoster").innerHTML, /CAPITÃO FUNDADOR/);
+  assert.match(elements.get("teamRoster").innerHTML, /data-member-assignment=/);
+  assert.match(elements.get("teamSuccession").innerHTML, /No Ano 2, indique integrantes/);
+  assert.match(elements.get("teamCandidates").innerHTML, /Integrante · Aerodinâmica/);
+  assert.match(elements.get("teamCandidates").innerHTML, /REPUTAÇÃO 10/);
 });

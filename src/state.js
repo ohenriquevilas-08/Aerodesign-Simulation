@@ -1,6 +1,6 @@
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear, skillNodes } = game.Content;
+  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear, seasonGoalsForYear, skillNodes } = game.Content;
   const strategyIds = Object.keys(strategies);
   const skillNodeIds = skillNodes.map((node) => node.id);
 
@@ -36,9 +36,13 @@
         week: 0,
         cash: difficulties[difficulty].startingCash,
         prestige: 0,
+        reputation: 0,
+        team: game.Team.create(1),
         attributes: { ...baseStats },
         rivals: game.Rivals.create(1),
         scouted: {},
+        rivalNews: { week: 0, activities: [] },
+        annualGoals: seasonGoalsForYear(1, baseStats),
         history: [],
         log: [{ week: 0, text: "A temporada começou. Defina uma estratégia para a equipe." }],
         phase: "preparation",
@@ -57,7 +61,28 @@
       const validRivals = Array.isArray(candidate.rivals) && candidate.rivals.length === rivalBlueprints.length &&
         candidate.rivals.every((rival) => rival && typeof rival.name === "string" &&
           rival.attributes && attributes.every(({ key }) => isNumber(rival.attributes[key])) &&
-          rival.weights && Object.keys(rival.weights).length === 5);
+          rival.weights && Object.keys(rival.weights).length === 5 &&
+          rival.lastAction && typeof rival.lastAction.text === "string");
+      const validGoals = candidate.annualGoals && candidate.annualGoals.year === candidate.year &&
+        candidate.annualGoals.placement && Number.isInteger(candidate.annualGoals.placement.targetPosition) &&
+        candidate.annualGoals.placement.targetPosition >= 1 && candidate.annualGoals.placement.targetPosition <= 5 &&
+        candidate.annualGoals.technical && attributes.some(({ key }) => key === candidate.annualGoals.technical.attribute) &&
+        isNumber(candidate.annualGoals.technical.baseline) && candidate.annualGoals.technical.baseline >= 0 &&
+        candidate.annualGoals.technical.baseline <= 100 && isNumber(candidate.annualGoals.technical.target) &&
+        candidate.annualGoals.technical.target >= candidate.annualGoals.technical.baseline &&
+        candidate.annualGoals.technical.target <= 100 &&
+        (candidate.annualGoals.result === null || (
+          candidate.annualGoals.result && typeof candidate.annualGoals.result.technicalMet === "boolean" &&
+          typeof candidate.annualGoals.result.placementMet === "boolean" &&
+          isNumber(candidate.annualGoals.result.reputationGained) &&
+          candidate.annualGoals.result.reputationGained >= 0
+        ));
+      const validRivalNews = candidate.rivalNews && Number.isInteger(candidate.rivalNews.week) &&
+        candidate.rivalNews.week >= 0 && candidate.rivalNews.week <= weeksPerSeason &&
+        Array.isArray(candidate.rivalNews.activities) &&
+        candidate.rivalNews.activities.every((activity) =>
+          activity && typeof activity.name === "string" && typeof activity.text === "string"
+        );
       const validStrategies = Array.isArray(candidate.eventStrategies) && candidate.eventStrategies.length === 3 &&
         candidate.eventStrategies.every((strategy) => strategyIds.includes(strategy));
       const validIdentity = typeof candidate.teamName === "string" && candidate.teamName.trim().length > 0 &&
@@ -93,8 +118,10 @@
         (candidate.phase !== "preparation" || candidate.week < weeksPerSeason) &&
         isNumber(candidate.cash) && candidate.cash >= 0 &&
         isNumber(candidate.prestige) && candidate.prestige >= 0 &&
+        Number.isInteger(candidate.reputation) && candidate.reputation >= 0 && candidate.reputation <= 100 &&
         Number.isInteger(candidate.rngState) && candidate.rngState >= 0 && candidate.rngState <= 0xffffffff &&
-        validAttributes && validSkills(candidate.skills) && validRivals &&
+        validAttributes && validSkills(candidate.skills) && validRivals && validGoals && validRivalNews &&
+        game.Team.validate(candidate.team, candidate.year, candidate.reputation) &&
         Array.isArray(candidate.history) && Array.isArray(candidate.log) &&
         candidate.scouted && typeof candidate.scouted === "object" &&
         validStrategies && validEvent &&
@@ -102,7 +129,7 @@
         validEventPhase;
     },
     migrate(candidate) {
-      if (!candidate || ![1, 2, 3, 4].includes(candidate.version)) return candidate;
+      if (!candidate || ![1, 2, 3, 4, 5, 6].includes(candidate.version)) return candidate;
       let migrated = { ...candidate };
 
       if (candidate.version === 1) {
@@ -189,6 +216,28 @@
           ? migrated.seasonScope
           : seasonScopeForYear(migrated.year || 1).id
       };
+      migrated.reputation = Number.isInteger(migrated.reputation)
+        ? Math.max(0, Math.min(100, migrated.reputation))
+        : 0;
+      migrated.team = game.Team.create(migrated.year || 1);
+      migrated.annualGoals = migrated.annualGoals?.year === migrated.year
+        ? migrated.annualGoals
+        : seasonGoalsForYear(migrated.year || 1, migrated.attributes || baseStats);
+      migrated.rivals = (migrated.rivals || game.Rivals.create(migrated.year || 1)).map((rival) => ({
+        ...rival,
+        lastAction: rival.lastAction && typeof rival.lastAction.text === "string"
+          ? rival.lastAction
+          : { type: "opening", text: "manteve o plano de desenvolvimento da temporada" }
+      }));
+      migrated.rivalNews = migrated.rivalNews && Array.isArray(migrated.rivalNews.activities)
+        ? migrated.rivalNews
+        : { week: migrated.week || 0, activities: [] };
+      migrated.scouted = Object.fromEntries(Object.entries(migrated.scouted || {}).map(([index, analysis]) => [
+        index,
+        analysis && typeof analysis.strength === "string"
+          ? analysis
+          : { year: migrated.year || 1, week: migrated.week || 0, legacy: true, estimate: analysis }
+      ]));
       if (migrated.event && !migrated.event.scope) {
         migrated.event.scope = { ...seasonScopes.find((scope) => scope.id === migrated.seasonScope) };
       }
