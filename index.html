@@ -149,6 +149,9 @@
     .rival-heading strong { font-size: 12px; }
     .rival-tag { padding: 4px 7px; border-radius: 20px; background: #263545; color: #bdcde0; font-size: 9px; font-weight: 700; }
     .rival-detail { margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .rivalry-score { display: grid; gap: 7px; }
+    .rivalry-score p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .rivalry-score strong { color: var(--text); }
 
     .main-panel { min-height: 620px; overflow: hidden; }
     .main-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px 18px; border-bottom: 1px solid var(--border); }
@@ -229,6 +232,14 @@
     .event-stage { min-height: 82px; padding: 12px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 13%); }
     .event-stage span { color: var(--muted); font-size: 10px; }
     .event-stage strong { display: block; margin-top: 10px; font-size: 16px; }
+    .stage-current { border-color: var(--accent); background: rgb(82 211 162 / 8%); }
+    .competition-lead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 8px; }
+    .competition-lead h4 { margin: 0; font-size: 12px; }
+    .competition-lead span { color: var(--muted); font-size: 10px; }
+    .competition-commentary { min-height: 46px; margin: 14px 0; padding: 12px 14px; border-left: 3px solid var(--warning); border-radius: 0 8px 8px 0; background: rgb(240 189 104 / 7%); color: #f0d7aa; font-size: 11px; line-height: 1.5; }
+    .strategy-detail { display: block; margin-top: 4px; color: var(--muted); font-size: 9px; }
+    .leader-row td { color: var(--accent) !important; }
+    .event-stage.flight-stage { min-height: 130px; }
     .event-stage.flight-stage { min-height: 130px; }
     .flight-weather { display: block; margin-top: 4px; color: #d3dee9 !important; }
     .strategy-options { display: flex; gap: 4px; margin-top: 10px; }
@@ -240,6 +251,17 @@
     .score-table th:first-child, .score-table td:first-child { text-align: left; }
     .score-table td { padding: 12px 8px; border-top: 1px solid var(--border); color: #d6dee7; text-align: right; }
     .score-table tr:first-child td { color: var(--accent); font-weight: 750; }
+    .leaderboard-region { max-width: 100%; overflow-x: auto; }
+    .score-cell-strategy { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; font-weight: 500; }
+    .score-table tbody tr { animation: standings-entry .32s ease both; }
+    .score-table tbody tr:nth-child(2) { animation-delay: .035s; }
+    .score-table tbody tr:nth-child(3) { animation-delay: .07s; }
+    .score-table tbody tr:nth-child(4) { animation-delay: .105s; }
+    .score-table tbody tr:nth-child(5) { animation-delay: .14s; }
+    @keyframes standings-entry {
+      from { opacity: .4; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .result-callout { margin: 17px 0; padding: 13px 15px; border: 1px solid var(--border); border-radius: 9px; color: #d9e3ed; font-size: 12px; line-height: 1.5; }
     .event-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
     .footer-note { margin-top: 18px; color: var(--muted); font-size: 10px; text-align: center; }
@@ -265,6 +287,14 @@
       .score-table th, .score-table td { padding-right: 4px; padding-left: 4px; font-size: 9px; }
       .intro-row, .week-footer { align-items: flex-start; flex-direction: column; }
       .hint { text-align: left; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
     }
   </style>
 </head>
@@ -329,6 +359,15 @@
             </div>
           </div>
           <div class="rival-list" id="rivalList"></div>
+        </section>
+        <section class="panel panel-pad" id="rivalryPanel">
+          <div class="section-heading">
+            <div>
+              <h2>Disputa pelo título</h2>
+              <p>Rivalidade da temporada</p>
+            </div>
+          </div>
+          <div class="rivalry-score" id="rivalryScore"></div>
         </section>
       </aside>
 
@@ -399,662 +438,1101 @@
         </section>
       </main>
     </div>
-    <div class="footer-note">Aerodesign Manager · Simulação determinística com variância no evento · Progresso salvo neste navegador</div>
+    <div class="footer-note">Aerodesign Manager · Campeonato por baterias · Clima e estratégia mudam as chances · Progresso salvo neste navegador</div>
   </div>
 
   <script>
-    "use strict";
 
-    const SAVE_KEY = "aerodesign-manager-save-v1";
-    const WEEKS_PER_SEASON = 20;
-    const BASE_STATS = { aerodynamics: 30, structures: 30, systems: 25, report: 20 };
-    const MILESTONE_LEVEL = 50;
-    const ATTRIBUTES = [
+/* content.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
+
+  game.Content = Object.freeze({
+    saveKey: "aerodesign-manager-save-v1",
+    saveVersion: 2,
+    weeksPerSeason: 20,
+    milestoneLevel: 50,
+    baseStats: Object.freeze({ aerodynamics: 30, structures: 30, systems: 25, report: 20 }),
+    attributes: Object.freeze([
       { key: "aerodynamics", name: "Aerodinâmica", icon: "↗", baseCost: 240, baseGain: 8, description: "Aumenta a capacidade de carga e a eficiência do voo." },
       { key: "structures", name: "Estruturas", icon: "⌁", baseCost: 220, baseGain: 8, description: "Reduz o peso vazio e melhora a confiabilidade." },
       { key: "systems", name: "Sistemas", icon: "⌘", baseCost: 200, baseGain: 8, description: "Eleva a confiabilidade com um custo moderado de peso." },
       { key: "report", name: "Relatório", icon: "▤", baseCost: 150, baseGain: 9, description: "Garante pontos de apresentação antes das baterias de voo." }
-    ];
-    const RIVAL_BLUEPRINTS = [
+    ]),
+    rivalBlueprints: Object.freeze([
       { name: "Instituto Politécnico", philosophy: "Estruturas e segurança", weights: { aerodynamics: 0.13, structures: 0.38, systems: 0.22, report: 0.17, funding: 0.10 } },
       { name: "Universidade Estadual", philosophy: "Eficiência equilibrada", weights: { aerodynamics: 0.28, structures: 0.22, systems: 0.19, report: 0.20, funding: 0.11 } },
       { name: "Centro Universitário do Vale", philosophy: "Carga máxima", weights: { aerodynamics: 0.43, structures: 0.14, systems: 0.12, report: 0.16, funding: 0.15 } },
       { name: "Escola Técnica do Litoral", philosophy: "Sistemas e captação", weights: { aerodynamics: 0.17, structures: 0.18, systems: 0.30, report: 0.15, funding: 0.20 } }
-    ];
-    const FUNDRAISERS = [
+    ]),
+    fundraisers: Object.freeze([
       { id: "raffle", name: "Organizar rifa", weeks: 1, reward: 420, description: "Uma ação rápida para reforçar o caixa sem interromper o projeto por muito tempo." },
       { id: "sponsorship", name: "Buscar patrocínio", weeks: 2, reward: 1120, description: "Uma rodada de contatos com retorno maior, mas consome duas semanas de preparação." }
-    ];
-    const FLIGHT_STRATEGIES = {
+    ]),
+    strategies: Object.freeze({
       conservative: { label: "Segura", loadMultiplier: 0.72, reliabilityModifier: 0.16 },
       balanced: { label: "Equilibrada", loadMultiplier: 0.90, reliabilityModifier: 0 },
       aggressive: { label: "Agressiva", loadMultiplier: 1.05, reliabilityModifier: -0.13 }
-    };
-    const EVENT_WEATHERS = [
+    }),
+    weather: Object.freeze([
       { id: "clear", label: "Céu limpo", effect: "Condições estáveis", payloadMultiplier: 1, reliabilityModifier: 0 },
       { id: "gusts", label: "Rajadas de vento", effect: "Carga −4% · Confiabilidade −8 p.p.", payloadMultiplier: 0.96, reliabilityModifier: -0.08 },
       { id: "heat", label: "Calor e ar rarefeito", effect: "Carga −12% · Confiabilidade −2 p.p.", payloadMultiplier: 0.88, reliabilityModifier: -0.02 },
       { id: "turbulence", label: "Turbulência", effect: "Carga −8% · Confiabilidade −12 p.p.", payloadMultiplier: 0.92, reliabilityModifier: -0.12 }
-    ];
-    const TECH_MILESTONES = [
+    ]),
+    milestones: Object.freeze([
       { key: "aerodynamics", label: "Aerodinâmica · Perfil avançado", effect: "+8% de potencial de carga" },
       { key: "structures", label: "Estruturas · Manufatura leve", effect: "−8% de peso vazio" },
       { key: "systems", label: "Sistemas · Redundância", effect: "+6 p.p. de confiabilidade" },
       { key: "report", label: "Relatório · Revisão técnica", effect: "+8 pontos de apresentação" }
-    ];
-    const ACTIONS = {
-      engineering: "Engenharia",
-      fundraising: "Captação",
-      scouting: "Scouting",
-      idle: "Semana encerrada"
-    };
+    ]),
+    prizes: Object.freeze([1400, 900, 600, 300, 300]),
+    prestigeAwards: Object.freeze([10, 5, 2, 0, 0])
+  });
+})();
 
-    const State = {
-      create() {
-        return {
-          version: 1,
-          year: 1,
-          week: 0,
-          cash: 1000,
-          prestige: 0,
-          attributes: { ...BASE_STATS },
-          rivals: this.createRivals(1),
-          scouted: {},
-          history: [],
-          log: [{ week: 0, text: "A temporada começou. Defina uma estratégia para o Projeto Aurora." }],
-          phase: "preparation",
-          eventResult: null,
-          eventWeather: null,
-          eventStrategies: ["balanced", "balanced", "balanced"]
-        };
-      },
-      createRivals(year) {
-        const progression = Math.min(24, Math.max(0, year - 1) * 2);
-        return RIVAL_BLUEPRINTS.map((blueprint, index) => {
-          const startingBonus = (year - 1) % 4;
-          const base = 27 + progression + (index % 2) * 4 + startingBonus;
-          return {
-            name: blueprint.name,
-            philosophy: blueprint.philosophy,
-            weights: { ...blueprint.weights },
-            attributes: {
-              aerodynamics: base + (index === 2 ? 9 : 0),
-              structures: base + (index === 0 ? 10 : 0),
-              systems: base + (index === 3 ? 7 : 0),
-              report: base - 4
-            },
-            cash: 700 + year * 80
-          };
-        });
-      },
-      validate(candidate) {
-        const validPhase = ["preparation", "event", "results"].includes(candidate.phase);
-        const validAttributes = candidate.attributes && ATTRIBUTES.every(({ key }) =>
-          Number.isFinite(candidate.attributes[key]) && candidate.attributes[key] >= 0 && candidate.attributes[key] <= 100
-        );
-        const validRivals = Array.isArray(candidate.rivals) && candidate.rivals.length === RIVAL_BLUEPRINTS.length &&
-          candidate.rivals.every((rival) => rival && typeof rival.name === "string" &&
-            rival.attributes && ATTRIBUTES.every(({ key }) => Number.isFinite(rival.attributes[key])));
-        const validStrategies = candidate.eventStrategies === undefined ||
-          (Array.isArray(candidate.eventStrategies) && candidate.eventStrategies.length === 3 &&
-            candidate.eventStrategies.every((strategy) => Object.hasOwn(FLIGHT_STRATEGIES, strategy)));
-        const validWeather = candidate.eventWeather == null ||
-          (Array.isArray(candidate.eventWeather) && candidate.eventWeather.length === 3 &&
-            candidate.eventWeather.every((weather) => weather && EVENT_WEATHERS.some((option) => option.id === weather.id)));
-        return candidate.version === 1 &&
-          Number.isInteger(candidate.year) && candidate.year >= 1 &&
-          Number.isInteger(candidate.week) && candidate.week >= 0 && candidate.week <= WEEKS_PER_SEASON &&
-          Number.isFinite(candidate.cash) && candidate.cash >= 0 &&
-          Number.isFinite(candidate.prestige) && candidate.prestige >= 0 &&
-          validAttributes && validRivals &&
-          Array.isArray(candidate.history) && Array.isArray(candidate.log) &&
-          candidate.scouted && typeof candidate.scouted === "object" &&
-          validStrategies && validWeather &&
-          validPhase &&
-          (candidate.phase !== "results" || (candidate.eventResult && Array.isArray(candidate.eventResult.standings)));
-      },
-      migrate(candidate) {
-        return {
-          ...candidate,
-          eventWeather: Array.isArray(candidate.eventWeather)
-            ? candidate.eventWeather.map((weather) => weather && EVENT_WEATHERS.find((option) => option.id === weather.id))
-            : candidate.phase === "event" ? EventEngine.planBatteries() : null,
-          eventStrategies: candidate.eventStrategies ?? ["balanced", "balanced", "balanced"]
-        };
-      }
-    };
 
-    const GameLoop = {
-      perform(action, weeks, mutation, successMessage) {
-        if (state.phase !== "preparation") return showNotice("A preparação desta temporada já terminou.", "warning");
-        if (!Number.isInteger(weeks) || weeks < 1 || state.week + weeks > WEEKS_PER_SEASON) {
-          return showNotice("Não há semanas suficientes para essa ação.", "warning");
-        }
-        mutation();
-        for (let turn = 0; turn < weeks; turn += 1) {
-          AIBehavior.advanceAll(state.rivals);
-          state.week += 1;
-          state.log.unshift({ week: state.week, text: `${action}: ${successMessage}` });
-        }
-        if (state.week === WEEKS_PER_SEASON) {
-          state.phase = "event";
-          state.eventWeather = EventEngine.planBatteries();
-          state.eventStrategies = ["balanced", "balanced", "balanced"];
-          state.log.unshift({ week: state.week, text: "A preparação terminou. A equipe está no evento de competição." });
-        }
-        state.log = state.log.slice(0, 6);
-        showNotice(successMessage, "success");
-        persist();
-        UIRenderer.render();
-      },
-      endWeek() {
-        this.perform(ACTIONS.idle, 1, () => {}, "O calendário avançou; as equipes rivais também trabalharam.");
-      }
-    };
+/* random.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
 
-    const AIBehavior = {
-      advanceAll(rivals) {
-        rivals.forEach((rival) => {
-          const choice = this.chooseAction(rival);
-          if (choice === "funding") {
-            rival.cash += 330;
-            return;
-          }
-          const stat = rival.attributes[choice];
-          rival.attributes[choice] = Math.min(100, stat + 6 * (1 - stat / 135));
-        });
-      },
-      chooseAction(rival) {
-        const entries = Object.entries(rival.weights);
-        const fundingWeight = rival.cash < 500 ? rival.weights.funding * 1.8 : rival.weights.funding;
-        const total = entries.reduce((sum, [key, weight]) => sum + (key === "funding" ? fundingWeight : weight), 0);
-        let roll = Math.random() * total;
-        for (const [key, weight] of entries) {
-          roll -= key === "funding" ? fundingWeight : weight;
-          if (roll <= 0) return key;
-        }
-        return entries[0][0];
-      }
-    };
-
-    const EventEngine = {
-      derive(attributes) {
-        const milestones = Object.fromEntries(TECH_MILESTONES.map(({ key }) => [key, attributes[key] >= MILESTONE_LEVEL]));
-        const emptyWeightBase = 15.8 - attributes.structures * 0.07 + attributes.systems * 0.018;
-        const payloadBase = 0.8 + attributes.aerodynamics * 0.052 + attributes.systems * 0.017 + attributes.structures * 0.006;
-        const emptyWeight = this.clamp(emptyWeightBase * (milestones.structures ? 0.92 : 1), 7.5, 16);
-        const payload = this.clamp(payloadBase * (milestones.aerodynamics ? 1.08 : 1), 1, 10.5);
-        const reliability = this.clamp(
-          0.58 + attributes.structures * 0.0028 + attributes.systems * 0.0025 - attributes.aerodynamics * 0.00055 + (milestones.systems ? 0.06 : 0),
-          0.55,
-          0.97
-        );
-        const payloadPotential = this.clamp(payload * 9.2 + (16 - emptyWeight) * 3.2, 0, 100);
-        return { emptyWeight, payload, reliability, payloadPotential, milestones };
-      },
-      planBatteries() {
-        return [0, 1, 2].map(() => {
-          const index = Math.floor(Math.random() * EVENT_WEATHERS.length);
-          return { ...EVENT_WEATHERS[index] };
-        });
-      },
-      scoreFlight(attributes, strategy, weather) {
-        const design = this.derive(attributes);
-        const reliability = this.clamp(design.reliability + weather.reliabilityModifier + strategy.reliabilityModifier, 0.35, 0.98);
-        const crashChance = this.clamp(0.04 + (1 - reliability) * 0.45, 0.04, 0.36);
-        const flightPotential = design.payloadPotential * strategy.loadMultiplier * weather.payloadMultiplier;
-        const failureRoll = Math.random();
-        if (failureRoll < crashChance * 0.65) return { score: 0, crashed: true, partial: false, weather: weather.label, strategy: strategy.label };
-        const variance = (Math.random() - 0.5) * 12;
-        if (failureRoll < crashChance) {
-          return {
-            score: Math.round(this.clamp(flightPotential * 0.5 + variance, 0, 100)),
-            crashed: false,
-            partial: true,
-            weather: weather.label,
-            strategy: strategy.label
-          };
-        }
-        return {
-          score: Math.round(this.clamp(flightPotential + variance, 0, 100)),
-          crashed: false,
-          partial: false,
-          weather: weather.label,
-          strategy: strategy.label
-        };
-      },
-      scoreReport(report) {
-        return Math.round(this.clamp(28 + report * 0.72 + (report >= MILESTONE_LEVEL ? 8 : 0), 0, 100));
-      },
-      compete(gameState) {
-        const teams = [
-          { name: "Projeto Aurora", isPlayer: true, attributes: gameState.attributes },
-          ...gameState.rivals.map((rival) => ({ name: rival.name, isPlayer: false, attributes: rival.attributes }))
-        ];
-        const standings = teams.map((team) => {
-          const report = this.scoreReport(team.attributes.report);
-          const flights = [0, 1, 2].map((index) => {
-            const strategy = team.isPlayer
-              ? FLIGHT_STRATEGIES[gameState.eventStrategies[index]]
-              : FLIGHT_STRATEGIES.balanced;
-            return this.scoreFlight(team.attributes, strategy, gameState.eventWeather[index]);
-          });
-          const total = report + flights.reduce((sum, flight) => sum + flight.score, 0);
-          return { name: team.name, isPlayer: team.isPlayer, report, flights, total };
-        }).sort((left, right) => right.total - left.total);
-        standings.forEach((team, index) => { team.position = index + 1; });
-        return { standings, winner: standings[0].name };
-      },
-      clamp(value, min, max) {
-        return Math.min(max, Math.max(min, value));
-      }
-    };
-
-    let state = State.create();
-    let activeTab = "engineering";
-    let notice = { text: "", kind: "" };
-
-    function formatCredits(amount) {
-      return `${Math.round(amount).toLocaleString("pt-BR")} cr`;
+  game.Random = Object.freeze({
+    seed() {
+      return Math.floor(Math.random() * 0x100000000) >>> 0;
+    },
+    next(seed) {
+      const nextSeed = (Math.imul(seed >>> 0, 1664525) + 1013904223) >>> 0;
+      return { seed: nextSeed, value: nextSeed / 0x100000000 };
+    },
+    integer(seed, maxExclusive) {
+      const result = this.next(seed);
+      return { seed: result.seed, value: Math.floor(result.value * maxExclusive) };
     }
+  });
+})();
 
-    function showNotice(text, kind) {
-      notice = { text, kind };
-      const noticeElement = document.getElementById("actionNotice");
-      if (noticeElement) {
-        noticeElement.textContent = text;
-        noticeElement.dataset.kind = kind;
-      }
-    }
 
-    function persist() {
-      try {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-      } catch (error) {
-        showNotice(`Não foi possível salvar neste navegador: ${error.message}`, "error");
-      }
-    }
+/* aircraft.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
+  const { milestones: milestoneConfig, milestoneLevel } = game.Content;
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-    function saveGame() {
-      try {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-        showNotice("Jogo salvo neste navegador.", "success");
-      } catch (error) {
-        showNotice(`Falha ao salvar: ${error.message}`, "error");
-      }
-    }
-
-    function loadGame() {
-      try {
-        const saved = localStorage.getItem(SAVE_KEY);
-        if (!saved) {
-          showNotice("Nenhum jogo salvo foi encontrado neste navegador.", "warning");
-          return;
-        }
-        const loaded = State.migrate(JSON.parse(saved));
-        if (!State.validate(loaded)) {
-          showNotice("O arquivo salvo não corresponde a um estado válido do jogo.", "error");
-          return;
-        }
-        state = loaded;
-        notice = { text: "Jogo carregado.", kind: "success" };
-        UIRenderer.render();
-      } catch (error) {
-        showNotice(`Falha ao carregar o jogo: ${error.message}`, "error");
-      }
-    }
-
-    function engineeringCost(attribute) {
-      const level = state.attributes[attribute.key];
+  game.Aircraft = Object.freeze({
+    derive(attributes) {
+      const milestones = Object.fromEntries(milestoneConfig.map(({ key }) => [key, attributes[key] >= milestoneLevel]));
+      const emptyWeightBase = 15.8 - attributes.structures * 0.07 + attributes.systems * 0.018;
+      const payloadBase = 0.8 + attributes.aerodynamics * 0.052 + attributes.systems * 0.017 + attributes.structures * 0.006;
+      const emptyWeight = clamp(emptyWeightBase * (milestones.structures ? 0.92 : 1), 7.5, 16);
+      const payload = clamp(payloadBase * (milestones.aerodynamics ? 1.08 : 1), 1, 10.5);
+      const reliability = clamp(
+        0.58 + attributes.structures * 0.0028 + attributes.systems * 0.0025 -
+          attributes.aerodynamics * 0.00055 + (milestones.systems ? 0.06 : 0),
+        0.55,
+        0.97
+      );
+      const payloadPotential = clamp(payload * 9.2 + (16 - emptyWeight) * 3.2, 0, 100);
+      return { emptyWeight, payload, reliability, payloadPotential, milestones };
+    },
+    reportScore(report) {
+      return Math.round(clamp(28 + report * 0.72 + (report >= milestoneLevel ? 8 : 0), 0, 100));
+    },
+    upgradeCost(attribute, level) {
       return Math.round(attribute.baseCost * (1 + level / 100));
-    }
-
-    function engineeringGain(attribute) {
-      const level = state.attributes[attribute.key];
+    },
+    upgradeGain(attribute, level) {
       return Math.min(100 - level, attribute.baseGain * (1 - level / 135));
     }
+  });
+})();
 
-    function buyUpgrade(key) {
-      const attribute = ATTRIBUTES.find((entry) => entry.key === key);
-      if (!attribute) return showNotice("Área de engenharia desconhecida.", "error");
-      const cost = engineeringCost(attribute);
-      if (state.cash < cost) return showNotice("Créditos insuficientes para essa melhoria.", "warning");
-      const gain = engineeringGain(attribute);
-      if (gain <= 0) return showNotice("Essa área já atingiu o nível máximo.", "warning");
-      GameLoop.perform(ACTIONS.engineering, 1, () => {
-        state.cash -= cost;
-        state.attributes[key] = Math.min(100, state.attributes[key] + gain);
-      }, `${attribute.name} evoluiu ${gain.toFixed(1).replace(".", ",")} pontos por ${formatCredits(cost)}.`);
+
+/* rivals.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
+  const { rivalBlueprints } = game.Content;
+  const { Random, Aircraft } = game;
+
+  function chooseAction(rival, seed) {
+    const weights = Object.entries(rival.weights).map(([key, weight]) =>
+      [key, key === "funding" && rival.cash < 500 ? weight * 1.8 : weight]
+    );
+    const total = weights.reduce((sum, [, weight]) => sum + weight, 0);
+    const { seed: nextSeed, value } = Random.next(seed);
+    let roll = value * total;
+    for (const [action, weight] of weights) {
+      roll -= weight;
+      if (roll <= 0) return { action, seed: nextSeed };
     }
+    return { action: weights[0][0], seed: nextSeed };
+  }
 
-    function raiseFunds(id) {
-      const option = FUNDRAISERS.find((entry) => entry.id === id);
-      if (!option) return showNotice("Ação de captação desconhecida.", "error");
-      GameLoop.perform(ACTIONS.fundraising, option.weeks, () => {
-        state.cash += option.reward;
-      }, `${option.name} rendeu ${formatCredits(option.reward)}.`);
-    }
-
-    function scoutRival(index) {
-      const rival = state.rivals[index];
-      if (!rival) return showNotice("Equipe rival não encontrada.", "error");
-      if (state.scouted[index]) return showNotice("Esta equipe já foi analisada nesta temporada.", "warning");
-      GameLoop.perform(ACTIONS.scouting, 1, () => {
-        const estimate = {};
-        ATTRIBUTES.forEach(({ key }) => {
-          const noisyValue = rival.attributes[key] + (Math.random() - 0.5) * 14;
-          estimate[key] = Math.max(0, Math.min(100, Math.round(noisyValue / 10) * 10));
-        });
-        state.scouted[index] = estimate;
-      }, `Scouting concluído: estimativas de ${rival.name} foram adicionadas ao relatório.`);
-    }
-
-    function setTab(name) {
-      if (!["engineering", "fundraising", "scouting"].includes(name)) return;
-      activeTab = name;
-      document.querySelectorAll(".tab").forEach((tab) => {
-        const selected = tab.dataset.tab === name;
-        tab.setAttribute("aria-selected", String(selected));
-        tab.tabIndex = selected ? 0 : -1;
+  game.Rivals = Object.freeze({
+    create(year) {
+      const progression = Math.min(24, Math.max(0, year - 1) * 2);
+      return rivalBlueprints.map((blueprint, index) => {
+        const base = 27 + progression + (index % 2) * 4 + ((year - 1) % 4);
+        return {
+          name: blueprint.name,
+          philosophy: blueprint.philosophy,
+          weights: { ...blueprint.weights },
+          attributes: {
+            aerodynamics: base + (index === 2 ? 9 : 0),
+            structures: base + (index === 0 ? 10 : 0),
+            systems: base + (index === 3 ? 7 : 0),
+            report: base - 4
+          },
+          cash: 700 + year * 80
+        };
       });
-      document.querySelectorAll(".tab-pane").forEach((pane) => {
-        pane.hidden = pane.id !== `pane-${name}`;
-      });
-      showNotice(notice.text, notice.kind);
-    }
-
-    function chooseFlightStrategy(batteryIndex, strategyId) {
-      if (state.phase !== "event" || !state.eventStrategies[batteryIndex]) return;
-      if (!Object.prototype.hasOwnProperty.call(FLIGHT_STRATEGIES, strategyId)) {
-        return showNotice("Estratégia de voo desconhecida.", "error");
-      }
-      state.eventStrategies[batteryIndex] = strategyId;
-      persist();
-      UIRenderer.render();
-    }
-
-    function resolveEvent() {
-      if (state.phase !== "event") return;
-      state.eventResult = EventEngine.compete(state);
-      state.phase = "results";
-      const playerResult = state.eventResult.standings.find((team) => team.isPlayer);
-      const reward = playerResult.position === 1 ? 1400 : 300;
-      state.cash += reward;
-      if (playerResult.position === 1) state.prestige += 10;
-      state.history.unshift({ year: state.year, position: playerResult.position, score: playerResult.total, winner: state.eventResult.winner });
-      state.log.unshift({
-        week: WEEKS_PER_SEASON,
-        text: playerResult.position === 1
-          ? `Campeões da temporada! A equipe recebeu ${formatCredits(reward)} e 10 pontos de prestígio.`
-          : `Competição encerrada em ${playerResult.position}º lugar. A equipe recebeu ${formatCredits(reward)}.`
-      });
-      state.log = state.log.slice(0, 6);
-      notice = { text: "", kind: "" };
-      persist();
-      UIRenderer.render();
-    }
-
-    function startNextSeason() {
-      if (state.phase !== "results") return;
-      state.year += 1;
-      state.week = 0;
-      const legacyBonus = Math.min(6, Math.floor(state.prestige / 25));
-      state.attributes = Object.fromEntries(Object.entries(BASE_STATS).map(([key, value]) => [key, value + legacyBonus]));
-      state.rivals = State.createRivals(state.year);
-      state.scouted = {};
-      state.phase = "preparation";
-      state.eventResult = null;
-      state.eventWeather = null;
-      state.eventStrategies = ["balanced", "balanced", "balanced"];
-      state.log = [{ week: 0, text: `Temporada ${state.year} iniciada. O projeto foi reiniciado; o prestígio concede uma pequena vantagem de experiência.` }, ...state.log].slice(0, 6);
-      activeTab = "engineering";
-      notice = { text: `Temporada ${state.year} iniciada.`, kind: "success" };
-      persist();
-      UIRenderer.render();
-    }
-
-    function renderEngineering() {
-      const list = document.getElementById("engineeringList");
-      list.innerHTML = ATTRIBUTES.map((attribute) => {
-        const level = state.attributes[attribute.key];
-        const gain = engineeringGain(attribute);
-        const cost = engineeringCost(attribute);
-        const disabled = state.phase !== "preparation" || state.week >= WEEKS_PER_SEASON || state.cash < cost || gain <= 0;
-        return `
-          <article class="engineering-item">
-            <div class="engineering-copy">
-              <div class="engineering-name"><span class="engineering-icon" aria-hidden="true">${attribute.icon}</span>${attribute.name}</div>
-              <p>${attribute.description}</p>
-              <div class="engineering-progress">
-                <div class="aircraft-stat-top"><span>Nível atual</span><strong>${Math.round(level)} / 100</strong></div>
-                <div class="mini-track"><div class="mini-fill" style="width:${level}%;background:var(--blue)"></div></div>
-              </div>
-            </div>
-            <div class="engineering-actions">
-              <div class="cost-line">+${gain.toFixed(1).replace(".", ",")} pts · <strong>${formatCredits(cost)}</strong></div>
-              <button class="button button-subtle" type="button" data-action="upgrade" data-attribute="${attribute.key}" ${disabled ? "disabled" : ""}>Investir · 1 sem.</button>
-            </div>
-          </article>`;
-      }).join("");
-    }
-
-    function renderFundraising() {
-      document.getElementById("fundraisingList").innerHTML = FUNDRAISERS.map((option) => `
-        <article class="fundraising-item">
-          <div class="fundraising-copy">
-            <strong>${option.name}</strong>
-            <p>${option.description}</p>
-          </div>
-          <div class="fundraising-actions">
-            <div class="cost-line">${option.weeks} ${option.weeks === 1 ? "semana" : "semanas"} · <strong>+${formatCredits(option.reward)}</strong></div>
-            <button class="button button-subtle" type="button" data-action="fundraise" data-fundraiser="${option.id}" ${state.phase !== "preparation" || state.week + option.weeks > WEEKS_PER_SEASON ? "disabled" : ""}>Iniciar captação</button>
-          </div>
-        </article>`).join("");
-    }
-
-    function renderScouting() {
-      document.getElementById("scoutingList").innerHTML = state.rivals.map((rival, index) => {
-        const estimate = state.scouted[index];
-        const reveal = estimate
-          ? `<div class="scouting-reveal">${ATTRIBUTES.map(({ key, name }) => `<span>${name}: ~${estimate[key]}</span>`).join("")}</div>`
-          : "";
-        return `
-          <article class="scouting-item">
-            <div class="scouting-copy">
-              <strong>${rival.name}</strong>
-              <p>${estimate ? "Estimativa aproximada registrada nesta temporada." : "Filosofia: " + rival.philosophy + ". Atributos ainda não revelados."}</p>
-              ${reveal}
-            </div>
-            <button class="button button-subtle" type="button" data-action="scout" data-rival="${index}" ${state.phase !== "preparation" || Boolean(estimate) || state.week >= WEEKS_PER_SEASON ? "disabled" : ""}>${estimate ? "Analisada" : "Analisar · 1 sem."}</button>
-          </article>`;
-      }).join("");
-    }
-
-    function renderAircraft() {
-      const stats = [
-        { key: "aerodynamics", label: "Aerodinâmica" },
-        { key: "structures", label: "Estruturas" },
-        { key: "systems", label: "Sistemas" },
-        { key: "report", label: "Relatório" }
-      ];
-      document.getElementById("aircraftStats").innerHTML = stats.map(({ key, label }) => `
-        <div class="aircraft-stat">
-          <div class="aircraft-stat-top"><span>${label}</span><strong>${Math.round(state.attributes[key])}</strong></div>
-          <div class="mini-track"><div class="mini-fill" style="width:${state.attributes[key]}%"></div></div>
-        </div>`).join("");
-      const derived = EventEngine.derive(state.attributes);
-      document.getElementById("derivedStats").innerHTML = `
-        <div class="derived-stat"><span>Peso vazio</span><strong>${derived.emptyWeight.toFixed(1).replace(".", ",")} kg</strong></div>
-        <div class="derived-stat"><span>Carga estimada</span><strong>${derived.payload.toFixed(1).replace(".", ",")} kg</strong></div>
-        <div class="derived-stat"><span>Confiabilidade</span><strong>${Math.round(derived.reliability * 100)}%</strong></div>
-        <div class="derived-stat"><span>Potencial de voo</span><strong>${Math.round(derived.payloadPotential)} / 100</strong></div>`;
-      document.getElementById("milestoneList").innerHTML = TECH_MILESTONES.map((milestone) => `
-        <div class="milestone ${derived.milestones[milestone.key] ? "unlocked" : ""}">
-          <strong>${milestone.label}</strong><span>${derived.milestones[milestone.key] ? milestone.effect : `Nível ${MILESTONE_LEVEL}`}</span>
-        </div>`).join("");
-    }
-
-    function renderRivals() {
-      document.getElementById("rivalList").innerHTML = state.rivals.map((rival, index) => `
-        <article class="rival-item">
-          <div class="rival-heading"><strong>${rival.name}</strong><span class="rival-tag">${state.scouted[index] ? "ANALISADA" : "NÃO ANALISADA"}</span></div>
-          <div class="rival-detail">${rival.philosophy}${state.scouted[index] ? ` · Média estimada ${Math.round(Object.values(state.scouted[index]).reduce((sum, value) => sum + value, 0) / 4)}` : ""}</div>
-        </article>`).join("");
-    }
-
-    function renderLog() {
-      const list = document.getElementById("logList");
-      list.innerHTML = state.log.length
-        ? state.log.map((entry) => `<div class="log-entry"><span class="log-week">${entry.week === 0 ? "INÍCIO" : `SEM. ${entry.week}`}</span><span>${entry.text}</span></div>`).join("")
-        : `<div class="empty-log">Ainda não há acontecimentos registrados.</div>`;
-    }
-
-    function renderEvent() {
-      const host = document.getElementById("eventView");
-      if (state.phase === "preparation") {
-        document.getElementById("preparationView").hidden = false;
-        host.hidden = true;
-        return;
-      }
-      document.getElementById("preparationView").hidden = true;
-      host.hidden = false;
-      if (state.phase === "event") {
-        if (!state.eventWeather) {
-          state.eventWeather = EventEngine.planBatteries();
-          persist();
+    },
+    advance(rivals, seed) {
+      let nextSeed = seed;
+      const updated = rivals.map((rival) => {
+        const result = chooseAction(rival, nextSeed);
+        nextSeed = result.seed;
+        const copy = { ...rival, attributes: { ...rival.attributes } };
+        if (result.action === "funding") {
+          copy.cash += 330;
+        } else {
+          const current = copy.attributes[result.action];
+          copy.attributes[result.action] = Math.min(100, current + 6 * (1 - current / 135));
         }
-        const eventWeather = state.eventWeather;
-        host.innerHTML = `
-          <div class="event-content">
-            <section class="event-hero">
-              <div class="event-header">
-                <div><h3>Dia da competição · Ano ${state.year}</h3><p>Defina a carga para cada bateria. Mais carga aumenta a pontuação potencial, mas eleva o risco de falha.</p></div>
-                <span class="rival-tag">SEMANA 20 / 20</span>
-              </div>
-            </section>
-            <div class="event-stages">
-              <div class="event-stage"><span>01 · Apresentação</span><strong>${EventEngine.scoreReport(state.attributes.report)} pts</strong></div>
-              ${eventWeather.map((weather, index) => `
-                <div class="event-stage flight-stage">
-                  <span>0${index + 2} · Bateria ${index + 1}</span>
-                  <span class="flight-weather">${weather.label} · ${weather.effect}</span>
-                  <div class="strategy-options" role="group" aria-label="Estratégia da bateria ${index + 1}">
-                    ${Object.entries(FLIGHT_STRATEGIES).map(([id, strategy]) => `
-                      <button class="strategy-option" type="button" data-action="choose-strategy" data-battery="${index}" data-strategy="${id}" aria-pressed="${state.eventStrategies[index] === id}">
-                        ${strategy.label}
-                      </button>`).join("")}
-                  </div>
-                </div>`).join("")}
+        return copy;
+      });
+      return { rivals: updated, seed: nextSeed };
+    },
+    flightStrategy(rival, weather) {
+      const stability = rival.weights.structures + rival.weights.systems;
+      if (weather.reliabilityModifier <= -0.08 && stability >= 0.48) return "conservative";
+      if (rival.weights.aerodynamics >= 0.38) return "aggressive";
+      if (stability >= 0.52) return "conservative";
+      return "balanced";
+    }
+  });
+})();
+
+
+/* competition.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
+  const { strategies, weather } = game.Content;
+  const { Random, Aircraft, Rivals } = game;
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  function standingsByScore(standings) {
+    return [...standings].sort((left, right) =>
+      right.total - left.total || Number(right.isPlayer) - Number(left.isPlayer) || left.name.localeCompare(right.name)
+    );
+  }
+
+  function addCommentary(event, text, kind = "info") {
+    event.commentary.push({ text, kind });
+    event.commentary = event.commentary.slice(-8);
+  }
+
+  game.Competition = Object.freeze({
+    create(state) {
+      let seed = state.rngState;
+      const forecast = [];
+      for (let index = 0; index < 3; index += 1) {
+        const result = Random.integer(seed, weather.length);
+        seed = result.seed;
+        forecast.push({ ...weather[result.value] });
+      }
+
+      const teams = [
+        { name: "Projeto Aurora", isPlayer: true, attributes: { ...state.attributes } },
+        ...state.rivals.map((rival) => ({
+          name: rival.name,
+          isPlayer: false,
+          philosophy: rival.philosophy,
+          weights: { ...rival.weights },
+          attributes: { ...rival.attributes }
+        }))
+      ];
+      const standings = teams.map((team) => ({
+        ...team,
+        report: Aircraft.reportScore(team.attributes.report),
+        flights: [],
+        total: 0
+      }));
+
+      return {
+        seed,
+        event: {
+          round: 0,
+          weather: forecast,
+          standings,
+          commentary: [{ text: "Os projetos foram lacrados. A arbitragem prepara a avaliação dos relatórios.", kind: "info" }]
+        }
+      };
+    },
+    revealReports(event) {
+      event.standings.forEach((team) => { team.total = team.report; });
+      const leader = standingsByScore(event.standings)[0];
+      addCommentary(event, `Relatórios avaliados: ${leader.name} assume a liderança provisória com ${leader.report} pontos.`, "report");
+      return event;
+    },
+    runFlight(event, playerStrategyId, seed) {
+      const round = event.round;
+      const roundWeather = event.weather[round];
+      const previousLeader = standingsByScore(event.standings)[0];
+      const nextStandings = event.standings.map((team) => {
+        const strategyId = team.isPlayer
+          ? playerStrategyId
+          : Rivals.flightStrategy(team, roundWeather);
+        const strategy = strategies[strategyId];
+        const design = Aircraft.derive(team.attributes);
+        const effectiveReliability = clamp(
+          design.reliability + roundWeather.reliabilityModifier + strategy.reliabilityModifier,
+          0.35,
+          0.98
+        );
+        const crashChance = clamp(0.04 + (1 - effectiveReliability) * 0.45, 0.04, 0.36);
+        const potential = design.payloadPotential * strategy.loadMultiplier * roundWeather.payloadMultiplier;
+        let rng = Random.next(seed);
+        seed = rng.seed;
+        const failureRoll = rng.value;
+        rng = Random.next(seed);
+        seed = rng.seed;
+        const variance = (rng.value - 0.5) * 12;
+
+        let crashed = false;
+        let partial = false;
+        let score;
+        if (failureRoll < crashChance * 0.7) {
+          score = 0;
+          crashed = true;
+        } else if (failureRoll < crashChance) {
+          score = Math.round(clamp(potential * 0.5 + variance, 0, 100));
+          partial = true;
+        } else {
+          score = Math.round(clamp(potential + variance, 0, 100));
+        }
+
+        const flight = {
+          score,
+          crashed,
+          partial,
+          weather: roundWeather.label,
+          strategy: strategy.label,
+          strategyId
+        };
+        return {
+          ...team,
+          flights: [...team.flights, flight],
+          total: team.total + score
+        };
+      });
+
+      const nextRound = round + 1;
+      const leader = standingsByScore(nextStandings)[0];
+      const playerFlight = nextStandings.find((team) => team.isPlayer).flights[round];
+      const eventCopy = {
+        ...event,
+        round: nextRound,
+        standings: nextStandings,
+        commentary: [...event.commentary]
+      };
+      const outcome = playerFlight.crashed
+        ? "queda na bateria"
+        : playerFlight.partial ? "pouso parcial após danos" : `voo validado com ${playerFlight.score} pontos`;
+      addCommentary(eventCopy, `Bateria ${nextRound}: ${playerFlight.strategy} no ${roundWeather.label.toLowerCase()}; ${outcome}. ${leader.name} lidera com ${leader.total} pontos.`, playerFlight.crashed ? "danger" : "flight");
+
+      if (leader.name !== previousLeader.name) {
+        addCommentary(eventCopy, `${leader.name} assume a ponta e ultrapassa ${previousLeader.name}.`, "lead");
+      }
+      const rivalOutcome = nextStandings
+        .filter((team) => !team.isPlayer)
+        .find((team) => team.flights[round].crashed);
+      if (rivalOutcome) {
+        addCommentary(eventCopy, `${rivalOutcome.name} sofreu uma queda. A classificação pode mudar nesta bateria.`, "danger");
+      } else if (leader.name === previousLeader.name) {
+        addCommentary(eventCopy, `${leader.name} sustenta a liderança após a bateria ${nextRound}.`, "lead");
+      }
+
+      return { event: eventCopy, seed };
+    },
+    orderedStandings(event) {
+      return standingsByScore(event.standings).map((team, index) => ({ ...team, position: index + 1 }));
+    },
+    strategyOptions() {
+      return Object.entries(strategies).map(([id, strategy]) => ({ id, ...strategy }));
+    }
+  });
+})();
+
+
+/* state.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
+  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies } = game.Content;
+  const strategyIds = Object.keys(strategies);
+
+  function isNumber(value) {
+    return Number.isFinite(value);
+  }
+
+  game.State = Object.freeze({
+    create() {
+      return {
+        version: saveVersion,
+        year: 1,
+        week: 0,
+        cash: 1000,
+        prestige: 0,
+        attributes: { ...baseStats },
+        rivals: game.Rivals.create(1),
+        scouted: {},
+        history: [],
+        log: [{ week: 0, text: "A temporada começou. Defina uma estratégia para o Projeto Aurora." }],
+        phase: "preparation",
+        rngState: game.Random.seed(),
+        event: null,
+        eventStrategies: ["balanced", "balanced", "balanced"],
+        eventResult: null
+      };
+    },
+    validate(candidate) {
+      if (!candidate || typeof candidate !== "object") return false;
+      const validPhases = ["preparation", "event-report", "event-flight", "results"];
+      const validAttributes = candidate.attributes && attributes.every(({ key }) =>
+        isNumber(candidate.attributes[key]) && candidate.attributes[key] >= 0 && candidate.attributes[key] <= 100
+      );
+      const validRivals = Array.isArray(candidate.rivals) && candidate.rivals.length === rivalBlueprints.length &&
+        candidate.rivals.every((rival) => rival && typeof rival.name === "string" &&
+          rival.attributes && attributes.every(({ key }) => isNumber(rival.attributes[key])) &&
+          rival.weights && Object.keys(rival.weights).length === 5);
+      const validStrategies = Array.isArray(candidate.eventStrategies) && candidate.eventStrategies.length === 3 &&
+        candidate.eventStrategies.every((strategy) => strategyIds.includes(strategy));
+      const validEvent = candidate.event === null || (
+        candidate.event && Number.isInteger(candidate.event.round) &&
+        candidate.event.round >= 0 && candidate.event.round <= 3 &&
+        Array.isArray(candidate.event.weather) && candidate.event.weather.length === 3 &&
+        candidate.event.weather.every((entry) => entry && weather.some((option) => option.id === entry.id)) &&
+        Array.isArray(candidate.event.standings) && candidate.event.standings.length === rivalBlueprints.length + 1 &&
+        candidate.event.standings.filter((team) => team?.isPlayer).length === 1 &&
+        candidate.event.standings.every((team) => team && typeof team.name === "string" &&
+          typeof team.isPlayer === "boolean" && isNumber(team.report) && isNumber(team.total) &&
+          team.attributes && attributes.every(({ key }) => isNumber(team.attributes[key])) &&
+          Array.isArray(team.flights) && team.flights.length <= 3 &&
+          team.flights.every((flight) => flight && isNumber(flight.score) && typeof flight.crashed === "boolean")) &&
+        Array.isArray(candidate.event.commentary) &&
+        candidate.event.commentary.every((entry) => entry && typeof entry.text === "string")
+      );
+      const validEventPhase = candidate.phase === "preparation" ? candidate.event === null
+        : candidate.phase === "event-report" ? candidate.event?.round === 0
+          : candidate.phase === "event-flight" ? candidate.event?.round < 3
+            : candidate.phase === "results" ? candidate.event?.round === 3
+              : false;
+      return candidate.version === saveVersion &&
+        Number.isInteger(candidate.year) && candidate.year >= 1 &&
+        Number.isInteger(candidate.week) && candidate.week >= 0 && candidate.week <= weeksPerSeason &&
+        (candidate.phase !== "preparation" || candidate.week < weeksPerSeason) &&
+        isNumber(candidate.cash) && candidate.cash >= 0 &&
+        isNumber(candidate.prestige) && candidate.prestige >= 0 &&
+        Number.isInteger(candidate.rngState) && candidate.rngState >= 0 && candidate.rngState <= 0xffffffff &&
+        validAttributes && validRivals &&
+        Array.isArray(candidate.history) && Array.isArray(candidate.log) &&
+        candidate.scouted && typeof candidate.scouted === "object" &&
+        validStrategies && validEvent &&
+        validPhases.includes(candidate.phase) &&
+        validEventPhase;
+    },
+    migrate(candidate) {
+      if (!candidate || candidate.version !== 1) return candidate;
+      let migrated = {
+        ...candidate,
+        version: saveVersion,
+        rngState: Number.isInteger(candidate.rngState) ? candidate.rngState >>> 0 : game.Random.seed(),
+        event: null,
+        eventStrategies: Array.isArray(candidate.eventStrategies) && candidate.eventStrategies.length === 3
+          ? candidate.eventStrategies
+          : ["balanced", "balanced", "balanced"]
+      };
+      migrated.history = (candidate.history || []).map((entry) => ({
+        ...entry,
+        standings: Array.isArray(entry.standings) ? entry.standings : []
+      }));
+
+      if (candidate.phase === "event" && candidate.week === weeksPerSeason) {
+        const eventPlan = game.Competition.create(migrated);
+        migrated.rngState = eventPlan.seed;
+        if (Array.isArray(candidate.eventWeather) && candidate.eventWeather.length === 3) {
+          eventPlan.event.weather = candidate.eventWeather.map((savedWeather) =>
+            weather.find((option) => option.id === savedWeather.id) || { ...weather[0] }
+          );
+        }
+        migrated.event = eventPlan.event;
+        migrated.phase = "event-report";
+      } else if (candidate.phase === "results" && candidate.eventResult?.standings) {
+        const standings = candidate.eventResult.standings.map((team) => {
+          const sourceAttributes = team.isPlayer
+            ? candidate.attributes
+            : candidate.rivals.find((rival) => rival.name === team.name)?.attributes || baseStats;
+          const flights = (team.flights || []).map((flight) => ({
+            ...flight,
+            partial: Boolean(flight.partial),
+            weather: flight.weather || "Clima variável",
+            strategy: flight.strategy || "Equilibrada",
+            strategyId: flight.strategyId || "balanced"
+          }));
+          return {
+            ...team,
+            attributes: { ...sourceAttributes },
+            report: Number.isFinite(team.report) ? team.report : 0,
+            flights,
+            total: Number.isFinite(team.total) ? team.total : Number(team.score) || 0
+          };
+        });
+        const weatherPlan = Array.isArray(candidate.eventWeather) && candidate.eventWeather.length === 3
+          ? candidate.eventWeather.map((entry) => weather.find((option) => option.id === entry.id) || { ...weather[0] })
+          : [{ ...weather[0] }, { ...weather[0] }, { ...weather[0] }];
+        migrated.event = {
+          round: 3,
+          weather: weatherPlan,
+          standings,
+          commentary: [{ text: "Resultado migrado de uma versão anterior do jogo.", kind: "info" }]
+        };
+        migrated.phase = "results";
+        migrated.eventResult = { standings, winner: candidate.eventResult.winner };
+      }
+
+      if (migrated.phase === "preparation") migrated.event = null;
+      return migrated;
+    }
+  });
+})();
+
+
+/* game.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
+  const { baseStats, attributes, fundraisers, prizes, prestigeAwards, weeksPerSeason } = game.Content;
+  const clone = (value) => JSON.parse(JSON.stringify(value));
+
+  function failure(state, message, kind = "warning") {
+    return { state, notice: { text: message, kind } };
+  }
+
+  function pushLog(state, week, text) {
+    state.log.unshift({ week, text });
+    state.log = state.log.slice(0, 8);
+  }
+
+  function advancePreparation(state, weeks, action, message, mutation) {
+    if (state.phase !== "preparation") return failure(state, "A preparação desta temporada já terminou.");
+    if (!Number.isInteger(weeks) || weeks < 1 || state.week + weeks > weeksPerSeason) {
+      return failure(state, "Não há semanas suficientes para essa ação.");
+    }
+
+    const next = clone(state);
+    mutation(next);
+    for (let turn = 0; turn < weeks; turn += 1) {
+      const progress = game.Rivals.advance(next.rivals, next.rngState);
+      next.rivals = progress.rivals;
+      next.rngState = progress.seed;
+      next.week += 1;
+      pushLog(next, next.week, `${action}: ${message}`);
+    }
+    if (next.week === weeksPerSeason) {
+      const event = game.Competition.create(next);
+      next.phase = "event-report";
+      next.event = event.event;
+      next.rngState = event.seed;
+      next.eventStrategies = ["balanced", "balanced", "balanced"];
+      pushLog(next, next.week, "Preparação encerrada. A equipe entrou no campeonato contra quatro rivais.");
+    }
+    return { state: next, notice: { text: message, kind: "success" } };
+  }
+
+  function finalizeCompetition(state) {
+    const next = state;
+    const standings = game.Competition.orderedStandings(next.event);
+    next.phase = "results";
+    next.event.standings = standings;
+    const player = standings.find((team) => team.isPlayer);
+    const reward = prizes[player.position - 1] || 0;
+    const prestige = prestigeAwards[player.position - 1] || 0;
+    next.cash += reward;
+    next.prestige += prestige;
+    next.eventResult = { standings, winner: standings[0].name };
+    next.history.unshift({
+      year: next.year,
+      position: player.position,
+      score: player.total,
+      winner: standings[0].name,
+      standings: standings.map(({ name, position, total }) => ({ name, position, score: total }))
+    });
+    const outcome = player.position === 1
+      ? `Campeões! Projeto Aurora levou o título, +${reward} créditos e ${prestige} de prestígio.`
+      : `Projeto Aurora terminou em ${player.position}º lugar. Prêmio: ${reward} créditos${prestige ? ` e ${prestige} de prestígio` : ""}.`;
+    pushLog(next, weeksPerSeason, outcome);
+    return outcome;
+  }
+
+  game.Game = Object.freeze({
+    apply(state, action) {
+      if (!action || typeof action.type !== "string") return failure(state, "Ação inválida.", "error");
+      switch (action.type) {
+        case "upgrade": {
+          const attribute = attributes.find((entry) => entry.key === action.key);
+          if (!attribute) return failure(state, "Área de engenharia desconhecida.", "error");
+          const level = state.attributes[attribute.key];
+          const cost = game.Aircraft.upgradeCost(attribute, level);
+          const gain = game.Aircraft.upgradeGain(attribute, level);
+          if (state.cash < cost) return failure(state, "Créditos insuficientes para essa melhoria.");
+          if (gain <= 0) return failure(state, "Essa área já atingiu o nível máximo.");
+          return advancePreparation(state, 1, "Engenharia", `${attribute.name} evoluiu ${gain.toFixed(1).replace(".", ",")} pontos por ${cost.toLocaleString("pt-BR")} créditos.`, (next) => {
+            next.cash -= cost;
+            next.attributes[attribute.key] = Math.min(100, level + gain);
+          });
+        }
+        case "fundraise": {
+          const option = fundraisers.find((entry) => entry.id === action.id);
+          if (!option) return failure(state, "Ação de captação desconhecida.", "error");
+          return advancePreparation(state, option.weeks, "Captação", `${option.name} rendeu ${option.reward.toLocaleString("pt-BR")} créditos.`, (next) => {
+            next.cash += option.reward;
+          });
+        }
+        case "scout": {
+          const rival = state.rivals[action.index];
+          if (!rival) return failure(state, "Equipe rival não encontrada.", "error");
+          if (state.scouted[action.index]) return failure(state, "Esta equipe já foi analisada nesta temporada.");
+          return advancePreparation(state, 1, "Scouting", `Estimativas de ${rival.name} foram adicionadas ao relatório.`, (next) => {
+            const estimate = {};
+            attributes.forEach(({ key }) => {
+              const draw = game.Random.next(next.rngState);
+              next.rngState = draw.seed;
+              const noisyValue = rival.attributes[key] + (draw.value - 0.5) * 14;
+              estimate[key] = Math.max(0, Math.min(100, Math.round(noisyValue / 10) * 10));
+            });
+            next.scouted[action.index] = estimate;
+          });
+        }
+        case "advance-week":
+          return advancePreparation(state, 1, "Semana encerrada", "O calendário avançou; as equipes rivais também trabalharam.", () => {});
+        case "reveal-reports": {
+          if (state.phase !== "event-report") return failure(state, "A arbitragem não está avaliando relatórios.");
+          const next = clone(state);
+          next.event = game.Competition.revealReports(next.event);
+          next.phase = "event-flight";
+          const player = next.event.standings.find((team) => team.isPlayer);
+          pushLog(next, weeksPerSeason, `Relatório avaliado: Projeto Aurora marcou ${player.report} pontos.`);
+          return { state: next, notice: { text: "Relatórios avaliados. A primeira bateria está pronta.", kind: "success" } };
+        }
+        case "choose-strategy": {
+          if (state.phase !== "event-flight") return failure(state, "A estratégia só pode ser alterada antes de uma bateria.");
+          if (action.round !== state.event.round || !game.Content.strategies[action.strategy]) {
+            return failure(state, "Estratégia ou bateria inválida.", "error");
+          }
+          const next = clone(state);
+          next.eventStrategies[action.round] = action.strategy;
+          return { state: next, notice: { text: `${game.Content.strategies[action.strategy].label} definida para a bateria ${action.round + 1}.`, kind: "success" } };
+        }
+        case "run-flight": {
+          if (state.phase !== "event-flight" || state.event.round >= 3) return failure(state, "Não há bateria de voo disponível.");
+          const next = clone(state);
+          const result = game.Competition.runFlight(next.event, next.eventStrategies[next.event.round], next.rngState);
+          next.event = result.event;
+          next.rngState = result.seed;
+          const currentRound = next.event.round;
+          const player = next.event.standings.find((team) => team.isPlayer);
+          const outcome = player.flights[currentRound - 1];
+          pushLog(next, weeksPerSeason, outcome.crashed
+            ? `Bateria ${currentRound}: Projeto Aurora sofreu uma queda.`
+            : `Bateria ${currentRound}: Projeto Aurora marcou ${outcome.score} pontos${outcome.partial ? " em pouso parcial" : ""}.`);
+          if (currentRound === 3) {
+            const rewardMessage = finalizeCompetition(next);
+            return { state: next, notice: { text: rewardMessage, kind: "success" } };
+          }
+          return { state: next, notice: { text: `Bateria ${currentRound} concluída. A classificação provisória foi atualizada.`, kind: "success" } };
+        }
+        case "next-season": {
+          if (state.phase !== "results") return failure(state, "A próxima temporada só começa após o resultado final.");
+          const next = clone(state);
+          next.year += 1;
+          next.week = 0;
+          const legacyBonus = Math.min(6, Math.floor(next.prestige / 25));
+          next.attributes = Object.fromEntries(Object.entries(baseStats).map(([key, value]) => [key, value + legacyBonus]));
+          next.rivals = game.Rivals.create(next.year);
+          next.scouted = {};
+          next.phase = "preparation";
+          next.event = null;
+          next.eventResult = null;
+          next.eventStrategies = ["balanced", "balanced", "balanced"];
+          pushLog(next, 0, `Temporada ${next.year} iniciada. O projeto foi reiniciado; experiência acumulada concede +${legacyBonus} níveis.`);
+          return { state: next, notice: { text: `Temporada ${next.year} iniciada.`, kind: "success" } };
+        }
+        default:
+          return failure(state, `Ação não reconhecida: ${action.type}.`, "error");
+      }
+    }
+  });
+})();
+
+
+/* storage.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
+  const { saveKey } = game.Content;
+
+  game.Storage = Object.freeze({
+    save(state) {
+      try {
+        globalThis.localStorage.setItem(saveKey, JSON.stringify(state));
+        return { ok: true };
+      } catch (error) {
+        return { ok: false, message: error.message };
+      }
+    },
+    load() {
+      try {
+        const saved = globalThis.localStorage.getItem(saveKey);
+        if (!saved) return { ok: false, missing: true, message: "Nenhum jogo salvo foi encontrado neste navegador." };
+        const state = game.State.migrate(JSON.parse(saved));
+        if (!game.State.validate(state)) {
+          return { ok: false, message: "O jogo salvo não corresponde a um estado válido ou a uma versão compatível." };
+        }
+        return { ok: true, state };
+      } catch (error) {
+        return { ok: false, message: `Falha ao carregar o jogo: ${error.message}` };
+      }
+    }
+  });
+})();
+
+
+/* ui.js */
+(() => {
+  const game = globalThis.AeroDesign ||= {};
+  const { attributes, fundraisers, milestones, milestoneLevel, strategies, weeksPerSeason } = game.Content;
+  const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+  })[character]);
+  const credits = (amount) => `${Math.round(amount).toLocaleString("pt-BR")} cr`;
+
+  function setNotice(notice) {
+    const node = document.getElementById("actionNotice");
+    if (!node) return;
+    node.textContent = notice.text || "";
+    node.dataset.kind = notice.kind || "";
+  }
+
+  function renderHeader(state) {
+    const remaining = weeksPerSeason - state.week;
+    document.getElementById("weekLabel").textContent = `Semana ${state.week} / ${weeksPerSeason}`;
+    document.getElementById("yearLabel").textContent = `Ano ${state.year}`;
+    document.getElementById("designYear").textContent = `· Ano ${state.year}`;
+    document.getElementById("cashLabel").textContent = credits(state.cash);
+    document.getElementById("prestigeLabel").textContent = state.prestige;
+    document.getElementById("weekProgress").style.width = `${(state.week / weeksPerSeason) * 100}%`;
+    document.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", String(state.week));
+    document.getElementById("turnIndicator").textContent = state.phase === "preparation"
+      ? `${remaining} ${remaining === 1 ? "ação restante" : "ações restantes"}`
+      : state.phase === "event-report" ? "Avaliação de relatório"
+        : state.phase === "event-flight" ? `Bateria ${state.event.round + 1} de 3` : "Temporada concluída";
+    document.getElementById("seasonCaption").textContent = state.phase === "preparation"
+      ? "Preparação para a competição"
+      : state.phase === "event-report" ? "Abertura do campeonato"
+        : state.phase === "event-flight" ? "Competição em andamento" : "Resultado oficial";
+    document.getElementById("mainTitle").textContent = state.phase === "preparation" ? "Centro de operações" : "Campeonato";
+    document.getElementById("mainSubtitle").textContent = state.phase === "preparation"
+      ? "Uma decisão por semana. Prepare o projeto para o dia da competição."
+      : state.phase === "event-report" ? "Cinco equipes, um título. Os relatórios estão com a arbitragem."
+        : state.phase === "event-flight" ? "Cada bateria muda as chances. Escolha sua carga e acompanhe o placar."
+          : `Temporada ${state.year} encerrada. Confira a classificação e prepare o próximo ciclo.`;
+    document.getElementById("weekFooter").hidden = state.phase !== "preparation";
+  }
+
+  function renderTabs(activeTab) {
+    document.querySelectorAll(".tab").forEach((tab) => {
+      const selected = tab.dataset.tab === activeTab;
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    });
+    document.querySelectorAll(".tab-pane").forEach((pane) => {
+      pane.hidden = pane.id !== `pane-${activeTab}`;
+    });
+  }
+
+  function renderEngineering(state) {
+    document.getElementById("engineeringList").innerHTML = attributes.map((attribute) => {
+      const level = state.attributes[attribute.key];
+      const gain = game.Aircraft.upgradeGain(attribute, level);
+      const cost = game.Aircraft.upgradeCost(attribute, level);
+      const disabled = state.week >= weeksPerSeason || state.cash < cost || gain <= 0;
+      return `
+        <article class="engineering-item">
+          <div class="engineering-copy">
+            <div class="engineering-name"><span class="engineering-icon" aria-hidden="true">${attribute.icon}</span>${attribute.name}</div>
+            <p>${attribute.description}</p>
+            <div class="engineering-progress">
+              <div class="aircraft-stat-top"><span>Nível atual</span><strong>${Math.round(level)} / 100</strong></div>
+              <div class="mini-track"><div class="mini-fill" style="width:${level}%;background:var(--blue)"></div></div>
             </div>
-            <div class="result-callout">Confiabilidade-base do Projeto Aurora: <strong>${Math.round(EventEngine.derive(state.attributes).reliability * 100)}%</strong>. Uma falha pode resultar em queda (zero) ou pouso parcial (metade dos pontos). O clima e a estratégia alteram cada bateria.</div>
-            <div class="event-actions"><button class="button button-primary" type="button" data-action="resolve-event">Simular competição <span aria-hidden="true">→</span></button></div>
-          </div>`;
+          </div>
+          <div class="engineering-actions">
+            <div class="cost-line">+${gain.toFixed(1).replace(".", ",")} pts · <strong>${credits(cost)}</strong></div>
+            <button class="button button-subtle" type="button" data-action="upgrade" data-attribute="${attribute.key}" ${disabled ? "disabled" : ""}>Investir · 1 sem.</button>
+          </div>
+        </article>`;
+    }).join("");
+  }
+
+  function renderFundraising(state) {
+    document.getElementById("fundraisingList").innerHTML = fundraisers.map((option) => `
+      <article class="fundraising-item">
+        <div class="fundraising-copy">
+          <strong>${option.name}</strong>
+          <p>${option.description}</p>
+        </div>
+        <div class="fundraising-actions">
+          <div class="cost-line">${option.weeks} ${option.weeks === 1 ? "semana" : "semanas"} · <strong>+${credits(option.reward)}</strong></div>
+          <button class="button button-subtle" type="button" data-action="fundraise" data-fundraiser="${option.id}" ${state.week + option.weeks > weeksPerSeason ? "disabled" : ""}>Iniciar captação</button>
+        </div>
+      </article>`).join("");
+  }
+
+  function renderScouting(state) {
+    document.getElementById("scoutingList").innerHTML = state.rivals.map((rival, index) => {
+      const estimate = state.scouted[index];
+      const revealed = estimate
+        ? `<div class="scouting-reveal">${attributes.map(({ key, name }) => `<span>${name}: ~${estimate[key]}</span>`).join("")}</div>`
+        : "";
+      return `
+        <article class="scouting-item">
+          <div class="scouting-copy">
+            <strong>${escapeHtml(rival.name)}</strong>
+            <p>${estimate ? "Estimativa aproximada registrada nesta temporada." : `Filosofia: ${escapeHtml(rival.philosophy)}. Atributos não revelados.`}</p>
+            ${revealed}
+          </div>
+          <button class="button button-subtle" type="button" data-action="scout" data-rival="${index}" ${estimate || state.week >= weeksPerSeason ? "disabled" : ""}>${estimate ? "Analisada" : "Analisar · 1 sem."}</button>
+        </article>`;
+    }).join("");
+  }
+
+  function renderAircraft(state) {
+    const fields = [
+      { key: "aerodynamics", label: "Aerodinâmica" },
+      { key: "structures", label: "Estruturas" },
+      { key: "systems", label: "Sistemas" },
+      { key: "report", label: "Relatório" }
+    ];
+    document.getElementById("aircraftStats").innerHTML = fields.map(({ key, label }) => `
+      <div class="aircraft-stat">
+        <div class="aircraft-stat-top"><span>${label}</span><strong>${Math.round(state.attributes[key])}</strong></div>
+        <div class="mini-track"><div class="mini-fill" style="width:${state.attributes[key]}%"></div></div>
+      </div>`).join("");
+    const design = game.Aircraft.derive(state.attributes);
+    document.getElementById("derivedStats").innerHTML = `
+      <div class="derived-stat"><span>Peso vazio</span><strong>${design.emptyWeight.toFixed(1).replace(".", ",")} kg</strong></div>
+      <div class="derived-stat"><span>Carga estimada</span><strong>${design.payload.toFixed(1).replace(".", ",")} kg</strong></div>
+      <div class="derived-stat"><span>Confiabilidade</span><strong>${Math.round(design.reliability * 100)}%</strong></div>
+      <div class="derived-stat"><span>Potencial de voo</span><strong>${Math.round(design.payloadPotential)} / 100</strong></div>`;
+    document.getElementById("milestoneList").innerHTML = milestones.map((milestone) => `
+      <div class="milestone ${design.milestones[milestone.key] ? "unlocked" : ""}">
+        <strong>${milestone.label}</strong><span>${design.milestones[milestone.key] ? milestone.effect : `Nível ${milestoneLevel}`}</span>
+      </div>`).join("");
+  }
+
+  function lastSeason(state) {
+    return state.history[0] || null;
+  }
+
+  function renderRivals(state) {
+    const recentChampion = lastSeason(state)?.winner;
+    document.getElementById("rivalList").innerHTML = state.rivals.map((rival, index) => {
+      const average = state.scouted[index]
+        ? Math.round(Object.values(state.scouted[index]).reduce((sum, value) => sum + value, 0) / 4)
+        : null;
+      const isChampion = recentChampion === rival.name;
+      return `
+        <article class="rival-item">
+          <div class="rival-heading"><strong>${escapeHtml(rival.name)}</strong><span class="rival-tag">${isChampion ? "CAMPEÃ DEFENSORA" : state.scouted[index] ? "ANALISADA" : "NÃO ANALISADA"}</span></div>
+          <div class="rival-detail">${escapeHtml(rival.philosophy)}${average === null ? "" : ` · Média estimada ${average}`}</div>
+        </article>`;
+    }).join("");
+  }
+
+  function renderRivalry(state) {
+    const previous = lastSeason(state);
+    const container = document.getElementById("rivalryScore");
+    if (!previous) {
+      container.innerHTML = "<p>Esta é a primeira disputa pelo título. Um campeão será lembrado na próxima temporada.</p>";
+      return;
+    }
+
+    const champion = previous.winner;
+    const playerName = "Projeto Aurora";
+    const previousPlayer = previous.standings?.find((team) => team.name === playerName);
+    const previousChampion = champion === playerName ? null : previous.standings?.find((team) => team.name === champion);
+    const rival = champion === playerName
+      ? previous.standings?.find((team) => team.name !== playerName)
+      : previousChampion;
+    const olderMeetings = state.history.filter((entry) =>
+      entry.standings?.some((team) => team.name === playerName) &&
+      entry.standings?.some((team) => team.name === rival?.name)
+    );
+    const headToHeadWins = rival
+      ? olderMeetings.filter((entry) => entry.standings.find((team) => team.name === playerName).position <
+        entry.standings.find((team) => team.name === rival.name).position).length
+      : 0;
+    const encounterCount = olderMeetings.length;
+    const championLabel = champion === playerName ? "Projeto Aurora (defensora)" : escapeHtml(champion);
+    const playerLabel = previousPlayer ? `${previousPlayer.position}º lugar · ${previousPlayer.score} pts` : "Resultado registrado";
+    const rivalLabel = previousChampion ? `${previousChampion.position}º lugar · ${previousChampion.score} pts` : "Título da equipe";
+    container.innerHTML = `
+      <p>Campeã defensora: <strong>${championLabel}</strong></p>
+      <p>Projeto Aurora no último ano: <strong>${playerLabel}</strong></p>
+      ${champion === playerName
+        ? `<p>Defesas de título: <strong>${state.history.filter((entry) => entry.winner === playerName).length}</strong></p>`
+        : `<p>Confronto histórico contra a campeã: <strong>${headToHeadWins} vitória(s) Aurora em ${encounterCount} temporada(s)</strong></p><p>Último resultado da rival: <strong>${rivalLabel}</strong></p>`}
+      ${champion === playerName && rival ? `<p>Vice-campeã anterior: <strong>${escapeHtml(rival.name)}</strong> · ${headToHeadWins} vitória(s) Aurora em ${encounterCount} encontro(s)</p>` : ""}`;
+  }
+
+  function renderLog(state) {
+    document.getElementById("logList").innerHTML = state.log.length
+      ? state.log.map((entry) => `<div class="log-entry"><span class="log-week">${entry.week === 0 ? "INÍCIO" : `SEM. ${entry.week}`}</span><span>${escapeHtml(entry.text)}</span></div>`).join("")
+      : '<div class="empty-log">Ainda não há acontecimentos registrados.</div>';
+  }
+
+  function orderedStandings(state) {
+    if (!state.event) return [];
+    return game.Competition.orderedStandings(state.event);
+  }
+
+  function renderLeaderboard(state, revealReports) {
+    const teams = orderedStandings(state);
+    return `
+      <div class="leaderboard-region" role="region" aria-live="polite" aria-label="Classificação do campeonato" tabindex="0">
+      <table class="score-table">
+        <thead><tr><th>Posição</th><th>Equipe</th><th>Relatório</th><th>Bateria 1</th><th>Bateria 2</th><th>Bateria 3</th><th>Total</th></tr></thead>
+        <tbody>${teams.map((team) => `
+          <tr class="${revealReports && team.position === 1 ? "leader-row" : ""}">
+            <td>${revealReports ? `${team.position}º` : "—"}</td>
+            <td>${escapeHtml(team.name)}${team.isPlayer ? " · Você" : ""}</td>
+            <td>${revealReports ? team.report : "—"}</td>
+            ${[0, 1, 2].map((index) => {
+              const flight = team.flights[index];
+              return `<td>${flight
+                ? `${flight.score}${flight.crashed ? " · Queda" : flight.partial ? " · Parcial" : ""}<span class="score-cell-strategy">${escapeHtml(flight.strategy)}</span>`
+                : "—"}</td>`;
+            }).join("")}
+            <td>${revealReports ? team.total : "—"}</td>
+          </tr>`).join("")}</tbody>
+      </table>
+      </div>`;
+  }
+
+  function renderStageTiles(state, stage, allowChoice) {
+    const event = state.event;
+    return `
+      <div class="event-stages">
+        <div class="event-stage ${stage === "report" ? "stage-current" : ""}">
+          <span>01 · Relatório</span>
+          <strong>${stage === "report" ? "Em avaliação" : `${event.standings.find((team) => team.isPlayer).report} pts`}</strong>
+        </div>
+        ${event.weather.map((weather, index) => {
+          const completed = index < event.round;
+          const current = allowChoice && index === event.round;
+          const selected = state.eventStrategies[index];
+          const flight = event.standings.find((team) => team.isPlayer).flights[index];
+          return `
+            <div class="event-stage flight-stage ${current ? "stage-current" : ""}">
+              <span>0${index + 2} · Bateria ${index + 1}</span>
+              <span class="flight-weather">${escapeHtml(weather.label)} · ${escapeHtml(weather.effect)}</span>
+              ${completed
+                ? `<strong>${flight.score} pts</strong><span class="strategy-detail">${escapeHtml(flight.strategy)}${flight.crashed ? " · Queda" : flight.partial ? " · Pouso parcial" : ""}</span>`
+                : current
+                  ? `<div class="strategy-options" role="group" aria-label="Estratégia da bateria ${index + 1}">
+                    ${game.Competition.strategyOptions().map((option) => `
+                      <button class="strategy-option" type="button" data-action="choose-strategy" data-round="${index}" data-strategy="${option.id}" aria-pressed="${selected === option.id}">
+                        ${escapeHtml(option.label)}
+                      </button>`).join("")}
+                    </div>
+                    <span class="strategy-detail">Bot escolhe conforme sua filosofia</span>`
+                  : `<strong>${index > event.round ? "Na sequência" : "Aguardando"}</strong>`}
+            </div>`;
+        }).join("")}
+      </div>`;
+  }
+
+  function renderCommentary(event) {
+    return `<div class="competition-commentary" aria-live="polite">${event.commentary.slice(-3).reverse().map((entry) =>
+      `<div>${escapeHtml(entry.text)}</div>`).join("")}</div>`;
+  }
+
+  function renderReportPhase(state) {
+    return `
+      <div class="event-content">
+        <section class="event-hero">
+          <div class="event-header">
+            <div><h3>Campeonato · Ano ${state.year}</h3><p>Quatro rivais. Três baterias. O resultado de hoje entra no histórico da equipe.</p></div>
+            <span class="rival-tag">ABERTURA</span>
+          </div>
+        </section>
+        ${renderStageTiles(state, "report", false)}
+        ${renderCommentary(state.event)}
+        <div class="competition-lead"><h4>Equipes na disputa</h4><span>As notas são reveladas ao encerrar a avaliação</span></div>
+        ${renderLeaderboard(state, false)}
+        <div class="event-actions"><button class="button button-primary" type="button" data-action="reveal-reports">Revelar notas do relatório <span aria-hidden="true">→</span></button></div>
+      </div>`;
+  }
+
+  function renderFlightPhase(state) {
+    const round = state.event.round;
+    const weather = state.event.weather[round];
+    return `
+      <div class="event-content">
+        <section class="event-hero">
+          <div class="event-header">
+            <div><h3>Bateria ${round + 1} · ${escapeHtml(weather.label)}</h3><p>${escapeHtml(weather.effect)}. Escolha sua estratégia; os BOTs decidem conforme a própria filosofia.</p></div>
+            <span class="rival-tag">AO VIVO · ${round + 1}/3</span>
+          </div>
+        </section>
+        ${renderStageTiles(state, "flight", true)}
+        ${renderCommentary(state.event)}
+        <div class="competition-lead"><h4>Classificação parcial</h4><span>Atualiza depois de cada bateria</span></div>
+        ${renderLeaderboard(state, true)}
+        <div class="event-actions"><button class="button button-primary" type="button" data-action="run-flight">Largar bateria ${round + 1} <span aria-hidden="true">→</span></button></div>
+      </div>`;
+  }
+
+  function renderResults(state) {
+    const standings = orderedStandings(state);
+    const player = standings.find((team) => team.isPlayer);
+    const champion = standings[0];
+    return `
+      <div class="event-content">
+        <section class="event-hero">
+          <div class="event-header">
+            <div><h3>${escapeHtml(champion.name)} conquista o título</h3><p>Projeto Aurora terminou em ${player.position}º lugar, com ${player.total} pontos.</p></div>
+            <span class="rival-tag">RESULTADO FINAL</span>
+          </div>
+        </section>
+        ${renderStageTiles(state, "results", false)}
+        ${renderCommentary(state.event)}
+        <div class="competition-lead"><h4>Classificação final</h4><span>Prestígio e premiação registrados no caixa</span></div>
+        ${renderLeaderboard(state, true)}
+        <div class="event-actions"><button class="button button-primary" type="button" data-action="next-season">Iniciar próxima temporada <span aria-hidden="true">→</span></button></div>
+      </div>`;
+  }
+
+  function renderEvent(state) {
+    const preparation = document.getElementById("preparationView");
+    const host = document.getElementById("eventView");
+    preparation.hidden = state.phase !== "preparation";
+    host.hidden = state.phase === "preparation";
+    if (state.phase === "preparation") return;
+    host.innerHTML = state.phase === "event-report" ? renderReportPhase(state)
+      : state.phase === "event-flight" ? renderFlightPhase(state) : renderResults(state);
+  }
+
+  game.UI = Object.freeze({
+    render(state, activeTab, notice) {
+      renderHeader(state);
+      renderEngineering(state);
+      renderFundraising(state);
+      renderScouting(state);
+      renderAircraft(state);
+      renderRivals(state);
+      renderRivalry(state);
+      renderLog(state);
+      renderEvent(state);
+      renderTabs(activeTab);
+      setNotice(notice);
+    }
+  });
+})();
+
+
+/* main.js */
+(() => {
+  const game = globalThis.AeroDesign;
+  let state = game.State.create();
+  let activeTab = "engineering";
+  let notice = { text: "", kind: "" };
+
+  function render() {
+    game.UI.render(state, activeTab, notice);
+  }
+
+  function apply(action) {
+    const previousState = state;
+    const transition = game.Game.apply(state, action);
+    state = transition.state;
+    notice = transition.notice;
+    if (state !== previousState && notice.kind !== "error" && notice.kind !== "warning") {
+      const saved = game.Storage.save(state);
+      if (!saved.ok) notice = { text: `Ação concluída, mas não foi possível salvar automaticamente: ${saved.message}`, kind: "error" };
+    }
+    render();
+  }
+
+  function handleClick(event) {
+    const button = event.target.closest("button");
+    if (!button) return;
+    if (button.dataset.tab) {
+      activeTab = button.dataset.tab;
+      render();
+      return;
+    }
+
+    switch (button.dataset.action) {
+      case "save": {
+        const saved = game.Storage.save(state);
+        notice = saved.ok
+          ? { text: "Jogo salvo neste navegador.", kind: "success" }
+          : { text: `Falha ao salvar: ${saved.message}`, kind: "error" };
+        render();
         return;
       }
-      const result = state.eventResult;
-      const player = result.standings.find((team) => team.isPlayer);
-      const playerPosition = player.position;
-      const reward = playerPosition === 1 ? 1400 : 300;
-      const flightCells = player.flights.map((flight) => flight.crashed ? "0 · queda" : flight.partial ? `${flight.score} · parcial` : flight.score).join(" · ");
-      host.innerHTML = `
-        <div class="event-content">
-          <section class="event-hero">
-            <div class="event-header">
-              <div><h3>Resultado final · ${playerPosition}º lugar</h3><p>Vencedora: ${result.winner}. ${playerPosition === 1 ? "A equipe conquistou o título." : "A temporada termina com uma nova meta para o próximo ano."}</p></div>
-              <span class="rival-tag">ANO ${state.year}</span>
-            </div>
-          </section>
-          <div class="event-stages">
-            <div class="event-stage"><span>Apresentação</span><strong>${player.report} pts</strong></div>
-            ${player.flights.map((flight, index) => `
-              <div class="event-stage">
-                <span>Bateria ${index + 1} · ${flight.weather || "Clima variável"}</span>
-                <strong>${flight.score} pts</strong>
-                <span class="flight-weather">${flight.strategy || "Estratégia equilibrada"}${flight.crashed ? " · Queda" : flight.partial ? " · Pouso parcial" : ""}</span>
-              </div>`).join("")}
-          </div>
-          <div class="result-callout">${playerPosition === 1 ? "Título conquistado!" : `Projeto Aurora marcou ${player.total} pontos, com baterias ${flightCells}.`} Recompensa da equipe: <strong>${formatCredits(reward)}</strong>${playerPosition === 1 ? " e 10 pontos de prestígio." : "."}</div>
-          <table class="score-table">
-            <thead><tr><th>Posição</th><th>Equipe</th><th>Relatório</th><th>Bateria 1</th><th>Bateria 2</th><th>Bateria 3</th><th>Total</th></tr></thead>
-            <tbody>${result.standings.map((team) => `
-              <tr>
-                <td>${team.position}º</td><td>${team.name}${team.isPlayer ? " · Você" : ""}</td><td>${team.report}</td>
-                ${team.flights.map((flight) => `<td>${flight.score}${flight.crashed ? " · Queda" : flight.partial ? " · Parcial" : ""}</td>`).join("")}<td>${team.total}</td>
-              </tr>`).join("")}</tbody>
-          </table>
-          <div class="event-actions"><button class="button button-primary" type="button" data-action="next-season">Iniciar próxima temporada <span aria-hidden="true">→</span></button></div>
-        </div>`;
-    }
-
-    function renderHeader() {
-      document.getElementById("weekLabel").textContent = `Semana ${state.week} / ${WEEKS_PER_SEASON}`;
-      document.getElementById("yearLabel").textContent = `Ano ${state.year}`;
-      document.getElementById("designYear").textContent = `· Ano ${state.year}`;
-      document.getElementById("cashLabel").textContent = formatCredits(state.cash);
-      document.getElementById("prestigeLabel").textContent = state.prestige;
-      const progress = (state.week / WEEKS_PER_SEASON) * 100;
-      document.getElementById("weekProgress").style.width = `${progress}%`;
-      document.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", String(state.week));
-      const remaining = WEEKS_PER_SEASON - state.week;
-      document.getElementById("turnIndicator").textContent = state.phase === "preparation"
-        ? `${remaining} ${remaining === 1 ? "ação restante" : "ações restantes"}`
-        : state.phase === "event" ? "Evento final" : "Temporada concluída";
-      document.getElementById("seasonCaption").textContent = state.phase === "preparation"
-        ? "Preparação para a competição"
-        : state.phase === "event" ? "Competição em andamento" : "Resultado oficial";
-      document.getElementById("mainTitle").textContent = state.phase === "preparation" ? "Centro de operações" : "Evento de competição";
-      document.getElementById("mainSubtitle").textContent = state.phase === "preparation"
-        ? "Uma decisão por semana. Prepare o projeto para o dia da competição."
-        : state.phase === "event" ? "A temporada está decidida. Execute as baterias para ver a classificação."
-          : `Temporada ${state.year} encerrada. Confira a classificação e prepare o próximo ciclo.`;
-      document.getElementById("weekFooter").hidden = state.phase !== "preparation";
-      document.querySelector('[data-action="advance"]').disabled = state.phase !== "preparation";
-    }
-
-    const UIRenderer = {
-      render() {
-        renderHeader();
-        renderEngineering();
-        renderFundraising();
-        renderScouting();
-        renderAircraft();
-        renderRivals();
-        renderLog();
-        renderEvent();
-        if (state.phase === "preparation") setTab(activeTab);
-        else showNotice("", "");
+      case "load": {
+        const loaded = game.Storage.load();
+        if (loaded.ok) {
+          state = loaded.state;
+          activeTab = "engineering";
+          notice = { text: "Jogo carregado.", kind: "success" };
+        } else {
+          notice = { text: loaded.message, kind: loaded.missing ? "warning" : "error" };
+        }
+        render();
+        return;
       }
-    };
+      case "upgrade": return apply({ type: "upgrade", key: button.dataset.attribute });
+      case "fundraise": return apply({ type: "fundraise", id: button.dataset.fundraiser });
+      case "scout": return apply({ type: "scout", index: Number(button.dataset.rival) });
+      case "advance-week": return apply({ type: "advance-week" });
+      case "reveal-reports": return apply({ type: "reveal-reports" });
+      case "choose-strategy": return apply({
+        type: "choose-strategy",
+        round: Number(button.dataset.round),
+        strategy: button.dataset.strategy
+      });
+      case "run-flight": return apply({ type: "run-flight" });
+      case "next-season": return apply({ type: "next-season" });
+      default: return;
+    }
+  }
 
-    document.addEventListener("click", (event) => {
-      const target = event.target.closest("button");
-      if (!target) return;
-      if (target.dataset.tab) return setTab(target.dataset.tab);
-      switch (target.dataset.action) {
-        case "upgrade": return buyUpgrade(target.dataset.attribute);
-        case "fundraise": return raiseFunds(target.dataset.fundraiser);
-        case "scout": return scoutRival(Number(target.dataset.rival));
-        case "advance": return GameLoop.endWeek();
-        case "save": return saveGame();
-        case "load": return loadGame();
-        case "resolve-event": return resolveEvent();
-        case "choose-strategy": return chooseFlightStrategy(Number(target.dataset.battery), target.dataset.strategy);
-        case "next-season": return startNextSeason();
-        default: return;
-      }
-    });
+  function handleKeydown(event) {
+    if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+    const tabs = [...document.querySelectorAll(".tab")];
+    if (tabs.length === 0) return;
+    const currentIndex = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+    const offset = event.key === "ArrowRight" ? 1 : -1;
+    const next = tabs[(currentIndex + offset + tabs.length) % tabs.length];
+    next.focus();
+    activeTab = next.dataset.tab;
+    render();
+  }
 
-    document.addEventListener("keydown", (event) => {
-      if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
-      const tabs = [...document.querySelectorAll(".tab")];
-      const currentIndex = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
-      const offset = event.key === "ArrowRight" ? 1 : -1;
-      const next = tabs[(currentIndex + offset + tabs.length) % tabs.length];
-      next.focus();
-      setTab(next.dataset.tab);
-    });
-
-    UIRenderer.render();
-  </script>
+  document.addEventListener("click", handleClick);
+  document.addEventListener("keydown", handleKeydown);
+  render();
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,11 @@
+{
+  "name": "aerodesign-manager",
+  "private": true,
+  "type": "module",
+  "version": "0.2.0",
+  "description": "Browser-based university aerodesign manager game",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test"
+  }
+}
