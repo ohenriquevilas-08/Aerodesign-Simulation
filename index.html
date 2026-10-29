@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111822">
+  <title>Aerodesign Manager Universitário</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111822;
+      --panel: #192330;
+      --panel-alt: #202c3a;
+      --border: #2d3b4b;
+      --text: #e8edf3;
+      --muted: #9aa8b8;
+      --accent: #52d3a2;
+      --accent-dark: #143e36;
+      --blue: #70a9ff;
+      --warning: #f0bd68;
+      --danger: #ee7e80;
+      --shadow: 0 16px 38px rgb(0 0 0 / 18%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 70% -15%, rgb(82 211 162 / 10%), transparent 42%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    button { font: inherit; }
+
+    .shell { max-width: 1440px; margin: 0 auto; padding: 28px clamp(16px, 3vw, 40px) 48px; }
+
+    .topbar, .topbar-actions, .brand, .section-heading, .action-row, .rival-heading, .event-header {
+      display: flex;
+      align-items: center;
+    }
+
+    .topbar { justify-content: space-between; gap: 20px; margin-bottom: 28px; }
+    .brand { gap: 13px; }
+    .brand-mark {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid rgb(82 211 162 / 36%);
+      border-radius: 13px;
+      background: var(--accent-dark);
+      color: var(--accent);
+      font-size: 19px;
+      font-weight: 800;
+    }
+    .brand h1 { margin: 0; font-size: clamp(17px, 2vw, 21px); letter-spacing: -.025em; }
+    .brand p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .topbar-actions { gap: 8px; }
+
+    .button {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--panel-alt);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 650;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .button:hover:not(:disabled) { transform: translateY(-1px); border-color: #50647b; }
+    .button:focus-visible, .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .button:disabled { cursor: not-allowed; opacity: .43; }
+    .button-primary { border-color: transparent; background: var(--accent); color: #0c211b; }
+    .button-primary:hover:not(:disabled) { background: #72e3b6; }
+    .button-subtle { min-height: 34px; padding: 0 10px; font-size: 12px; }
+    .button-warn { color: var(--warning); }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: minmax(240px, 290px) minmax(0, 1fr);
+      align-items: start;
+      gap: 20px;
+    }
+    .sidebar, .main-column { display: grid; gap: 16px; }
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: linear-gradient(160deg, rgb(255 255 255 / 1.8%), transparent 45%), var(--panel);
+      box-shadow: var(--shadow);
+    }
+    .panel-pad { padding: 18px; }
+    .eyebrow {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .section-heading { justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+    .section-heading h2, .section-heading h3 { margin: 0; font-size: 15px; letter-spacing: -.015em; }
+    .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    .season-card { overflow: hidden; }
+    .season-top { padding: 19px 19px 17px; }
+    .season-label { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; }
+    .season-number { margin: 9px 0 3px; font-size: 30px; font-weight: 750; letter-spacing: -.055em; }
+    .season-caption { color: var(--muted); font-size: 12px; }
+    .progress-track { height: 7px; overflow: hidden; margin-top: 16px; border-radius: 20px; background: #0f1720; }
+    .progress-fill { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #39b98b, #9be4c5); transition: width .25s ease; }
+    .season-bottom { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); }
+    .metric { padding: 14px 18px; }
+    .metric + .metric { border-left: 1px solid var(--border); }
+    .metric-label { color: var(--muted); font-size: 11px; }
+    .metric-value { margin-top: 5px; font-size: 17px; font-weight: 720; }
+    .cash-value { color: var(--accent); }
+
+    .aircraft-card { padding: 18px; }
+    .aircraft-name { margin: 0 0 3px; font-size: 14px; }
+    .aircraft-summary { margin: 0 0 17px; color: var(--muted); font-size: 11px; }
+    .aircraft-stat { margin-top: 13px; }
+    .aircraft-stat-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 7px; font-size: 11px; }
+    .aircraft-stat-top span:first-child { color: #c8d1dc; }
+    .aircraft-stat-top strong { font-weight: 700; }
+    .mini-track { height: 5px; overflow: hidden; border-radius: 8px; background: #101822; }
+    .mini-fill { height: 100%; border-radius: inherit; background: var(--blue); }
+    .derived-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+    .derived-stat { padding: 10px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 10%); }
+    .derived-stat span { display: block; color: var(--muted); font-size: 10px; }
+    .derived-stat strong { display: block; margin-top: 5px; font-size: 14px; }
+    .milestone-list { display: grid; gap: 6px; margin-top: 12px; }
+    .milestone { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 8px; border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-size: 9px; }
+    .milestone.unlocked { border-color: rgb(82 211 162 / 30%); background: rgb(82 211 162 / 6%); color: #a7e8cd; }
+    .milestone strong { font-size: 9px; font-weight: 700; }
+
+    .rival-list { display: grid; gap: 10px; }
+    .rival-item { padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: rgb(0 0 0 / 10%); }
+    .rival-heading { justify-content: space-between; gap: 8px; }
+    .rival-heading strong { font-size: 12px; }
+    .rival-tag { padding: 4px 7px; border-radius: 20px; background: #263545; color: #bdcde0; font-size: 9px; font-weight: 700; }
+    .rival-detail { margin-top: 7px; color: var(--muted); font-size: 10px; line-height: 1.4; }
+
+    .main-panel { min-height: 620px; overflow: hidden; }
+    .main-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px 18px; border-bottom: 1px solid var(--border); }
+    .main-header h2 { margin: 0; font-size: 20px; letter-spacing: -.035em; }
+    .main-header p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    .turn-indicator { flex-shrink: 0; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; color: #c9d4df; font-size: 11px; }
+    .tabs { display: flex; gap: 5px; padding: 12px 24px 0; border-bottom: 1px solid var(--border); }
+    .tab {
+      position: relative;
+      padding: 10px 12px 12px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .tab[aria-selected="true"] { color: var(--accent); }
+    .tab[aria-selected="true"]::after { position: absolute; right: 10px; bottom: -1px; left: 10px; height: 2px; background: var(--accent); content: ""; }
+    .tab-content { padding: 23px 24px 25px; }
+    .tab-pane[hidden] { display: none; }
+    .intro-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+    .intro-row h3 { margin: 0; font-size: 15px; }
+    .intro-row p { max-width: 560px; margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .hint { color: var(--muted); font-size: 10px; text-align: right; }
+    .engineering-list, .fundraising-list, .scouting-list { display: grid; gap: 10px; }
+    .engineering-item, .fundraising-item, .scouting-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: rgb(255 255 255 / 1.2%);
+    }
+    .engineering-name { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 700; }
+    .engineering-icon {
+      display: grid;
+      width: 29px;
+      height: 29px;
+      flex: 0 0 29px;
+      place-items: center;
+      border-radius: 8px;
+      background: #263a4b;
+      color: #9ac2ff;
+      font-size: 13px;
+    }
+    .engineering-copy p, .fundraising-copy p, .scouting-copy p { margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .engineering-progress { width: 100%; max-width: 320px; margin-top: 10px; }
+    .engineering-actions { display: grid; justify-items: end; gap: 6px; }
+    .cost-line { color: var(--muted); font-size: 10px; white-space: nowrap; }
+    .cost-line strong { color: #d7e0e9; }
+    .fundraising-copy strong, .scouting-copy strong { font-size: 13px; }
+    .fundraising-actions { display: grid; justify-items: end; gap: 7px; }
+    .notice { min-height: 34px; margin-top: 15px; padding: 9px 11px; border: 1px solid transparent; border-radius: 8px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+    .notice:empty { display: none; }
+    .notice[data-kind="success"] { border-color: rgb(82 211 162 / 24%); background: rgb(82 211 162 / 7%); color: #a7e8cd; }
+    .notice[data-kind="warning"] { border-color: rgb(240 189 104 / 25%); background: rgb(240 189 104 / 7%); color: #f3d09a; }
+    .notice[data-kind="error"] { border-color: rgb(238 126 128 / 28%); background: rgb(238 126 128 / 8%); color: #f1a4a6; }
+    .scouting-reveal { display: flex; gap: 5px; margin-top: 9px; flex-wrap: wrap; }
+    .scouting-reveal span { padding: 4px 6px; border-radius: 5px; background: #263545; color: #c7d6e5; font-size: 9px; }
+
+    .week-footer { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 22px; padding-top: 17px; border-top: 1px solid var(--border); }
+    .week-footer p { max-width: 430px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .season-log { padding: 18px; }
+    .log-list { display: grid; gap: 10px; }
+    .log-entry { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 9px; color: #c9d3dd; font-size: 11px; line-height: 1.45; }
+    .log-week { color: var(--accent); font-weight: 700; }
+    .empty-log { color: var(--muted); font-size: 11px; }
+
+    .event-content { padding: 25px 24px; }
+    .event-hero { padding: 19px; border: 1px solid rgb(82 211 162 / 22%); border-radius: 12px; background: linear-gradient(110deg, rgb(82 211 162 / 10%), transparent 75%), #17242c; }
+    .event-header { justify-content: space-between; gap: 15px; }
+    .event-header h3 { margin: 0; font-size: 16px; }
+    .event-header p { margin: 5px 0 0; color: var(--muted); font-size: 11px; }
+    .event-stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 18px 0; }
+    .event-stage { min-height: 82px; padding: 12px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 13%); }
+    .event-stage span { color: var(--muted); font-size: 10px; }
+    .event-stage strong { display: block; margin-top: 10px; font-size: 16px; }
+    .event-stage.flight-stage { min-height: 130px; }
+    .flight-weather { display: block; margin-top: 4px; color: #d3dee9 !important; }
+    .strategy-options { display: flex; gap: 4px; margin-top: 10px; }
+    .strategy-option { flex: 1; min-height: 28px; padding: 3px 4px; border: 1px solid var(--border); border-radius: 6px; background: var(--panel-alt); color: var(--muted); cursor: pointer; font-size: 9px; font-weight: 650; }
+    .strategy-option[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-dark); color: var(--accent); }
+    .strategy-option:hover { border-color: #50647b; }
+    .score-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .score-table th { padding: 10px 8px; color: var(--muted); font-size: 9px; font-weight: 750; letter-spacing: .08em; text-align: right; text-transform: uppercase; }
+    .score-table th:first-child, .score-table td:first-child { text-align: left; }
+    .score-table td { padding: 12px 8px; border-top: 1px solid var(--border); color: #d6dee7; text-align: right; }
+    .score-table tr:first-child td { color: var(--accent); font-weight: 750; }
+    .result-callout { margin: 17px 0; padding: 13px 15px; border: 1px solid var(--border); border-radius: 9px; color: #d9e3ed; font-size: 12px; line-height: 1.5; }
+    .event-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .footer-note { margin-top: 18px; color: var(--muted); font-size: 10px; text-align: center; }
+
+    @media (max-width: 920px) {
+      .dashboard { grid-template-columns: minmax(0, 1fr); }
+      .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .season-card { grid-column: 1 / -1; }
+      .main-panel { min-height: auto; }
+    }
+    @media (max-width: 620px) {
+      .shell { padding: 18px 12px 30px; }
+      .topbar { align-items: flex-start; margin-bottom: 18px; }
+      .topbar-actions { flex-direction: column; align-items: stretch; }
+      .topbar-actions .button { min-height: 34px; font-size: 11px; }
+      .sidebar { grid-template-columns: minmax(0, 1fr); }
+      .main-header, .tab-content, .event-content { padding-right: 16px; padding-left: 16px; }
+      .tabs { overflow-x: auto; padding-right: 12px; padding-left: 12px; }
+      .tab { flex: 0 0 auto; padding-right: 8px; padding-left: 8px; }
+      .engineering-item, .fundraising-item, .scouting-item { grid-template-columns: minmax(0, 1fr); }
+      .engineering-actions, .fundraising-actions { justify-items: start; }
+      .event-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .score-table th, .score-table td { padding-right: 4px; padding-left: 4px; font-size: 9px; }
+      .intro-row, .week-footer { align-items: flex-start; flex-direction: column; }
+      .hint { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <div>
+          <h1>Aerodesign Manager</h1>
+          <p>Gestão de equipe universitária</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="button button-subtle" type="button" data-action="save">Salvar</button>
+        <button class="button button-subtle" type="button" data-action="load">Carregar</button>
+      </div>
+    </header>
+
+    <div class="dashboard">
+      <aside class="sidebar" aria-label="Resumo da temporada">
+        <section class="panel season-card">
+          <div class="season-top">
+            <div class="season-label"><span>Temporada</span><span id="weekLabel">Semana 0 / 20</span></div>
+            <div class="season-number" id="yearLabel">Ano 1</div>
+            <div class="season-caption" id="seasonCaption">Preparação para a competição</div>
+            <div class="progress-track" role="progressbar" aria-label="Progresso da temporada" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0">
+              <div class="progress-fill" id="weekProgress"></div>
+            </div>
+          </div>
+          <div class="season-bottom">
+            <div class="metric">
+              <div class="metric-label">Caixa</div>
+              <div class="metric-value cash-value" id="cashLabel">0 cr</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Prestígio</div>
+              <div class="metric-value" id="prestigeLabel">0</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel aircraft-card">
+          <div class="section-heading">
+            <div>
+              <h2>Status do avião</h2>
+              <p>Indicadores do projeto atual</p>
+            </div>
+          </div>
+          <h3 class="aircraft-name">Projeto Aurora <span id="designYear"></span></h3>
+          <p class="aircraft-summary">Estimativas do regulamento</p>
+          <div id="aircraftStats"></div>
+          <div class="derived-grid" id="derivedStats"></div>
+          <div class="milestone-list" id="milestoneList"></div>
+        </section>
+
+        <section class="panel panel-pad">
+          <div class="section-heading">
+            <div>
+              <h2>Equipes rivais</h2>
+              <p>Filosofias e status de scouting</p>
+            </div>
+          </div>
+          <div class="rival-list" id="rivalList"></div>
+        </section>
+      </aside>
+
+      <main class="main-column">
+        <section class="panel main-panel">
+          <header class="main-header">
+            <div>
+              <h2 id="mainTitle">Centro de operações</h2>
+              <p id="mainSubtitle">Uma decisão por semana. Prepare o projeto para o dia da competição.</p>
+            </div>
+            <div class="turn-indicator" id="turnIndicator">20 ações restantes</div>
+          </header>
+          <div id="preparationView">
+            <nav class="tabs" role="tablist" aria-label="Ações da equipe">
+              <button class="tab" id="tab-engineering" type="button" role="tab" aria-controls="pane-engineering" aria-selected="true" data-tab="engineering">Engenharia</button>
+              <button class="tab" id="tab-fundraising" type="button" role="tab" aria-controls="pane-fundraising" aria-selected="false" data-tab="fundraising">Captação</button>
+              <button class="tab" id="tab-scouting" type="button" role="tab" aria-controls="pane-scouting" aria-selected="false" data-tab="scouting">Scouting</button>
+            </nav>
+            <div class="tab-content">
+              <section class="tab-pane" id="pane-engineering" role="tabpanel" aria-labelledby="tab-engineering">
+                <div class="intro-row">
+                  <div>
+                    <h3>Desenvolvimento do projeto</h3>
+                    <p>Invista uma semana e créditos em uma área. Melhorias sucessivas na mesma disciplina rendem menos.</p>
+                  </div>
+                  <div class="hint">Cada melhoria consome 1 semana</div>
+                </div>
+                <div class="engineering-list" id="engineeringList"></div>
+              </section>
+              <section class="tab-pane" id="pane-fundraising" role="tabpanel" aria-labelledby="tab-fundraising" hidden>
+                <div class="intro-row">
+                  <div>
+                    <h3>Financiamento da equipe</h3>
+                    <p>Créditos dão acesso a mais melhorias, mas cada atividade de captação custa semanas de projeto.</p>
+                  </div>
+                  <div class="hint">Renda determinística</div>
+                </div>
+                <div class="fundraising-list" id="fundraisingList"></div>
+              </section>
+              <section class="tab-pane" id="pane-scouting" role="tabpanel" aria-labelledby="tab-scouting" hidden>
+                <div class="intro-row">
+                  <div>
+                    <h3>Observação das rivais</h3>
+                    <p>Revele estimativas de uma equipe. Cada análise ocupa 1 semana; os valores têm uma margem de incerteza.</p>
+                  </div>
+                  <div class="hint">Consome 1 semana, sem custo em créditos</div>
+                </div>
+                <div class="scouting-list" id="scoutingList"></div>
+              </section>
+              <div class="notice" id="actionNotice" role="status" aria-live="polite"></div>
+              <div class="week-footer" id="weekFooter">
+                <p>Sem ação disponível? Encerrar a semana avança o calendário e dá às rivais mais tempo para evoluir.</p>
+                <button class="button" type="button" data-action="advance">Encerrar semana <span aria-hidden="true">→</span></button>
+              </div>
+            </div>
+          </div>
+          <div id="eventView" hidden></div>
+        </section>
+
+        <section class="panel season-log">
+          <div class="section-heading">
+            <div>
+              <h2>Diário da equipe</h2>
+              <p>Últimos acontecimentos da temporada</p>
+            </div>
+          </div>
+          <div class="log-list" id="logList"></div>
+        </section>
+      </main>
+    </div>
+    <div class="footer-note">Aerodesign Manager · Simulação determinística com variância no evento · Progresso salvo neste navegador</div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const SAVE_KEY = "aerodesign-manager-save-v1";
+    const WEEKS_PER_SEASON = 20;
+    const BASE_STATS = { aerodynamics: 30, structures: 30, systems: 25, report: 20 };
+    const MILESTONE_LEVEL = 50;
+    const ATTRIBUTES = [
+      { key: "aerodynamics", name: "Aerodinâmica", icon: "↗", baseCost: 240, baseGain: 8, description: "Aumenta a capacidade de carga e a eficiência do voo." },
+      { key: "structures", name: "Estruturas", icon: "⌁", baseCost: 220, baseGain: 8, description: "Reduz o peso vazio e melhora a confiabilidade." },
+      { key: "systems", name: "Sistemas", icon: "⌘", baseCost: 200, baseGain: 8, description: "Eleva a confiabilidade com um custo moderado de peso." },
+      { key: "report", name: "Relatório", icon: "▤", baseCost: 150, baseGain: 9, description: "Garante pontos de apresentação antes das baterias de voo." }
+    ];
+    const RIVAL_BLUEPRINTS = [
+      { name: "Instituto Politécnico", philosophy: "Estruturas e segurança", weights: { aerodynamics: 0.13, structures: 0.38, systems: 0.22, report: 0.17, funding: 0.10 } },
+      { name: "Universidade Estadual", philosophy: "Eficiência equilibrada", weights: { aerodynamics: 0.28, structures: 0.22, systems: 0.19, report: 0.20, funding: 0.11 } },
+      { name: "Centro Universitário do Vale", philosophy: "Carga máxima", weights: { aerodynamics: 0.43, structures: 0.14, systems: 0.12, report: 0.16, funding: 0.15 } },
+      { name: "Escola Técnica do Litoral", philosophy: "Sistemas e captação", weights: { aerodynamics: 0.17, structures: 0.18, systems: 0.30, report: 0.15, funding: 0.20 } }
+    ];
+    const FUNDRAISERS = [
+      { id: "raffle", name: "Organizar rifa", weeks: 1, reward: 420, description: "Uma ação rápida para reforçar o caixa sem interromper o projeto por muito tempo." },
+      { id: "sponsorship", name: "Buscar patrocínio", weeks: 2, reward: 1120, description: "Uma rodada de contatos com retorno maior, mas consome duas semanas de preparação." }
+    ];
+    const FLIGHT_STRATEGIES = {
+      conservative: { label: "Segura", loadMultiplier: 0.72, reliabilityModifier: 0.16 },
+      balanced: { label: "Equilibrada", loadMultiplier: 0.90, reliabilityModifier: 0 },
+      aggressive: { label: "Agressiva", loadMultiplier: 1.05, reliabilityModifier: -0.13 }
+    };
+    const EVENT_WEATHERS = [
+      { id: "clear", label: "Céu limpo", effect: "Condições estáveis", payloadMultiplier: 1, reliabilityModifier: 0 },
+      { id: "gusts", label: "Rajadas de vento", effect: "Carga −4% · Confiabilidade −8 p.p.", payloadMultiplier: 0.96, reliabilityModifier: -0.08 },
+      { id: "heat", label: "Calor e ar rarefeito", effect: "Carga −12% · Confiabilidade −2 p.p.", payloadMultiplier: 0.88, reliabilityModifier: -0.02 },
+      { id: "turbulence", label: "Turbulência", effect: "Carga −8% · Confiabilidade −12 p.p.", payloadMultiplier: 0.92, reliabilityModifier: -0.12 }
+    ];
+    const TECH_MILESTONES = [
+      { key: "aerodynamics", label: "Aerodinâmica · Perfil avançado", effect: "+8% de potencial de carga" },
+      { key: "structures", label: "Estruturas · Manufatura leve", effect: "−8% de peso vazio" },
+      { key: "systems", label: "Sistemas · Redundância", effect: "+6 p.p. de confiabilidade" },
+      { key: "report", label: "Relatório · Revisão técnica", effect: "+8 pontos de apresentação" }
+    ];
+    const ACTIONS = {
+      engineering: "Engenharia",
+      fundraising: "Captação",
+      scouting: "Scouting",
+      idle: "Semana encerrada"
+    };
+
+    const State = {
+      create() {
+        return {
+          version: 1,
+          year: 1,
+          week: 0,
+          cash: 1000,
+          prestige: 0,
+          attributes: { ...BASE_STATS },
+          rivals: this.createRivals(1),
+          scouted: {},
+          history: [],
+          log: [{ week: 0, text: "A temporada começou. Defina uma estratégia para o Projeto Aurora." }],
+          phase: "preparation",
+          eventResult: null,
+          eventWeather: null,
+          eventStrategies: ["balanced", "balanced", "balanced"]
+        };
+      },
+      createRivals(year) {
+        const progression = Math.min(24, Math.max(0, year - 1) * 2);
+        return RIVAL_BLUEPRINTS.map((blueprint, index) => {
+          const startingBonus = (year - 1) % 4;
+          const base = 27 + progression + (index % 2) * 4 + startingBonus;
+          return {
+            name: blueprint.name,
+            philosophy: blueprint.philosophy,
+            weights: { ...blueprint.weights },
+            attributes: {
+              aerodynamics: base + (index === 2 ? 9 : 0),
+              structures: base + (index === 0 ? 10 : 0),
+              systems: base + (index === 3 ? 7 : 0),
+              report: base - 4
+            },
+            cash: 700 + year * 80
+          };
+        });
+      },
+      validate(candidate) {
+        const validPhase = ["preparation", "event", "results"].includes(candidate.phase);
+        const validAttributes = candidate.attributes && ATTRIBUTES.every(({ key }) =>
+          Number.isFinite(candidate.attributes[key]) && candidate.attributes[key] >= 0 && candidate.attributes[key] <= 100
+        );
+        const validRivals = Array.isArray(candidate.rivals) && candidate.rivals.length === RIVAL_BLUEPRINTS.length &&
+          candidate.rivals.every((rival) => rival && typeof rival.name === "string" &&
+            rival.attributes && ATTRIBUTES.every(({ key }) => Number.isFinite(rival.attributes[key])));
+        const validStrategies = candidate.eventStrategies === undefined ||
+          (Array.isArray(candidate.eventStrategies) && candidate.eventStrategies.length === 3 &&
+            candidate.eventStrategies.every((strategy) => Object.hasOwn(FLIGHT_STRATEGIES, strategy)));
+        const validWeather = candidate.eventWeather == null ||
+          (Array.isArray(candidate.eventWeather) && candidate.eventWeather.length === 3 &&
+            candidate.eventWeather.every((weather) => weather && EVENT_WEATHERS.some((option) => option.id === weather.id)));
+        return candidate.version === 1 &&
+          Number.isInteger(candidate.year) && candidate.year >= 1 &&
+          Number.isInteger(candidate.week) && candidate.week >= 0 && candidate.week <= WEEKS_PER_SEASON &&
+          Number.isFinite(candidate.cash) && candidate.cash >= 0 &&
+          Number.isFinite(candidate.prestige) && candidate.prestige >= 0 &&
+          validAttributes && validRivals &&
+          Array.isArray(candidate.history) && Array.isArray(candidate.log) &&
+          candidate.scouted && typeof candidate.scouted === "object" &&
+          validStrategies && validWeather &&
+          validPhase &&
+          (candidate.phase !== "results" || (candidate.eventResult && Array.isArray(candidate.eventResult.standings)));
+      },
+      migrate(candidate) {
+        return {
+          ...candidate,
+          eventWeather: Array.isArray(candidate.eventWeather)
+            ? candidate.eventWeather.map((weather) => weather && EVENT_WEATHERS.find((option) => option.id === weather.id))
+            : candidate.phase === "event" ? EventEngine.planBatteries() : null,
+          eventStrategies: candidate.eventStrategies ?? ["balanced", "balanced", "balanced"]
+        };
+      }
+    };
+
+    const GameLoop = {
+      perform(action, weeks, mutation, successMessage) {
+        if (state.phase !== "preparation") return showNotice("A preparação desta temporada já terminou.", "warning");
+        if (!Number.isInteger(weeks) || weeks < 1 || state.week + weeks > WEEKS_PER_SEASON) {
+          return showNotice("Não há semanas suficientes para essa ação.", "warning");
+        }
+        mutation();
+        for (let turn = 0; turn < weeks; turn += 1) {
+          AIBehavior.advanceAll(state.rivals);
+          state.week += 1;
+          state.log.unshift({ week: state.week, text: `${action}: ${successMessage}` });
+        }
+        if (state.week === WEEKS_PER_SEASON) {
+          state.phase = "event";
+          state.eventWeather = EventEngine.planBatteries();
+          state.eventStrategies = ["balanced", "balanced", "balanced"];
+          state.log.unshift({ week: state.week, text: "A preparação terminou. A equipe está no evento de competição." });
+        }
+        state.log = state.log.slice(0, 6);
+        showNotice(successMessage, "success");
+        persist();
+        UIRenderer.render();
+      },
+      endWeek() {
+        this.perform(ACTIONS.idle, 1, () => {}, "O calendário avançou; as equipes rivais também trabalharam.");
+      }
+    };
+
+    const AIBehavior = {
+      advanceAll(rivals) {
+        rivals.forEach((rival) => {
+          const choice = this.chooseAction(rival);
+          if (choice === "funding") {
+            rival.cash += 330;
+            return;
+          }
+          const stat = rival.attributes[choice];
+          rival.attributes[choice] = Math.min(100, stat + 6 * (1 - stat / 135));
+        });
+      },
+      chooseAction(rival) {
+        const entries = Object.entries(rival.weights);
+        const fundingWeight = rival.cash < 500 ? rival.weights.funding * 1.8 : rival.weights.funding;
+        const total = entries.reduce((sum, [key, weight]) => sum + (key === "funding" ? fundingWeight : weight), 0);
+        let roll = Math.random() * total;
+        for (const [key, weight] of entries) {
+          roll -= key === "funding" ? fundingWeight : weight;
+          if (roll <= 0) return key;
+        }
+        return entries[0][0];
+      }
+    };
+
+    const EventEngine = {
+      derive(attributes) {
+        const milestones = Object.fromEntries(TECH_MILESTONES.map(({ key }) => [key, attributes[key] >= MILESTONE_LEVEL]));
+        const emptyWeightBase = 15.8 - attributes.structures * 0.07 + attributes.systems * 0.018;
+        const payloadBase = 0.8 + attributes.aerodynamics * 0.052 + attributes.systems * 0.017 + attributes.structures * 0.006;
+        const emptyWeight = this.clamp(emptyWeightBase * (milestones.structures ? 0.92 : 1), 7.5, 16);
+        const payload = this.clamp(payloadBase * (milestones.aerodynamics ? 1.08 : 1), 1, 10.5);
+        const reliability = this.clamp(
+          0.58 + attributes.structures * 0.0028 + attributes.systems * 0.0025 - attributes.aerodynamics * 0.00055 + (milestones.systems ? 0.06 : 0),
+          0.55,
+          0.97
+        );
+        const payloadPotential = this.clamp(payload * 9.2 + (16 - emptyWeight) * 3.2, 0, 100);
+        return { emptyWeight, payload, reliability, payloadPotential, milestones };
+      },
+      planBatteries() {
+        return [0, 1, 2].map(() => {
+          const index = Math.floor(Math.random() * EVENT_WEATHERS.length);
+          return { ...EVENT_WEATHERS[index] };
+        });
+      },
+      scoreFlight(attributes, strategy, weather) {
+        const design = this.derive(attributes);
+        const reliability = this.clamp(design.reliability + weather.reliabilityModifier + strategy.reliabilityModifier, 0.35, 0.98);
+        const crashChance = this.clamp(0.04 + (1 - reliability) * 0.45, 0.04, 0.36);
+        const flightPotential = design.payloadPotential * strategy.loadMultiplier * weather.payloadMultiplier;
+        const failureRoll = Math.random();
+        if (failureRoll < crashChance * 0.65) return { score: 0, crashed: true, partial: false, weather: weather.label, strategy: strategy.label };
+        const variance = (Math.random() - 0.5) * 12;
+        if (failureRoll < crashChance) {
+          return {
+            score: Math.round(this.clamp(flightPotential * 0.5 + variance, 0, 100)),
+            crashed: false,
+            partial: true,
+            weather: weather.label,
+            strategy: strategy.label
+          };
+        }
+        return {
+          score: Math.round(this.clamp(flightPotential + variance, 0, 100)),
+          crashed: false,
+          partial: false,
+          weather: weather.label,
+          strategy: strategy.label
+        };
+      },
+      scoreReport(report) {
+        return Math.round(this.clamp(28 + report * 0.72 + (report >= MILESTONE_LEVEL ? 8 : 0), 0, 100));
+      },
+      compete(gameState) {
+        const teams = [
+          { name: "Projeto Aurora", isPlayer: true, attributes: gameState.attributes },
+          ...gameState.rivals.map((rival) => ({ name: rival.name, isPlayer: false, attributes: rival.attributes }))
+        ];
+        const standings = teams.map((team) => {
+          const report = this.scoreReport(team.attributes.report);
+          const flights = [0, 1, 2].map((index) => {
+            const strategy = team.isPlayer
+              ? FLIGHT_STRATEGIES[gameState.eventStrategies[index]]
+              : FLIGHT_STRATEGIES.balanced;
+            return this.scoreFlight(team.attributes, strategy, gameState.eventWeather[index]);
+          });
+          const total = report + flights.reduce((sum, flight) => sum + flight.score, 0);
+          return { name: team.name, isPlayer: team.isPlayer, report, flights, total };
+        }).sort((left, right) => right.total - left.total);
+        standings.forEach((team, index) => { team.position = index + 1; });
+        return { standings, winner: standings[0].name };
+      },
+      clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+    };
+
+    let state = State.create();
+    let activeTab = "engineering";
+    let notice = { text: "", kind: "" };
+
+    function formatCredits(amount) {
+      return `${Math.round(amount).toLocaleString("pt-BR")} cr`;
+    }
+
+    function showNotice(text, kind) {
+      notice = { text, kind };
+      const noticeElement = document.getElementById("actionNotice");
+      if (noticeElement) {
+        noticeElement.textContent = text;
+        noticeElement.dataset.kind = kind;
+      }
+    }
+
+    function persist() {
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+      } catch (error) {
+        showNotice(`Não foi possível salvar neste navegador: ${error.message}`, "error");
+      }
+    }
+
+    function saveGame() {
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+        showNotice("Jogo salvo neste navegador.", "success");
+      } catch (error) {
+        showNotice(`Falha ao salvar: ${error.message}`, "error");
+      }
+    }
+
+    function loadGame() {
+      try {
+        const saved = localStorage.getItem(SAVE_KEY);
+        if (!saved) {
+          showNotice("Nenhum jogo salvo foi encontrado neste navegador.", "warning");
+          return;
+        }
+        const loaded = State.migrate(JSON.parse(saved));
+        if (!State.validate(loaded)) {
+          showNotice("O arquivo salvo não corresponde a um estado válido do jogo.", "error");
+          return;
+        }
+        state = loaded;
+        notice = { text: "Jogo carregado.", kind: "success" };
+        UIRenderer.render();
+      } catch (error) {
+        showNotice(`Falha ao carregar o jogo: ${error.message}`, "error");
+      }
+    }
+
+    function engineeringCost(attribute) {
+      const level = state.attributes[attribute.key];
+      return Math.round(attribute.baseCost * (1 + level / 100));
+    }
+
+    function engineeringGain(attribute) {
+      const level = state.attributes[attribute.key];
+      return Math.min(100 - level, attribute.baseGain * (1 - level / 135));
+    }
+
+    function buyUpgrade(key) {
+      const attribute = ATTRIBUTES.find((entry) => entry.key === key);
+      if (!attribute) return showNotice("Área de engenharia desconhecida.", "error");
+      const cost = engineeringCost(attribute);
+      if (state.cash < cost) return showNotice("Créditos insuficientes para essa melhoria.", "warning");
+      const gain = engineeringGain(attribute);
+      if (gain <= 0) return showNotice("Essa área já atingiu o nível máximo.", "warning");
+      GameLoop.perform(ACTIONS.engineering, 1, () => {
+        state.cash -= cost;
+        state.attributes[key] = Math.min(100, state.attributes[key] + gain);
+      }, `${attribute.name} evoluiu ${gain.toFixed(1).replace(".", ",")} pontos por ${formatCredits(cost)}.`);
+    }
+
+    function raiseFunds(id) {
+      const option = FUNDRAISERS.find((entry) => entry.id === id);
+      if (!option) return showNotice("Ação de captação desconhecida.", "error");
+      GameLoop.perform(ACTIONS.fundraising, option.weeks, () => {
+        state.cash += option.reward;
+      }, `${option.name} rendeu ${formatCredits(option.reward)}.`);
+    }
+
+    function scoutRival(index) {
+      const rival = state.rivals[index];
+      if (!rival) return showNotice("Equipe rival não encontrada.", "error");
+      if (state.scouted[index]) return showNotice("Esta equipe já foi analisada nesta temporada.", "warning");
+      GameLoop.perform(ACTIONS.scouting, 1, () => {
+        const estimate = {};
+        ATTRIBUTES.forEach(({ key }) => {
+          const noisyValue = rival.attributes[key] + (Math.random() - 0.5) * 14;
+          estimate[key] = Math.max(0, Math.min(100, Math.round(noisyValue / 10) * 10));
+        });
+        state.scouted[index] = estimate;
+      }, `Scouting concluído: estimativas de ${rival.name} foram adicionadas ao relatório.`);
+    }
+
+    function setTab(name) {
+      if (!["engineering", "fundraising", "scouting"].includes(name)) return;
+      activeTab = name;
+      document.querySelectorAll(".tab").forEach((tab) => {
+        const selected = tab.dataset.tab === name;
+        tab.setAttribute("aria-selected", String(selected));
+        tab.tabIndex = selected ? 0 : -1;
+      });
+      document.querySelectorAll(".tab-pane").forEach((pane) => {
+        pane.hidden = pane.id !== `pane-${name}`;
+      });
+      showNotice(notice.text, notice.kind);
+    }
+
+    function chooseFlightStrategy(batteryIndex, strategyId) {
+      if (state.phase !== "event" || !state.eventStrategies[batteryIndex]) return;
+      if (!Object.prototype.hasOwnProperty.call(FLIGHT_STRATEGIES, strategyId)) {
+        return showNotice("Estratégia de voo desconhecida.", "error");
+      }
+      state.eventStrategies[batteryIndex] = strategyId;
+      persist();
+      UIRenderer.render();
+    }
+
+    function resolveEvent() {
+      if (state.phase !== "event") return;
+      state.eventResult = EventEngine.compete(state);
+      state.phase = "results";
+      const playerResult = state.eventResult.standings.find((team) => team.isPlayer);
+      const reward = playerResult.position === 1 ? 1400 : 300;
+      state.cash += reward;
+      if (playerResult.position === 1) state.prestige += 10;
+      state.history.unshift({ year: state.year, position: playerResult.position, score: playerResult.total, winner: state.eventResult.winner });
+      state.log.unshift({
+        week: WEEKS_PER_SEASON,
+        text: playerResult.position === 1
+          ? `Campeões da temporada! A equipe recebeu ${formatCredits(reward)} e 10 pontos de prestígio.`
+          : `Competição encerrada em ${playerResult.position}º lugar. A equipe recebeu ${formatCredits(reward)}.`
+      });
+      state.log = state.log.slice(0, 6);
+      notice = { text: "", kind: "" };
+      persist();
+      UIRenderer.render();
+    }
+
+    function startNextSeason() {
+      if (state.phase !== "results") return;
+      state.year += 1;
+      state.week = 0;
+      const legacyBonus = Math.min(6, Math.floor(state.prestige / 25));
+      state.attributes = Object.fromEntries(Object.entries(BASE_STATS).map(([key, value]) => [key, value + legacyBonus]));
+      state.rivals = State.createRivals(state.year);
+      state.scouted = {};
+      state.phase = "preparation";
+      state.eventResult = null;
+      state.eventWeather = null;
+      state.eventStrategies = ["balanced", "balanced", "balanced"];
+      state.log = [{ week: 0, text: `Temporada ${state.year} iniciada. O projeto foi reiniciado; o prestígio concede uma pequena vantagem de experiência.` }, ...state.log].slice(0, 6);
+      activeTab = "engineering";
+      notice = { text: `Temporada ${state.year} iniciada.`, kind: "success" };
+      persist();
+      UIRenderer.render();
+    }
+
+    function renderEngineering() {
+      const list = document.getElementById("engineeringList");
+      list.innerHTML = ATTRIBUTES.map((attribute) => {
+        const level = state.attributes[attribute.key];
+        const gain = engineeringGain(attribute);
+        const cost = engineeringCost(attribute);
+        const disabled = state.phase !== "preparation" || state.week >= WEEKS_PER_SEASON || state.cash < cost || gain <= 0;
+        return `
+          <article class="engineering-item">
+            <div class="engineering-copy">
+              <div class="engineering-name"><span class="engineering-icon" aria-hidden="true">${attribute.icon}</span>${attribute.name}</div>
+              <p>${attribute.description}</p>
+              <div class="engineering-progress">
+                <div class="aircraft-stat-top"><span>Nível atual</span><strong>${Math.round(level)} / 100</strong></div>
+                <div class="mini-track"><div class="mini-fill" style="width:${level}%;background:var(--blue)"></div></div>
+              </div>
+            </div>
+            <div class="engineering-actions">
+              <div class="cost-line">+${gain.toFixed(1).replace(".", ",")} pts · <strong>${formatCredits(cost)}</strong></div>
+              <button class="button button-subtle" type="button" data-action="upgrade" data-attribute="${attribute.key}" ${disabled ? "disabled" : ""}>Investir · 1 sem.</button>
+            </div>
+          </article>`;
+      }).join("");
+    }
+
+    function renderFundraising() {
+      document.getElementById("fundraisingList").innerHTML = FUNDRAISERS.map((option) => `
+        <article class="fundraising-item">
+          <div class="fundraising-copy">
+            <strong>${option.name}</strong>
+            <p>${option.description}</p>
+          </div>
+          <div class="fundraising-actions">
+            <div class="cost-line">${option.weeks} ${option.weeks === 1 ? "semana" : "semanas"} · <strong>+${formatCredits(option.reward)}</strong></div>
+            <button class="button button-subtle" type="button" data-action="fundraise" data-fundraiser="${option.id}" ${state.phase !== "preparation" || state.week + option.weeks > WEEKS_PER_SEASON ? "disabled" : ""}>Iniciar captação</button>
+          </div>
+        </article>`).join("");
+    }
+
+    function renderScouting() {
+      document.getElementById("scoutingList").innerHTML = state.rivals.map((rival, index) => {
+        const estimate = state.scouted[index];
+        const reveal = estimate
+          ? `<div class="scouting-reveal">${ATTRIBUTES.map(({ key, name }) => `<span>${name}: ~${estimate[key]}</span>`).join("")}</div>`
+          : "";
+        return `
+          <article class="scouting-item">
+            <div class="scouting-copy">
+              <strong>${rival.name}</strong>
+              <p>${estimate ? "Estimativa aproximada registrada nesta temporada." : "Filosofia: " + rival.philosophy + ". Atributos ainda não revelados."}</p>
+              ${reveal}
+            </div>
+            <button class="button button-subtle" type="button" data-action="scout" data-rival="${index}" ${state.phase !== "preparation" || Boolean(estimate) || state.week >= WEEKS_PER_SEASON ? "disabled" : ""}>${estimate ? "Analisada" : "Analisar · 1 sem."}</button>
+          </article>`;
+      }).join("");
+    }
+
+    function renderAircraft() {
+      const stats = [
+        { key: "aerodynamics", label: "Aerodinâmica" },
+        { key: "structures", label: "Estruturas" },
+        { key: "systems", label: "Sistemas" },
+        { key: "report", label: "Relatório" }
+      ];
+      document.getElementById("aircraftStats").innerHTML = stats.map(({ key, label }) => `
+        <div class="aircraft-stat">
+          <div class="aircraft-stat-top"><span>${label}</span><strong>${Math.round(state.attributes[key])}</strong></div>
+          <div class="mini-track"><div class="mini-fill" style="width:${state.attributes[key]}%"></div></div>
+        </div>`).join("");
+      const derived = EventEngine.derive(state.attributes);
+      document.getElementById("derivedStats").innerHTML = `
+        <div class="derived-stat"><span>Peso vazio</span><strong>${derived.emptyWeight.toFixed(1).replace(".", ",")} kg</strong></div>
+        <div class="derived-stat"><span>Carga estimada</span><strong>${derived.payload.toFixed(1).replace(".", ",")} kg</strong></div>
+        <div class="derived-stat"><span>Confiabilidade</span><strong>${Math.round(derived.reliability * 100)}%</strong></div>
+        <div class="derived-stat"><span>Potencial de voo</span><strong>${Math.round(derived.payloadPotential)} / 100</strong></div>`;
+      document.getElementById("milestoneList").innerHTML = TECH_MILESTONES.map((milestone) => `
+        <div class="milestone ${derived.milestones[milestone.key] ? "unlocked" : ""}">
+          <strong>${milestone.label}</strong><span>${derived.milestones[milestone.key] ? milestone.effect : `Nível ${MILESTONE_LEVEL}`}</span>
+        </div>`).join("");
+    }
+
+    function renderRivals() {
+      document.getElementById("rivalList").innerHTML = state.rivals.map((rival, index) => `
+        <article class="rival-item">
+          <div class="rival-heading"><strong>${rival.name}</strong><span class="rival-tag">${state.scouted[index] ? "ANALISADA" : "NÃO ANALISADA"}</span></div>
+          <div class="rival-detail">${rival.philosophy}${state.scouted[index] ? ` · Média estimada ${Math.round(Object.values(state.scouted[index]).reduce((sum, value) => sum + value, 0) / 4)}` : ""}</div>
+        </article>`).join("");
+    }
+
+    function renderLog() {
+      const list = document.getElementById("logList");
+      list.innerHTML = state.log.length
+        ? state.log.map((entry) => `<div class="log-entry"><span class="log-week">${entry.week === 0 ? "INÍCIO" : `SEM. ${entry.week}`}</span><span>${entry.text}</span></div>`).join("")
+        : `<div class="empty-log">Ainda não há acontecimentos registrados.</div>`;
+    }
+
+    function renderEvent() {
+      const host = document.getElementById("eventView");
+      if (state.phase === "preparation") {
+        document.getElementById("preparationView").hidden = false;
+        host.hidden = true;
+        return;
+      }
+      document.getElementById("preparationView").hidden = true;
+      host.hidden = false;
+      if (state.phase === "event") {
+        if (!state.eventWeather) {
+          state.eventWeather = EventEngine.planBatteries();
+          persist();
+        }
+        const eventWeather = state.eventWeather;
+        host.innerHTML = `
+          <div class="event-content">
+            <section class="event-hero">
+              <div class="event-header">
+                <div><h3>Dia da competição · Ano ${state.year}</h3><p>Defina a carga para cada bateria. Mais carga aumenta a pontuação potencial, mas eleva o risco de falha.</p></div>
+                <span class="rival-tag">SEMANA 20 / 20</span>
+              </div>
+            </section>
+            <div class="event-stages">
+              <div class="event-stage"><span>01 · Apresentação</span><strong>${EventEngine.scoreReport(state.attributes.report)} pts</strong></div>
+              ${eventWeather.map((weather, index) => `
+                <div class="event-stage flight-stage">
+                  <span>0${index + 2} · Bateria ${index + 1}</span>
+                  <span class="flight-weather">${weather.label} · ${weather.effect}</span>
+                  <div class="strategy-options" role="group" aria-label="Estratégia da bateria ${index + 1}">
+                    ${Object.entries(FLIGHT_STRATEGIES).map(([id, strategy]) => `
+                      <button class="strategy-option" type="button" data-action="choose-strategy" data-battery="${index}" data-strategy="${id}" aria-pressed="${state.eventStrategies[index] === id}">
+                        ${strategy.label}
+                      </button>`).join("")}
+                  </div>
+                </div>`).join("")}
+            </div>
+            <div class="result-callout">Confiabilidade-base do Projeto Aurora: <strong>${Math.round(EventEngine.derive(state.attributes).reliability * 100)}%</strong>. Uma falha pode resultar em queda (zero) ou pouso parcial (metade dos pontos). O clima e a estratégia alteram cada bateria.</div>
+            <div class="event-actions"><button class="button button-primary" type="button" data-action="resolve-event">Simular competição <span aria-hidden="true">→</span></button></div>
+          </div>`;
+        return;
+      }
+      const result = state.eventResult;
+      const player = result.standings.find((team) => team.isPlayer);
+      const playerPosition = player.position;
+      const reward = playerPosition === 1 ? 1400 : 300;
+      const flightCells = player.flights.map((flight) => flight.crashed ? "0 · queda" : flight.partial ? `${flight.score} · parcial` : flight.score).join(" · ");
+      host.innerHTML = `
+        <div class="event-content">
+          <section class="event-hero">
+            <div class="event-header">
+              <div><h3>Resultado final · ${playerPosition}º lugar</h3><p>Vencedora: ${result.winner}. ${playerPosition === 1 ? "A equipe conquistou o título." : "A temporada termina com uma nova meta para o próximo ano."}</p></div>
+              <span class="rival-tag">ANO ${state.year}</span>
+            </div>
+          </section>
+          <div class="event-stages">
+            <div class="event-stage"><span>Apresentação</span><strong>${player.report} pts</strong></div>
+            ${player.flights.map((flight, index) => `
+              <div class="event-stage">
+                <span>Bateria ${index + 1} · ${flight.weather || "Clima variável"}</span>
+                <strong>${flight.score} pts</strong>
+                <span class="flight-weather">${flight.strategy || "Estratégia equilibrada"}${flight.crashed ? " · Queda" : flight.partial ? " · Pouso parcial" : ""}</span>
+              </div>`).join("")}
+          </div>
+          <div class="result-callout">${playerPosition === 1 ? "Título conquistado!" : `Projeto Aurora marcou ${player.total} pontos, com baterias ${flightCells}.`} Recompensa da equipe: <strong>${formatCredits(reward)}</strong>${playerPosition === 1 ? " e 10 pontos de prestígio." : "."}</div>
+          <table class="score-table">
+            <thead><tr><th>Posição</th><th>Equipe</th><th>Relatório</th><th>Bateria 1</th><th>Bateria 2</th><th>Bateria 3</th><th>Total</th></tr></thead>
+            <tbody>${result.standings.map((team) => `
+              <tr>
+                <td>${team.position}º</td><td>${team.name}${team.isPlayer ? " · Você" : ""}</td><td>${team.report}</td>
+                ${team.flights.map((flight) => `<td>${flight.score}${flight.crashed ? " · Queda" : flight.partial ? " · Parcial" : ""}</td>`).join("")}<td>${team.total}</td>
+              </tr>`).join("")}</tbody>
+          </table>
+          <div class="event-actions"><button class="button button-primary" type="button" data-action="next-season">Iniciar próxima temporada <span aria-hidden="true">→</span></button></div>
+        </div>`;
+    }
+
+    function renderHeader() {
+      document.getElementById("weekLabel").textContent = `Semana ${state.week} / ${WEEKS_PER_SEASON}`;
+      document.getElementById("yearLabel").textContent = `Ano ${state.year}`;
+      document.getElementById("designYear").textContent = `· Ano ${state.year}`;
+      document.getElementById("cashLabel").textContent = formatCredits(state.cash);
+      document.getElementById("prestigeLabel").textContent = state.prestige;
+      const progress = (state.week / WEEKS_PER_SEASON) * 100;
+      document.getElementById("weekProgress").style.width = `${progress}%`;
+      document.querySelector('[role="progressbar"]').setAttribute("aria-valuenow", String(state.week));
+      const remaining = WEEKS_PER_SEASON - state.week;
+      document.getElementById("turnIndicator").textContent = state.phase === "preparation"
+        ? `${remaining} ${remaining === 1 ? "ação restante" : "ações restantes"}`
+        : state.phase === "event" ? "Evento final" : "Temporada concluída";
+      document.getElementById("seasonCaption").textContent = state.phase === "preparation"
+        ? "Preparação para a competição"
+        : state.phase === "event" ? "Competição em andamento" : "Resultado oficial";
+      document.getElementById("mainTitle").textContent = state.phase === "preparation" ? "Centro de operações" : "Evento de competição";
+      document.getElementById("mainSubtitle").textContent = state.phase === "preparation"
+        ? "Uma decisão por semana. Prepare o projeto para o dia da competição."
+        : state.phase === "event" ? "A temporada está decidida. Execute as baterias para ver a classificação."
+          : `Temporada ${state.year} encerrada. Confira a classificação e prepare o próximo ciclo.`;
+      document.getElementById("weekFooter").hidden = state.phase !== "preparation";
+      document.querySelector('[data-action="advance"]').disabled = state.phase !== "preparation";
+    }
+
+    const UIRenderer = {
+      render() {
+        renderHeader();
+        renderEngineering();
+        renderFundraising();
+        renderScouting();
+        renderAircraft();
+        renderRivals();
+        renderLog();
+        renderEvent();
+        if (state.phase === "preparation") setTab(activeTab);
+        else showNotice("", "");
+      }
+    };
+
+    document.addEventListener("click", (event) => {
+      const target = event.target.closest("button");
+      if (!target) return;
+      if (target.dataset.tab) return setTab(target.dataset.tab);
+      switch (target.dataset.action) {
+        case "upgrade": return buyUpgrade(target.dataset.attribute);
+        case "fundraise": return raiseFunds(target.dataset.fundraiser);
+        case "scout": return scoutRival(Number(target.dataset.rival));
+        case "advance": return GameLoop.endWeek();
+        case "save": return saveGame();
+        case "load": return loadGame();
+        case "resolve-event": return resolveEvent();
+        case "choose-strategy": return chooseFlightStrategy(Number(target.dataset.battery), target.dataset.strategy);
+        case "next-season": return startNextSeason();
+        default: return;
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+      const tabs = [...document.querySelectorAll(".tab")];
+      const currentIndex = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+      const offset = event.key === "ArrowRight" ? 1 : -1;
+      const next = tabs[(currentIndex + offset + tabs.length) % tabs.length];
+      next.focus();
+      setTab(next.dataset.tab);
+    });
+
+    UIRenderer.render();
+  </script>
+</body>
+</html>
