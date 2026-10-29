@@ -399,13 +399,20 @@
     .cash-value { color: var(--accent); }
 
     .aircraft-card { padding: 18px; }
+    .overview-grid > .aircraft-card { overflow-y: auto; }
     .aircraft-name { margin: 0 0 3px; font-size: 14px; }
     .aircraft-summary { margin: 0 0 17px; color: var(--muted); font-size: 11px; }
     .aircraft-concept { margin: -8px 0 14px; color: #b6e8d2; font-size: 10px; }
-    .aircraft-stat { margin-top: 13px; }
-    .aircraft-stat-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 7px; font-size: 11px; }
-    .aircraft-stat-top span:first-child { color: #c8d1dc; }
-    .aircraft-stat-top strong { font-weight: 700; }
+    .aircraft-radar-wrap { width: 100%; max-width: 360px; margin: 0 auto; }
+    .aircraft-radar { display: block; width: 100%; height: auto; }
+    .aircraft-radar-grid { fill: none; stroke: #344557; stroke-width: 1; }
+    .aircraft-radar-grid line { stroke: #3a4b5e; }
+    .aircraft-radar-area { fill: rgb(82 211 162 / 25%); stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+    .aircraft-radar-point { stroke: #143e36; stroke-width: 1.5; }
+    .aircraft-radar-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 12px; margin: 0 auto; }
+    .aircraft-radar-legend > div { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; align-items: center; gap: 5px; color: #c8d1dc; }
+    .aircraft-radar-key { width: 8px; height: 8px; border-radius: 50%; background: var(--radar-axis-color); }
+    .aircraft-radar-legend strong { color: var(--text); font-weight: 750; }
     .mini-track { height: 5px; overflow: hidden; border-radius: 8px; background: #101822; }
     .mini-fill { height: 100%; border-radius: inherit; background: var(--blue); }
     .derived-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
@@ -644,9 +651,8 @@
       .aircraft-card .section-heading p, .aircraft-summary { display: none; }
       .aircraft-name { margin-bottom: 2px; font-size: 11px; }
       .aircraft-concept { margin: 0 0 5px; font-size: 8px; }
-      .aircraft-stat { margin-top: 5px; }
-      .aircraft-stat-top { margin-bottom: 3px; font-size: 9px; }
-      .mini-track { height: 4px; }
+      .aircraft-radar-wrap { max-width: 320px; }
+      .aircraft-radar-legend { gap: 3px 6px; }
       .derived-grid { gap: 4px; margin-top: 7px; }
       .derived-stat { padding: 5px; }
       .derived-stat span { font-size: 8px; }
@@ -818,7 +824,7 @@
       .career-nav-button { font-size: 7px; }
       .career-position { min-width: 24px; }
     }
-    #gameApp :not(svg):not(path):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
+    #gameApp :not(svg):not(path):not(text):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
       font-size: max(13px, .8125em);
     }
     @media (max-width: 620px) {
@@ -2797,11 +2803,45 @@
       { key: "systems", label: "Sistemas" },
       { key: "report", label: "Relatório" }
     ];
-    document.getElementById("aircraftStats").innerHTML = fields.map(({ key, label }) => `
-      <div class="aircraft-stat">
-        <div class="aircraft-stat-top"><span>${label}</span><strong>${Math.round(state.attributes[key])}</strong></div>
-        <div class="mini-track"><div class="mini-fill" style="width:${state.attributes[key]}%"></div></div>
-      </div>`).join("");
+    const center = { x: 130, y: 100 };
+    const radius = 68;
+    const axisColors = ["#70a9ff", "#52d3a2", "#f0bd68", "#c79cff"];
+    const axes = [
+      { x: center.x, y: center.y - radius },
+      { x: center.x + radius, y: center.y },
+      { x: center.x, y: center.y + radius },
+      { x: center.x - radius, y: center.y }
+    ];
+    const pointAt = (scale) => axes
+      .map(({ x, y }) => `${(center.x + (x - center.x) * scale).toFixed(1)},${(center.y + (y - center.y) * scale).toFixed(1)}`)
+      .join(" ");
+    const values = fields.map(({ key, label }, index) => ({
+      label,
+      value: Math.max(0, Math.min(100, Math.round(state.attributes[key]))),
+      color: axisColors[index]
+    }));
+    const dataPoints = values.map(({ value }, index) => {
+      const axis = axes[index];
+      return `${(center.x + (axis.x - center.x) * value / 100).toFixed(1)},${(center.y + (axis.y - center.y) * value / 100).toFixed(1)}`;
+    }).join(" ");
+    document.getElementById("aircraftStats").innerHTML = `
+      <div class="aircraft-radar-wrap">
+        <svg class="aircraft-radar" viewBox="0 0 260 200" role="img" aria-label="Gráfico de radar dos atributos do avião, em escala de zero a cem">
+          <title>Atributos do avião</title>
+          <g class="aircraft-radar-grid">
+            ${[0.25, 0.5, 0.75, 1].map((scale) => `<polygon points="${pointAt(scale)}"></polygon>`).join("")}
+            ${axes.map(({ x, y }) => `<line x1="${center.x}" y1="${center.y}" x2="${x}" y2="${y}"></line>`).join("")}
+          </g>
+          <polygon class="aircraft-radar-area" points="${dataPoints}"></polygon>
+          ${dataPoints.split(" ").map((point, index) => {
+            const [x, y] = point.split(",");
+            return `<circle class="aircraft-radar-point" cx="${x}" cy="${y}" r="3" fill="${values[index].color}"></circle>`;
+          }).join("")}
+        </svg>
+        <div class="aircraft-radar-legend" aria-label="Valores dos atributos">
+          ${values.map(({ label, value, color }) => `<div><span class="aircraft-radar-key" style="--radar-axis-color:${color}" aria-hidden="true"></span><span>${label}</span><strong>${value}</strong></div>`).join("")}
+        </div>
+      </div>`;
     const design = game.Aircraft.derive(state.attributes, state.skills);
     const concept = state.skills
       .map((id) => game.Content.skillNodes.find((node) => node.id === id))

@@ -259,11 +259,45 @@
       { key: "systems", label: "Sistemas" },
       { key: "report", label: "Relatório" }
     ];
-    document.getElementById("aircraftStats").innerHTML = fields.map(({ key, label }) => `
-      <div class="aircraft-stat">
-        <div class="aircraft-stat-top"><span>${label}</span><strong>${Math.round(state.attributes[key])}</strong></div>
-        <div class="mini-track"><div class="mini-fill" style="width:${state.attributes[key]}%"></div></div>
-      </div>`).join("");
+    const center = { x: 130, y: 100 };
+    const radius = 68;
+    const axisColors = ["#70a9ff", "#52d3a2", "#f0bd68", "#c79cff"];
+    const axes = [
+      { x: center.x, y: center.y - radius },
+      { x: center.x + radius, y: center.y },
+      { x: center.x, y: center.y + radius },
+      { x: center.x - radius, y: center.y }
+    ];
+    const pointAt = (scale) => axes
+      .map(({ x, y }) => `${(center.x + (x - center.x) * scale).toFixed(1)},${(center.y + (y - center.y) * scale).toFixed(1)}`)
+      .join(" ");
+    const values = fields.map(({ key, label }, index) => ({
+      label,
+      value: Math.max(0, Math.min(100, Math.round(state.attributes[key]))),
+      color: axisColors[index]
+    }));
+    const dataPoints = values.map(({ value }, index) => {
+      const axis = axes[index];
+      return `${(center.x + (axis.x - center.x) * value / 100).toFixed(1)},${(center.y + (axis.y - center.y) * value / 100).toFixed(1)}`;
+    }).join(" ");
+    document.getElementById("aircraftStats").innerHTML = `
+      <div class="aircraft-radar-wrap">
+        <svg class="aircraft-radar" viewBox="0 0 260 200" role="img" aria-label="Gráfico de radar dos atributos do avião, em escala de zero a cem">
+          <title>Atributos do avião</title>
+          <g class="aircraft-radar-grid">
+            ${[0.25, 0.5, 0.75, 1].map((scale) => `<polygon points="${pointAt(scale)}"></polygon>`).join("")}
+            ${axes.map(({ x, y }) => `<line x1="${center.x}" y1="${center.y}" x2="${x}" y2="${y}"></line>`).join("")}
+          </g>
+          <polygon class="aircraft-radar-area" points="${dataPoints}"></polygon>
+          ${dataPoints.split(" ").map((point, index) => {
+            const [x, y] = point.split(",");
+            return `<circle class="aircraft-radar-point" cx="${x}" cy="${y}" r="3" fill="${values[index].color}"></circle>`;
+          }).join("")}
+        </svg>
+        <div class="aircraft-radar-legend" aria-label="Valores dos atributos">
+          ${values.map(({ label, value, color }) => `<div><span class="aircraft-radar-key" style="--radar-axis-color:${color}" aria-hidden="true"></span><span>${label}</span><strong>${value}</strong></div>`).join("")}
+        </div>
+      </div>`;
     const design = game.Aircraft.derive(state.attributes, state.skills);
     const concept = state.skills
       .map((id) => game.Content.skillNodes.find((node) => node.id === id))

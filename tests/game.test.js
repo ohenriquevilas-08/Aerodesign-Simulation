@@ -320,6 +320,26 @@ test("career UI keeps cash visible and presents the aircraft flight circuit", ()
   assert.doesNotMatch(elements.get("eventView").innerHTML, /animateMotion/);
 });
 
+test("aircraft overview plots all four attributes on a labeled radar chart", () => {
+  const { game, elements } = createHarness();
+  const state = game.State.create();
+  state.attributes = { aerodynamics: 12, structures: 34, systems: 56, report: 78 };
+  game.UI.render(state, "overview", { text: "", kind: "" });
+
+  const chart = elements.get("aircraftStats").innerHTML;
+  assert.match(chart, /<svg class="aircraft-radar"[^>]+role="img"/);
+  assert.match(chart, /points="130\.0,91\.8 153\.1,100\.0 130\.0,138\.1 77\.0,100\.0"/);
+  for (const [label, value] of [
+    ["Aerodinâmica", 12],
+    ["Estruturas", 34],
+    ["Sistemas", 56],
+    ["Relatório", 78]
+  ]) {
+    assert.match(chart, new RegExp(`<span class="aircraft-radar-key"[^>]+></span><span>${label}</span><strong>${value}</strong>`));
+  }
+  assert.doesNotMatch(chart, /mini-track|aircraft-stat/);
+});
+
 test("rival strategies reflect team philosophy and flight choices trade reliability for score", () => {
   const { game } = createHarness();
   const design = { aerodynamics: 50, structures: 60, systems: 55, report: 20 };
