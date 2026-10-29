@@ -25,11 +25,18 @@ function createHarness() {
   const navButtons = screens.map((screen) => ({
     dataset: { screen },
     attributes: {},
+    hidden: false,
     setAttribute(key, value) { this.attributes[key] = value; },
     removeAttribute(key) { delete this.attributes[key]; },
     focus() {}
   }));
-  const screenPanels = screens.map((screen) => ({ dataset: { screenPanel: screen }, setAttribute() {}, inert: false, style: {} }));
+  const screenPanels = screens.map((screen) => ({
+    dataset: { screenPanel: screen },
+    setAttribute() {},
+    inert: false,
+    hidden: false,
+    style: {}
+  }));
   const createElement = () => ({
     textContent: "",
     innerHTML: "",
@@ -304,7 +311,8 @@ test("career UI keeps cash visible and presents the aircraft flight circuit", ()
   state = apply(game, state, "reveal-reports");
   game.UI.render(state, "championship", { text: "", kind: "" });
   assert.match(elements.get("eventView").innerHTML, /Pista 2D · Ventania/);
-  assert.match(elements.get("eventView").innerHTML, /flightMotion/);
+  assert.match(elements.get("eventView").innerHTML, /id="flightPlane"/);
+  assert.doesNotMatch(elements.get("eventView").innerHTML, /animateMotion/);
 });
 
 test("rival strategies reflect team philosophy and flight choices trade reliability for score", () => {
@@ -369,14 +377,16 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
   game.UI.render(state, "overview", { text: "", kind: "" });
   assert.match(elements.get("rivalryScore").innerHTML, /Campeã defensora/);
   assert.equal(elements.get("careerTrack").style.transform, "translateX(0%)");
-  assert.equal(elements.get("careerPosition").textContent, "01 / 06");
+  assert.equal(elements.get("careerPosition").textContent, "01 / 05");
   assert.equal(navButtons[0].attributes["aria-current"], "page");
+  assert.equal(navButtons[5].hidden, true);
+  assert.equal(screenPanels[5].hidden, true);
   assert.equal(screenPanels[0].inert, false);
   assert.equal(screenPanels[1].inert, true);
 
   game.UI.render(state, "engineering", { text: "", kind: "" });
-  assert.equal(elements.get("careerTrack").style.transform, "translateX(-16.666666666666668%)");
-  assert.equal(elements.get("careerPosition").textContent, "02 / 06");
+  assert.equal(elements.get("careerTrack").style.transform, "translateX(-20%)");
+  assert.equal(elements.get("careerPosition").textContent, "02 / 05");
   assert.equal(navButtons[0].attributes["aria-current"], undefined);
   assert.equal(navButtons[1].attributes["aria-current"], "page");
   assert.equal(screenPanels[0].inert, true);
@@ -384,6 +394,9 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
 
   for (let week = 0; week < 20; week += 1) state = apply(game, state, "advance-week");
   game.UI.render(state, "championship", { text: "", kind: "" });
+  assert.equal(navButtons[5].hidden, false);
+  assert.equal(screenPanels[5].hidden, false);
+  assert.equal(elements.get("careerPosition").textContent, "06 / 06");
   assert.match(elements.get("eventView").innerHTML, /Revelar notas do relatório/);
   assert.match(elements.get("eventView").innerHTML, /Bateria 1/);
   assert.equal(elements.get("championshipPreparation").hidden, true);
@@ -391,6 +404,8 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
 
   state = apply(game, state, "reveal-reports");
   game.UI.render(state, "championship", { text: "", kind: "" });
+  assert.match(elements.get("eventView").innerHTML, /id="flightPlane"/);
+  assert.doesNotMatch(elements.get("eventView").innerHTML, /animateMotion/);
   assert.match(elements.get("eventView").innerHTML, /Classificação parcial/);
   assert.match(elements.get("eventView").innerHTML, /data-action="choose-strategy"/);
   assert.match(elements.get("eventView").innerHTML, /aria-pressed=/);

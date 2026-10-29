@@ -33,7 +33,7 @@ O evento é salvo entre etapas. As decisões da equipe, clima, resultados já re
 
 O menu inicial permite continuar a carreira salva ou criar uma nova. Na configuração, escolha os nomes da equipe e do avião e a dificuldade: Calouro começa com mais créditos e rivais que evoluem mais devagar; Veterano começa com menos créditos e rivais mais fortes. Intermediário mantém o equilíbrio padrão. Iniciar uma nova carreira substitui o salvamento atual; saves anteriores são migrados automaticamente.
 
-Durante a carreira, navegue horizontalmente por Visão geral, Projeto, Habilidades, Finanças, Rivais e Campeonato. Use as setas na interface, as teclas de direção ou deslize horizontalmente na área principal; a competição abre automaticamente na tela de Campeonato.
+Durante a preparação, navegue horizontalmente por Visão geral, Projeto, Habilidades, Finanças e Rivais. A aba Campeonato só aparece ao fim das 20 semanas e permanece disponível durante o evento e a classificação final. Use as setas na interface, as teclas de direção ou deslize horizontalmente na área principal.
 
 Na árvore de habilidades, escolha um conceito exclusivo para o avião (carga máxima, estrutura leve ou estabilidade) e pesquise melhorias de engenharia e gestão da equipe. Pesquisas consomem semanas e créditos; seus efeitos persistem entre temporadas. Pré-requisitos e impactos numéricos ficam visíveis antes de pesquisar. Saves antigos são migrados automaticamente para incluir a árvore.
 

@@ -30,8 +30,6 @@
     { id: "rivals", title: "Central de rivais", subtitle: "Analise as equipes e descubra como pretendem disputar o título." },
     { id: "championship", title: "Campeonato", subtitle: "Acompanhe a abertura, as baterias e a classificação da temporada." }
   ]);
-  const screenIndexes = Object.freeze(Object.fromEntries(careerScreens.map(({ id }, index) => [id, index])));
-
   function renderHeader(state, activeScreen) {
     const remaining = weeksPerSeason - state.week;
     document.getElementById("teamNameHeader").textContent = state.teamName;
@@ -69,29 +67,45 @@
     document.getElementById("weekFooter").hidden = state.phase !== "preparation";
   }
 
-  function renderCareerNavigation(activeScreen) {
-    const activeIndex = screenIndexes[activeScreen] ?? 0;
-    const panels = document.querySelectorAll(".career-screen");
-    const screenWidth = 100 / panels.length;
-    document.getElementById("careerTrack").style.width = `${panels.length * 100}%`;
-    panels.forEach((panel) => { panel.style.flexBasis = `${screenWidth}%`; });
-    document.querySelectorAll(".career-nav-button").forEach((button) => {
-      const selected = button.dataset.screen === careerScreens[activeIndex].id;
+  function renderCareerNavigation(activeScreen, state) {
+    const eventAvailable = state.phase !== "preparation";
+    const screens = eventAvailable ? careerScreens : careerScreens.filter(({ id }) => id !== "championship");
+    const currentScreen = screens.some(({ id }) => id === activeScreen) ? activeScreen : "overview";
+    const activeIndex = screens.findIndex(({ id }) => id === currentScreen);
+    const panels = [...document.querySelectorAll(".career-screen")];
+    const navButtons = [...document.querySelectorAll(".career-nav-button")];
+    panels.forEach((panel) => {
+      const available = eventAvailable || panel.dataset.screenPanel !== "championship";
+      panel.hidden = !available;
+      if (!available) {
+        panel.setAttribute("aria-hidden", "true");
+        panel.inert = true;
+      }
+    });
+    navButtons.forEach((button) => {
+      button.hidden = !eventAvailable && button.dataset.screen === "championship";
+    });
+    const visiblePanels = panels.filter((panel) => !panel.hidden);
+    const visibleScreenWidth = 100 / visiblePanels.length;
+    document.getElementById("careerTrack").style.width = `${visiblePanels.length * 100}%`;
+    panels.forEach((panel) => { panel.style.flexBasis = `${visibleScreenWidth}%`; });
+    navButtons.forEach((button) => {
+      const selected = button.dataset.screen === screens[activeIndex].id;
       if (selected) button.setAttribute("aria-current", "page");
       else button.removeAttribute("aria-current");
     });
-    document.querySelectorAll(".career-screen").forEach((panel) => {
-      const selected = panel.dataset.screenPanel === careerScreens[activeIndex].id;
+    visiblePanels.forEach((panel) => {
+      const selected = panel.dataset.screenPanel === screens[activeIndex].id;
       panel.setAttribute("aria-hidden", String(!selected));
       panel.inert = !selected;
     });
     document.getElementById("careerTrack").style.transform = activeIndex === 0
       ? "translateX(0%)"
-      : `translateX(-${activeIndex * screenWidth}%)`;
+      : `translateX(-${activeIndex * visibleScreenWidth}%)`;
     document.getElementById("careerPosition").textContent =
-      `${String(activeIndex + 1).padStart(2, "0")} / ${String(panels.length).padStart(2, "0")}`;
+      `${String(activeIndex + 1).padStart(2, "0")} / ${String(visiblePanels.length).padStart(2, "0")}`;
     document.querySelector('[data-action="previous-screen"]').disabled = activeIndex === 0;
-    document.querySelector('[data-action="next-screen"]').disabled = activeIndex === careerScreens.length - 1;
+    document.querySelector('[data-action="next-screen"]').disabled = activeIndex === screens.length - 1;
   }
 
   function renderSkillTree(state) {
@@ -387,19 +401,13 @@
         <svg viewBox="0 0 800 330" role="img" aria-label="${escapeHtml(aircraftName)} completando o circuito; equipes rivais são simuladas automaticamente">
           <defs>
             <path id="circuitPath" d="${path}"></path>
-            <symbol id="aircraftGlyph" viewBox="-28 -8 56 16">
-              <path d="M 28 0 L 10 -4 L 13 -1 L -12 -1 L -23 -7 L -27 -5 L -20 0 L -27 5 L -23 7 L -12 1 L 13 1 L 10 4 Z"></path>
-            </symbol>
           </defs>
           <path class="circuit-track" d="${path}"></path>
           <path class="circuit-centerline" d="${path}"></path>
           <circle class="circuit-pylon" cx="90" cy="170" r="8"></circle>
           <circle class="circuit-pylon" cx="710" cy="170" r="8"></circle>
-          <g class="circuit-plane" aria-hidden="true">
-            <use href="#aircraftGlyph" x="-28" y="-8" width="56" height="16"></use>
-            <animateMotion id="flightMotion" dur="2.4s" begin="indefinite" fill="freeze" rotate="auto">
-              <mpath href="#circuitPath"></mpath>
-            </animateMotion>
+          <g class="circuit-plane" id="flightPlane" transform="translate(90 170)" aria-hidden="true">
+            <path d="M 28 0 L 10 -4 L 13 -1 L -12 -1 L -23 -7 L -27 -5 L -20 0 L -27 5 L -23 7 L -12 1 L 13 1 L 10 4 Z"></path>
           </g>
         </svg>
       </div>`;
@@ -488,7 +496,7 @@
       renderRivalry(state);
       renderLog(state);
       renderEvent(state);
-      renderCareerNavigation(activeScreen);
+      renderCareerNavigation(activeScreen, state);
       setNotice(notice);
     }
   });

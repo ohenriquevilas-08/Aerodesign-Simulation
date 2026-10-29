@@ -9,6 +9,12 @@
   let swipeStart = null;
   let flightLaunching = false;
 
+  function availableCareerScreens() {
+    return state.phase === "preparation"
+      ? careerScreens.filter((screen) => screen !== "championship")
+      : careerScreens;
+  }
+
   function render() {
     const inGame = appView === "game";
     document.getElementById("hubView").hidden = inGame;
@@ -44,9 +50,11 @@
   }
 
   function navigateCareer(offset) {
-    const nextIndex = Math.max(0, Math.min(careerScreens.length - 1, careerScreens.indexOf(careerScreen) + offset));
-    if (careerScreens[nextIndex] === careerScreen) return;
-    careerScreen = careerScreens[nextIndex];
+    const screens = availableCareerScreens();
+    const currentIndex = screens.indexOf(careerScreen);
+    const nextIndex = Math.max(0, Math.min(screens.length - 1, (currentIndex < 0 ? 0 : currentIndex) + offset));
+    if (screens[nextIndex] === careerScreen) return;
+    careerScreen = screens[nextIndex];
     render();
   }
 
@@ -67,7 +75,10 @@
   function handleClick(event) {
     const button = event.target.closest("button");
     if (!button) return;
+    if (flightLaunching && (button.dataset.screen ||
+      ["previous-screen", "next-screen"].includes(button.dataset.action))) return;
     if (button.dataset.screen && appView === "game") {
+      if (!availableCareerScreens().includes(button.dataset.screen)) return;
       careerScreen = button.dataset.screen;
       render();
       return;
@@ -169,10 +180,30 @@
     render();
   }
 
-  function launchFlight(button) {
+  function animateFlight(path, plane, duration) {
+    const length = path.getTotalLength();
+    const start = performance.now();
+    return new Promise((resolve) => {
+      function frame(now) {
+        const progress = Math.min(1, (now - start) / duration);
+        const distance = progress * length;
+        const point = path.getPointAtLength(distance);
+        const nextPoint = path.getPointAtLength(Math.min(length, distance + 1));
+        const angle = Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x) * (180 / Math.PI);
+        plane.setAttribute("transform", `translate(${point.x} ${point.y}) rotate(${angle})`);
+        if (progress < 1) window.requestAnimationFrame(frame);
+        else resolve();
+      }
+      window.requestAnimationFrame(frame);
+    });
+  }
+
+  async function launchFlight(button) {
     if (flightLaunching) return;
-    const motion = document.getElementById("flightMotion");
-    if (!motion || typeof motion.beginElement !== "function") {
+    const path = document.getElementById("circuitPath");
+    const plane = document.getElementById("flightPlane");
+    if (!path || !plane || typeof path.getTotalLength !== "function" ||
+      typeof path.getPointAtLength !== "function" || typeof window.requestAnimationFrame !== "function") {
       apply({ type: "run-flight" });
       return;
     }
@@ -181,25 +212,23 @@
     button.disabled = true;
     document.querySelectorAll('[data-action="choose-strategy"]').forEach((option) => { option.disabled = true; });
     const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const duration = reducedMotion ? 40 : 2500;
+    const duration = reducedMotion ? 50 : 2500;
     const launchingState = state;
     const launchingRound = state.event.round;
-    motion.setAttribute("dur", `${reducedMotion ? 0.01 : 2.4}s`);
-    motion.beginElement();
-    window.setTimeout(() => {
-      if (state !== launchingState || state.phase !== "event-flight" || state.event.round !== launchingRound) {
-        flightLaunching = false;
-        return;
-      }
+    await animateFlight(path, plane, duration);
+    if (state !== launchingState || state.phase !== "event-flight" || state.event.round !== launchingRound) {
       flightLaunching = false;
-      apply({ type: "run-flight" });
-    }, duration);
+      return;
+    }
+    flightLaunching = false;
+    apply({ type: "run-flight" });
   }
 
   function handleKeydown(event) {
     if (appView !== "game" || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
     if (event.target.closest("input, select, textarea, [contenteditable='true']")) return;
     event.preventDefault();
+    if (flightLaunching) return;
     navigateCareer(event.key === "ArrowRight" ? 1 : -1);
   }
 
