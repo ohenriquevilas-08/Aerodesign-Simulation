@@ -406,6 +406,9 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
   game.UI.render(state, "championship", { text: "", kind: "" });
   assert.match(elements.get("eventView").innerHTML, /id="flightPlane"/);
   assert.doesNotMatch(elements.get("eventView").innerHTML, /animateMotion/);
+  const flightHtml = elements.get("eventView").innerHTML;
+  assert(flightHtml.indexOf('class="event-stages"') < flightHtml.indexOf('class="flight-circuit"'));
+  assert(flightHtml.indexOf('class="flight-circuit"') < flightHtml.indexOf("flight-launch-actions"));
   assert.match(elements.get("eventView").innerHTML, /Classificação parcial/);
   assert.match(elements.get("eventView").innerHTML, /data-action="choose-strategy"/);
   assert.match(elements.get("eventView").innerHTML, /aria-pressed=/);

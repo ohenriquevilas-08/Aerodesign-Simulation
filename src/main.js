@@ -202,8 +202,10 @@
     if (flightLaunching) return;
     const path = document.getElementById("circuitPath");
     const plane = document.getElementById("flightPlane");
+    const circuit = document.querySelector(".flight-circuit");
     if (!path || !plane || typeof path.getTotalLength !== "function" ||
-      typeof path.getPointAtLength !== "function" || typeof window.requestAnimationFrame !== "function") {
+      typeof path.getPointAtLength !== "function" || typeof window.requestAnimationFrame !== "function" ||
+      !circuit) {
       apply({ type: "run-flight" });
       return;
     }
@@ -212,9 +214,11 @@
     button.disabled = true;
     document.querySelectorAll('[data-action="choose-strategy"]').forEach((option) => { option.disabled = true; });
     const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const duration = reducedMotion ? 50 : 2500;
+    const duration = reducedMotion ? 1000 : 2500;
     const launchingState = state;
     const launchingRound = state.event.round;
+    circuit.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    if (!reducedMotion) await new Promise((resolve) => window.setTimeout(resolve, 450));
     await animateFlight(path, plane, duration);
     if (state !== launchingState || state.phase !== "event-flight" || state.event.round !== launchingRound) {
       flightLaunching = false;

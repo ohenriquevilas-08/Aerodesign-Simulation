@@ -443,12 +443,12 @@
           </div>
         </section>
         ${renderScopeBanner(state.event.scope)}
-        ${renderFlightCircuit(state.aircraftName, round)}
         ${renderStageTiles(state, "flight", true)}
+        ${renderFlightCircuit(state.aircraftName, round)}
+        <div class="event-actions flight-launch-actions"><button class="button button-primary" type="button" data-action="run-flight">Largar bateria ${round + 1} <span aria-hidden="true">→</span></button></div>
         ${renderCommentary(state.event)}
         <div class="competition-lead"><h4>Classificação parcial</h4><span>Atualiza depois de cada bateria</span></div>
         ${renderLeaderboard(state, true)}
-        <div class="event-actions"><button class="button button-primary" type="button" data-action="run-flight">Largar bateria ${round + 1} <span aria-hidden="true">→</span></button></div>
       </div>`;
   }
 
