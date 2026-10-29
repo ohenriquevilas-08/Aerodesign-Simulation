@@ -86,6 +86,100 @@
     .button-subtle { min-height: 34px; padding: 0 10px; font-size: 12px; }
     .button-warn { color: var(--warning); }
 
+    .hub-view {
+      display: grid;
+      min-height: min(720px, calc(100vh - 130px));
+      grid-template-columns: minmax(0, 1.15fr) minmax(310px, .85fr);
+      align-items: center;
+      gap: clamp(24px, 6vw, 88px);
+      overflow: hidden;
+      padding: clamp(28px, 6vw, 84px);
+      border: 2px solid #435260;
+      background:
+        linear-gradient(135deg, rgb(82 211 162 / 8%), transparent 48%),
+        repeating-linear-gradient(0deg, transparent 0 39px, rgb(255 255 255 / 2%) 40px),
+        repeating-linear-gradient(90deg, transparent 0 39px, rgb(255 255 255 / 2%) 40px),
+        #121c27;
+      box-shadow: 0 22px 70px rgb(0 0 0 / 32%), inset 0 0 0 6px rgb(0 0 0 / 12%);
+    }
+    .hub-showcase { position: relative; z-index: 1; }
+    .hub-kicker, .hub-menu-label, .hub-button, .hub-field label, .hub-difficulty-help, .hub-save-summary {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .hub-kicker { color: var(--accent); font-size: 11px; font-weight: 750; letter-spacing: .12em; }
+    .hub-title { max-width: 700px; margin: 18px 0; font-size: clamp(42px, 7vw, 88px); line-height: .96; letter-spacing: -.075em; }
+    .hub-title span { display: block; color: var(--accent); }
+    .hub-description { max-width: 470px; color: #b7c3d0; font-size: 15px; line-height: 1.7; }
+    .hub-blueprint {
+      position: relative;
+      width: min(440px, 82%);
+      height: 190px;
+      margin: 54px auto 0;
+      opacity: .8;
+      filter: drop-shadow(0 0 26px rgb(82 211 162 / 14%));
+    }
+    .blueprint-wing, .blueprint-tail, .blueprint-fuselage {
+      position: absolute;
+      background: linear-gradient(135deg, #70d9b2, #409b8a);
+      clip-path: polygon(0 50%, 100% 0, 88% 50%, 100% 100%);
+    }
+    .blueprint-wing { inset: 20% 5% 22% 4%; }
+    .blueprint-tail { right: 3%; bottom: 10%; width: 34%; height: 40%; opacity: .72; }
+    .blueprint-fuselage { z-index: 1; top: 44%; left: 7%; width: 88%; height: 14%; clip-path: polygon(0 40%, 82% 30%, 100% 50%, 82% 70%, 0 60%); background: #d3f5e6; }
+    .hub-menu {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      justify-self: center;
+      padding: clamp(20px, 4vw, 34px);
+      border: 2px solid #526271;
+      background: rgb(19 29 40 / 94%);
+      box-shadow: 8px 8px 0 rgb(0 0 0 / 28%);
+    }
+    .hub-menu-label { margin: 0 0 7px; color: var(--muted); font-size: 10px; letter-spacing: .14em; }
+    .hub-menu h3 { margin: 0 0 20px; font-size: 21px; }
+    .hub-save-summary { min-height: 39px; margin: 0 0 15px; color: #b4c1ce; font-size: 11px; line-height: 1.6; }
+    .hub-menu-actions { display: grid; gap: 10px; }
+    .hub-button {
+      min-height: 52px;
+      padding: 0 16px;
+      border: 2px solid #536271;
+      background: #283746;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-align: left;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .hub-button:hover:not(:disabled), .hub-button:focus-visible { transform: translateX(3px); border-color: var(--accent); outline: none; }
+    .hub-button-primary { border-color: #52d3a2; background: #23634f; color: #effff7; }
+    .hub-button-primary:hover:not(:disabled) { background: #2a795e; }
+    .hub-button:disabled { cursor: not-allowed; opacity: .42; }
+    .hub-form { display: grid; gap: 14px; }
+    .hub-field { display: grid; gap: 7px; }
+    .hub-field label { color: #c7d2de; font-size: 11px; font-weight: 700; }
+    .hub-field input, .hub-field select {
+      width: 100%;
+      min-height: 43px;
+      padding: 9px 11px;
+      border: 1px solid #465767;
+      border-radius: 0;
+      background: #101923;
+      color: var(--text);
+      font: inherit;
+    }
+    .hub-field input:focus, .hub-field select:focus { border-color: var(--accent); outline: 2px solid rgb(82 211 162 / 18%); }
+    .hub-difficulty-help { min-height: 30px; margin: -7px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .hub-replace-save { display: flex; align-items: flex-start; gap: 9px; padding: 10px; border: 1px solid rgb(240 189 104 / 45%); color: var(--warning); font-size: 11px; line-height: 1.5; }
+    .hub-replace-save input { flex: 0 0 auto; margin: 2px 0 0; accent-color: var(--accent); }
+    .hub-form-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 9px; margin-top: 5px; }
+    .hub-status { min-height: 20px; margin: 12px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .hub-status[data-kind="error"] { color: var(--danger); }
+    .hub-status[data-kind="success"] { color: var(--accent); }
+
     .dashboard {
       display: grid;
       grid-template-columns: minmax(240px, 290px) minmax(0, 1fr);
@@ -271,6 +365,9 @@
       .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .season-card { grid-column: 1 / -1; }
       .main-panel { min-height: auto; }
+      .hub-view { min-height: auto; grid-template-columns: 1fr; gap: 28px; padding: clamp(22px, 5vw, 48px); }
+      .hub-blueprint { height: 130px; margin-top: 32px; }
+      .hub-menu { max-width: none; }
     }
     @media (max-width: 620px) {
       .shell { padding: 18px 12px 30px; }
@@ -300,15 +397,70 @@
 </head>
 <body>
   <div class="shell">
+    <main class="hub-view" id="hubView" aria-labelledby="hubTitle">
+      <section class="hub-showcase">
+        <div class="hub-kicker">SIMULAÇÃO UNIVERSITÁRIA · MODO CARREIRA</div>
+        <h2 class="hub-title" id="hubTitle">Aerodesign <span>Manager</span></h2>
+        <p class="hub-description">Monte sua equipe, desenvolva um projeto de avião e encare rivais em uma temporada de decisões e estratégia.</p>
+        <div class="hub-blueprint" aria-hidden="true">
+          <div class="blueprint-wing"></div><div class="blueprint-tail"></div><div class="blueprint-fuselage"></div>
+        </div>
+      </section>
+      <section class="hub-menu" aria-label="Menu principal">
+        <div id="homeMenu">
+          <p class="hub-menu-label">MENU PRINCIPAL</p>
+          <h3>Sua próxima temporada</h3>
+          <p class="hub-save-summary" id="savedGameSummary">Verificando salvamento...</p>
+          <div class="hub-menu-actions">
+            <button class="hub-button hub-button-primary" type="button" data-action="new-game">NOVO JOGO</button>
+            <button class="hub-button" id="continueButton" type="button" data-action="continue" disabled>CONTINUAR</button>
+          </div>
+        </div>
+        <div id="newGameMenu" hidden>
+          <p class="hub-menu-label">CONFIGURAÇÃO DA CARREIRA</p>
+          <h3>Crie sua equipe</h3>
+          <form class="hub-form" id="newGameForm">
+            <div class="hub-field">
+              <label for="teamNameInput">Nome da equipe</label>
+              <input id="teamNameInput" name="teamName" maxlength="32" required value="Projeto Aurora" autocomplete="organization">
+            </div>
+            <div class="hub-field">
+              <label for="aircraftNameInput">Nome do avião</label>
+              <input id="aircraftNameInput" name="aircraftName" maxlength="24" required value="Aurora">
+            </div>
+            <div class="hub-field">
+              <label for="difficultyInput">Dificuldade</label>
+              <select id="difficultyInput" name="difficulty">
+                <option value="freshman">Calouro · mais créditos, rivais mais lentas</option>
+                <option value="standard" selected>Intermediário · desafio equilibrado</option>
+                <option value="veteran">Veterano · menos créditos, rivais mais fortes</option>
+              </select>
+            </div>
+            <p class="hub-difficulty-help" id="difficultyHelp">Recursos e evolução das rivais em equilíbrio.</p>
+            <label class="hub-replace-save" id="replaceSaveLabel" hidden>
+              <input id="replaceSaveInput" type="checkbox">
+              <span>Entendo que iniciar uma nova carreira substituirá o jogo salvo neste navegador.</span>
+            </label>
+            <div class="hub-form-actions">
+              <button class="hub-button" type="button" data-action="home">VOLTAR</button>
+              <button class="hub-button hub-button-primary" type="submit">INICIAR JOGO</button>
+            </div>
+          </form>
+        </div>
+        <p class="hub-status" id="hubStatus" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+    <div id="gameApp" hidden>
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">A</div>
         <div>
           <h1>Aerodesign Manager</h1>
-          <p>Gestão de equipe universitária</p>
+          <p id="teamNameHeader">Gestão de equipe universitária</p>
         </div>
       </div>
       <div class="topbar-actions">
+        <button class="button button-subtle" type="button" data-action="home">Menu principal</button>
         <button class="button button-subtle" type="button" data-action="save">Salvar</button>
         <button class="button button-subtle" type="button" data-action="load">Carregar</button>
       </div>
@@ -344,7 +496,7 @@
               <p>Indicadores do projeto atual</p>
             </div>
           </div>
-          <h3 class="aircraft-name">Projeto Aurora <span id="designYear"></span></h3>
+          <h3 class="aircraft-name"><span id="aircraftName">Aurora</span> <span id="designYear"></span></h3>
           <p class="aircraft-summary">Estimativas do regulamento</p>
           <div id="aircraftStats"></div>
           <div class="derived-grid" id="derivedStats"></div>
@@ -420,7 +572,7 @@
               <div class="notice" id="actionNotice" role="status" aria-live="polite"></div>
               <div class="week-footer" id="weekFooter">
                 <p>Sem ação disponível? Encerrar a semana avança o calendário e dá às rivais mais tempo para evoluir.</p>
-                <button class="button" type="button" data-action="advance">Encerrar semana <span aria-hidden="true">→</span></button>
+                <button class="button" type="button" data-action="advance-week">Encerrar semana <span aria-hidden="true">→</span></button>
               </div>
             </div>
           </div>
@@ -439,6 +591,7 @@
       </main>
     </div>
     <div class="footer-note">Aerodesign Manager · Campeonato por baterias · Clima e estratégia mudam as chances · Progresso salvo neste navegador</div>
+    </div>
   </div>
 
   <script>
@@ -449,7 +602,12 @@
 
   game.Content = Object.freeze({
     saveKey: "aerodesign-manager-save-v1",
-    saveVersion: 2,
+    saveVersion: 3,
+    difficulties: Object.freeze({
+      freshman: { label: "Calouro", startingCash: 1400, rivalProgress: 0.75, description: "Mais créditos iniciais; as rivais evoluem com calma." },
+      standard: { label: "Intermediário", startingCash: 1000, rivalProgress: 1, description: "Recursos e evolução das rivais em equilíbrio." },
+      veteran: { label: "Veterano", startingCash: 850, rivalProgress: 1.2, description: "Menos créditos iniciais; as rivais avançam mais rápido." }
+    }),
     weeksPerSeason: 20,
     milestoneLevel: 50,
     baseStats: Object.freeze({ aerodynamics: 30, structures: 30, systems: 25, report: 20 }),
@@ -586,8 +744,9 @@
         };
       });
     },
-    advance(rivals, seed) {
+    advance(rivals, seed, difficulty = "standard") {
       let nextSeed = seed;
+      const progressRate = game.Content.difficulties[difficulty]?.rivalProgress ?? 1;
       const updated = rivals.map((rival) => {
         const result = chooseAction(rival, nextSeed);
         nextSeed = result.seed;
@@ -596,7 +755,7 @@
           copy.cash += 330;
         } else {
           const current = copy.attributes[result.action];
-          copy.attributes[result.action] = Math.min(100, current + 6 * (1 - current / 135));
+          copy.attributes[result.action] = Math.min(100, current + 6 * progressRate * (1 - current / 135));
         }
         return copy;
       });
@@ -642,7 +801,7 @@
       }
 
       const teams = [
-        { name: "Projeto Aurora", isPlayer: true, attributes: { ...state.attributes } },
+        { name: state.teamName, isPlayer: true, attributes: { ...state.attributes } },
         ...state.rivals.map((rival) => ({
           name: rival.name,
           isPlayer: false,
@@ -767,7 +926,7 @@
 /* state.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies } = game.Content;
+  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties } = game.Content;
   const strategyIds = Object.keys(strategies);
 
   function isNumber(value) {
@@ -775,18 +934,24 @@
   }
 
   game.State = Object.freeze({
-    create() {
+    create(options = {}) {
+      const difficulty = Object.hasOwn(difficulties, options.difficulty) ? options.difficulty : "standard";
+      const teamName = typeof options.teamName === "string" ? options.teamName.trim().slice(0, 32) : "";
+      const aircraftName = typeof options.aircraftName === "string" ? options.aircraftName.trim().slice(0, 24) : "";
       return {
         version: saveVersion,
+        teamName: teamName || "Projeto Aurora",
+        aircraftName: aircraftName || "Aurora",
+        difficulty,
         year: 1,
         week: 0,
-        cash: 1000,
+        cash: difficulties[difficulty].startingCash,
         prestige: 0,
         attributes: { ...baseStats },
         rivals: game.Rivals.create(1),
         scouted: {},
         history: [],
-        log: [{ week: 0, text: "A temporada começou. Defina uma estratégia para o Projeto Aurora." }],
+        log: [{ week: 0, text: "A temporada começou. Defina uma estratégia para a equipe." }],
         phase: "preparation",
         rngState: game.Random.seed(),
         event: null,
@@ -806,6 +971,10 @@
           rival.weights && Object.keys(rival.weights).length === 5);
       const validStrategies = Array.isArray(candidate.eventStrategies) && candidate.eventStrategies.length === 3 &&
         candidate.eventStrategies.every((strategy) => strategyIds.includes(strategy));
+      const validIdentity = typeof candidate.teamName === "string" && candidate.teamName.trim().length > 0 &&
+        candidate.teamName.length <= 32 && typeof candidate.aircraftName === "string" &&
+        candidate.aircraftName.trim().length > 0 && candidate.aircraftName.length <= 24 &&
+        Object.hasOwn(difficulties, candidate.difficulty);
       const validEvent = candidate.event === null || (
         candidate.event && Number.isInteger(candidate.event.round) &&
         candidate.event.round >= 0 && candidate.event.round <= 3 &&
@@ -826,7 +995,7 @@
           : candidate.phase === "event-flight" ? candidate.event?.round < 3
             : candidate.phase === "results" ? candidate.event?.round === 3
               : false;
-      return candidate.version === saveVersion &&
+      return candidate.version === saveVersion && validIdentity &&
         Number.isInteger(candidate.year) && candidate.year >= 1 &&
         Number.isInteger(candidate.week) && candidate.week >= 0 && candidate.week <= weeksPerSeason &&
         (candidate.phase !== "preparation" || candidate.week < weeksPerSeason) &&
@@ -841,65 +1010,87 @@
         validEventPhase;
     },
     migrate(candidate) {
-      if (!candidate || candidate.version !== 1) return candidate;
-      let migrated = {
-        ...candidate,
-        version: saveVersion,
-        rngState: Number.isInteger(candidate.rngState) ? candidate.rngState >>> 0 : game.Random.seed(),
-        event: null,
-        eventStrategies: Array.isArray(candidate.eventStrategies) && candidate.eventStrategies.length === 3
-          ? candidate.eventStrategies
-          : ["balanced", "balanced", "balanced"]
-      };
-      migrated.history = (candidate.history || []).map((entry) => ({
-        ...entry,
-        standings: Array.isArray(entry.standings) ? entry.standings : []
-      }));
+      if (!candidate || ![1, 2].includes(candidate.version)) return candidate;
+      let migrated = { ...candidate };
 
-      if (candidate.phase === "event" && candidate.week === weeksPerSeason) {
-        const eventPlan = game.Competition.create(migrated);
-        migrated.rngState = eventPlan.seed;
-        if (Array.isArray(candidate.eventWeather) && candidate.eventWeather.length === 3) {
-          eventPlan.event.weather = candidate.eventWeather.map((savedWeather) =>
-            weather.find((option) => option.id === savedWeather.id) || { ...weather[0] }
-          );
-        }
-        migrated.event = eventPlan.event;
-        migrated.phase = "event-report";
-      } else if (candidate.phase === "results" && candidate.eventResult?.standings) {
-        const standings = candidate.eventResult.standings.map((team) => {
-          const sourceAttributes = team.isPlayer
-            ? candidate.attributes
-            : candidate.rivals.find((rival) => rival.name === team.name)?.attributes || baseStats;
-          const flights = (team.flights || []).map((flight) => ({
-            ...flight,
-            partial: Boolean(flight.partial),
-            weather: flight.weather || "Clima variável",
-            strategy: flight.strategy || "Equilibrada",
-            strategyId: flight.strategyId || "balanced"
-          }));
-          return {
-            ...team,
-            attributes: { ...sourceAttributes },
-            report: Number.isFinite(team.report) ? team.report : 0,
-            flights,
-            total: Number.isFinite(team.total) ? team.total : Number(team.score) || 0
-          };
-        });
-        const weatherPlan = Array.isArray(candidate.eventWeather) && candidate.eventWeather.length === 3
-          ? candidate.eventWeather.map((entry) => weather.find((option) => option.id === entry.id) || { ...weather[0] })
-          : [{ ...weather[0] }, { ...weather[0] }, { ...weather[0] }];
-        migrated.event = {
-          round: 3,
-          weather: weatherPlan,
-          standings,
-          commentary: [{ text: "Resultado migrado de uma versão anterior do jogo.", kind: "info" }]
+      if (candidate.version === 1) {
+        migrated = {
+          ...migrated,
+          teamName: typeof candidate.teamName === "string" && candidate.teamName.trim()
+            ? candidate.teamName.trim()
+            : "Projeto Aurora",
+          aircraftName: typeof candidate.aircraftName === "string" && candidate.aircraftName.trim()
+            ? candidate.aircraftName.trim()
+            : "Aurora",
+          difficulty: Object.hasOwn(difficulties, candidate.difficulty) ? candidate.difficulty : "standard",
+          rngState: Number.isInteger(candidate.rngState) ? candidate.rngState >>> 0 : game.Random.seed(),
+          event: null,
+          eventStrategies: Array.isArray(candidate.eventStrategies) && candidate.eventStrategies.length === 3
+            ? candidate.eventStrategies
+            : ["balanced", "balanced", "balanced"]
         };
-        migrated.phase = "results";
-        migrated.eventResult = { standings, winner: candidate.eventResult.winner };
+        migrated.history = (candidate.history || []).map((entry) => ({
+          ...entry,
+          standings: Array.isArray(entry.standings) ? entry.standings : []
+        }));
+
+        if (candidate.phase === "event" && candidate.week === weeksPerSeason) {
+          const eventPlan = game.Competition.create(migrated);
+          migrated.rngState = eventPlan.seed;
+          if (Array.isArray(candidate.eventWeather) && candidate.eventWeather.length === 3) {
+            eventPlan.event.weather = candidate.eventWeather.map((savedWeather) =>
+              weather.find((option) => option.id === savedWeather.id) || { ...weather[0] }
+            );
+          }
+          migrated.event = eventPlan.event;
+          migrated.phase = "event-report";
+        } else if (candidate.phase === "results" && candidate.eventResult?.standings) {
+          const standings = candidate.eventResult.standings.map((team) => {
+            const sourceAttributes = team.isPlayer
+              ? candidate.attributes
+              : candidate.rivals.find((rival) => rival.name === team.name)?.attributes || baseStats;
+            const flights = (team.flights || []).map((flight) => ({
+              ...flight,
+              partial: Boolean(flight.partial),
+              weather: flight.weather || "Clima variável",
+              strategy: flight.strategy || "Equilibrada",
+              strategyId: flight.strategyId || "balanced"
+            }));
+            return {
+              ...team,
+              attributes: { ...sourceAttributes },
+              report: Number.isFinite(team.report) ? team.report : 0,
+              flights,
+              total: Number.isFinite(team.total) ? team.total : Number(team.score) || 0
+            };
+          });
+          const weatherPlan = Array.isArray(candidate.eventWeather) && candidate.eventWeather.length === 3
+            ? candidate.eventWeather.map((entry) => weather.find((option) => option.id === entry.id) || { ...weather[0] })
+            : [{ ...weather[0] }, { ...weather[0] }, { ...weather[0] }];
+          migrated.event = {
+            round: 3,
+            weather: weatherPlan,
+            standings,
+            commentary: [{ text: "Resultado migrado de uma versão anterior do jogo.", kind: "info" }]
+          };
+          migrated.phase = "results";
+          migrated.eventResult = { standings, winner: candidate.eventResult.winner };
+        }
+
+        if (migrated.phase === "preparation") migrated.event = null;
       }
 
-      if (migrated.phase === "preparation") migrated.event = null;
+      migrated = {
+        ...migrated,
+        version: saveVersion,
+        teamName: typeof migrated.teamName === "string" && migrated.teamName.trim()
+          ? migrated.teamName.trim()
+          : "Projeto Aurora",
+        aircraftName: typeof migrated.aircraftName === "string" && migrated.aircraftName.trim()
+          ? migrated.aircraftName.trim()
+          : "Aurora",
+        difficulty: Object.hasOwn(difficulties, migrated.difficulty) ? migrated.difficulty : "standard"
+      };
       return migrated;
     }
   });
@@ -930,7 +1121,7 @@
     const next = clone(state);
     mutation(next);
     for (let turn = 0; turn < weeks; turn += 1) {
-      const progress = game.Rivals.advance(next.rivals, next.rngState);
+      const progress = game.Rivals.advance(next.rivals, next.rngState, next.difficulty);
       next.rivals = progress.rivals;
       next.rngState = progress.seed;
       next.week += 1;
@@ -966,8 +1157,8 @@
       standings: standings.map(({ name, position, total }) => ({ name, position, score: total }))
     });
     const outcome = player.position === 1
-      ? `Campeões! Projeto Aurora levou o título, +${reward} créditos e ${prestige} de prestígio.`
-      : `Projeto Aurora terminou em ${player.position}º lugar. Prêmio: ${reward} créditos${prestige ? ` e ${prestige} de prestígio` : ""}.`;
+      ? `Campeões! ${next.teamName} levou o título, +${reward} créditos e ${prestige} de prestígio.`
+      : `${next.teamName} terminou em ${player.position}º lugar. Prêmio: ${reward} créditos${prestige ? ` e ${prestige} de prestígio` : ""}.`;
     pushLog(next, weeksPerSeason, outcome);
     return outcome;
   }
@@ -1019,7 +1210,7 @@
           next.event = game.Competition.revealReports(next.event);
           next.phase = "event-flight";
           const player = next.event.standings.find((team) => team.isPlayer);
-          pushLog(next, weeksPerSeason, `Relatório avaliado: Projeto Aurora marcou ${player.report} pontos.`);
+          pushLog(next, weeksPerSeason, `Relatório avaliado: ${next.teamName} marcou ${player.report} pontos.`);
           return { state: next, notice: { text: "Relatórios avaliados. A primeira bateria está pronta.", kind: "success" } };
         }
         case "choose-strategy": {
@@ -1041,8 +1232,8 @@
           const player = next.event.standings.find((team) => team.isPlayer);
           const outcome = player.flights[currentRound - 1];
           pushLog(next, weeksPerSeason, outcome.crashed
-            ? `Bateria ${currentRound}: Projeto Aurora sofreu uma queda.`
-            : `Bateria ${currentRound}: Projeto Aurora marcou ${outcome.score} pontos${outcome.partial ? " em pouso parcial" : ""}.`);
+            ? `Bateria ${currentRound}: ${next.teamName} sofreu uma queda.`
+            : `Bateria ${currentRound}: ${next.teamName} marcou ${outcome.score} pontos${outcome.partial ? " em pouso parcial" : ""}.`);
           if (currentRound === 3) {
             const rewardMessage = finalizeCompetition(next);
             return { state: next, notice: { text: rewardMessage, kind: "success" } };
@@ -1122,9 +1313,11 @@
 
   function renderHeader(state) {
     const remaining = weeksPerSeason - state.week;
+    document.getElementById("teamNameHeader").textContent = state.teamName;
     document.getElementById("weekLabel").textContent = `Semana ${state.week} / ${weeksPerSeason}`;
     document.getElementById("yearLabel").textContent = `Ano ${state.year}`;
     document.getElementById("designYear").textContent = `· Ano ${state.year}`;
+    document.getElementById("aircraftName").textContent = state.aircraftName;
     document.getElementById("cashLabel").textContent = credits(state.cash);
     document.getElementById("prestigeLabel").textContent = state.prestige;
     document.getElementById("weekProgress").style.width = `${(state.week / weeksPerSeason) * 100}%`;
@@ -1265,7 +1458,7 @@
     }
 
     const champion = previous.winner;
-    const playerName = "Projeto Aurora";
+    const playerName = state.teamName;
     const previousPlayer = previous.standings?.find((team) => team.name === playerName);
     const previousChampion = champion === playerName ? null : previous.standings?.find((team) => team.name === champion);
     const rival = champion === playerName
@@ -1280,16 +1473,16 @@
         entry.standings.find((team) => team.name === rival.name).position).length
       : 0;
     const encounterCount = olderMeetings.length;
-    const championLabel = champion === playerName ? "Projeto Aurora (defensora)" : escapeHtml(champion);
+    const championLabel = champion === playerName ? `${escapeHtml(playerName)} (defensora)` : escapeHtml(champion);
     const playerLabel = previousPlayer ? `${previousPlayer.position}º lugar · ${previousPlayer.score} pts` : "Resultado registrado";
     const rivalLabel = previousChampion ? `${previousChampion.position}º lugar · ${previousChampion.score} pts` : "Título da equipe";
     container.innerHTML = `
       <p>Campeã defensora: <strong>${championLabel}</strong></p>
-      <p>Projeto Aurora no último ano: <strong>${playerLabel}</strong></p>
+      <p>${escapeHtml(playerName)} no último ano: <strong>${playerLabel}</strong></p>
       ${champion === playerName
         ? `<p>Defesas de título: <strong>${state.history.filter((entry) => entry.winner === playerName).length}</strong></p>`
-        : `<p>Confronto histórico contra a campeã: <strong>${headToHeadWins} vitória(s) Aurora em ${encounterCount} temporada(s)</strong></p><p>Último resultado da rival: <strong>${rivalLabel}</strong></p>`}
-      ${champion === playerName && rival ? `<p>Vice-campeã anterior: <strong>${escapeHtml(rival.name)}</strong> · ${headToHeadWins} vitória(s) Aurora em ${encounterCount} encontro(s)</p>` : ""}`;
+        : `<p>Confronto histórico contra a campeã: <strong>${headToHeadWins} vitória(s) ${escapeHtml(playerName)} em ${encounterCount} temporada(s)</strong></p><p>Último resultado da rival: <strong>${rivalLabel}</strong></p>`}
+      ${champion === playerName && rival ? `<p>Vice-campeã anterior: <strong>${escapeHtml(rival.name)}</strong> · ${headToHeadWins} vitória(s) ${escapeHtml(playerName)} em ${encounterCount} encontro(s)</p>` : ""}`;
   }
 
   function renderLog(state) {
@@ -1369,7 +1562,7 @@
       <div class="event-content">
         <section class="event-hero">
           <div class="event-header">
-            <div><h3>Campeonato · Ano ${state.year}</h3><p>Quatro rivais. Três baterias. O resultado de hoje entra no histórico da equipe.</p></div>
+            <div><h3>Campeonato · Ano ${state.year}</h3><p>${escapeHtml(state.teamName)} enfrenta quatro rivais em três baterias.</p></div>
             <span class="rival-tag">ABERTURA</span>
           </div>
         </section>
@@ -1408,7 +1601,7 @@
       <div class="event-content">
         <section class="event-hero">
           <div class="event-header">
-            <div><h3>${escapeHtml(champion.name)} conquista o título</h3><p>Projeto Aurora terminou em ${player.position}º lugar, com ${player.total} pontos.</p></div>
+            <div><h3>${escapeHtml(champion.name)} conquista o título</h3><p>${escapeHtml(state.teamName)} terminou em ${player.position}º lugar, com ${player.total} pontos.</p></div>
             <span class="rival-tag">RESULTADO FINAL</span>
           </div>
         </section>
@@ -1454,8 +1647,41 @@
   let state = game.State.create();
   let activeTab = "engineering";
   let notice = { text: "", kind: "" };
+  let screen = "home";
+  let hubNotice = { text: "", kind: "" };
 
   function render() {
+    const inGame = screen === "game";
+    document.getElementById("hubView").hidden = inGame;
+    document.getElementById("gameApp").hidden = !inGame;
+    document.getElementById("homeMenu").hidden = screen !== "home";
+    document.getElementById("newGameMenu").hidden = screen !== "setup";
+    const hubStatus = document.getElementById("hubStatus");
+    hubStatus.textContent = hubNotice.text;
+    hubStatus.dataset.kind = hubNotice.kind;
+
+    if (!inGame) {
+      const saved = game.Storage.load();
+      const canContinue = saved.ok;
+      const saveExists = !saved.missing;
+      document.getElementById("continueButton").disabled = !canContinue;
+      document.getElementById("savedGameSummary").textContent = canContinue
+        ? `${saved.state.teamName} · Ano ${saved.state.year}, semana ${saved.state.week}/20 · ${game.Content.difficulties[saved.state.difficulty].label}`
+        : saveExists
+          ? saved.message
+          : "Nenhuma carreira salva neste navegador. Comece uma nova temporada.";
+      document.getElementById("replaceSaveLabel").hidden = screen !== "setup" || !saveExists;
+      if (screen === "setup") {
+        const difficulty = game.Content.difficulties[document.getElementById("difficultyInput").value];
+        document.getElementById("difficultyHelp").textContent = difficulty?.description || "";
+      }
+      if (screen === "home" && !canContinue && saveExists && !hubNotice.text) {
+        hubStatus.textContent = saved.message;
+        hubStatus.dataset.kind = "error";
+      }
+      return;
+    }
+
     game.UI.render(state, activeTab, notice);
   }
 
@@ -1481,6 +1707,36 @@
     }
 
     switch (button.dataset.action) {
+      case "new-game":
+        screen = "setup";
+        hubNotice = { text: "", kind: "" };
+        document.getElementById("replaceSaveInput").checked = false;
+        render();
+        return;
+      case "home":
+        if (screen === "game") {
+          const saved = game.Storage.save(state);
+          hubNotice = saved.ok
+            ? { text: "", kind: "" }
+            : { text: `Não foi possível salvar a carreira: ${saved.message}`, kind: "error" };
+        }
+        screen = "home";
+        render();
+        return;
+      case "continue": {
+        const loaded = game.Storage.load();
+        if (loaded.ok) {
+          state = loaded.state;
+          activeTab = "engineering";
+          notice = { text: "Carreira retomada.", kind: "success" };
+          screen = "game";
+          hubNotice = { text: "", kind: "" };
+        } else {
+          hubNotice = { text: loaded.message, kind: loaded.missing ? "warning" : "error" };
+        }
+        render();
+        return;
+      }
       case "save": {
         const saved = game.Storage.save(state);
         notice = saved.ok
@@ -1517,8 +1773,36 @@
     }
   }
 
+  function handleNewGame(event) {
+    event.preventDefault();
+    const teamName = document.getElementById("teamNameInput").value.trim();
+    const aircraftName = document.getElementById("aircraftNameInput").value.trim();
+    const difficulty = document.getElementById("difficultyInput").value;
+    if (!teamName || !aircraftName) {
+      hubNotice = { text: "Informe o nome da equipe e do avião.", kind: "error" };
+      render();
+      return;
+    }
+
+    const saved = game.Storage.load();
+    if (!saved.missing && !document.getElementById("replaceSaveInput").checked) {
+      hubNotice = { text: "Marque a confirmação para substituir o jogo salvo antes de iniciar.", kind: "error" };
+      render();
+      return;
+    }
+
+    state = game.State.create({ teamName, aircraftName, difficulty });
+    activeTab = "engineering";
+    screen = "game";
+    notice = { text: `Carreira iniciada · dificuldade ${game.Content.difficulties[state.difficulty].label}.`, kind: "success" };
+    const result = game.Storage.save(state);
+    if (!result.ok) notice = { text: `Carreira iniciada, mas não foi possível salvar: ${result.message}`, kind: "error" };
+    hubNotice = { text: "", kind: "" };
+    render();
+  }
+
   function handleKeydown(event) {
-    if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+    if (screen !== "game" || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
     const tabs = [...document.querySelectorAll(".tab")];
     if (tabs.length === 0) return;
     const currentIndex = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
@@ -1531,6 +1815,8 @@
 
   document.addEventListener("click", handleClick);
   document.addEventListener("keydown", handleKeydown);
+  document.getElementById("newGameForm").addEventListener("submit", handleNewGame);
+  document.getElementById("difficultyInput").addEventListener("change", render);
   render();
 })();
 </script>

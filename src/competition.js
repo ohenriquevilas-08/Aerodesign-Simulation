@@ -26,7 +26,7 @@
       }
 
       const teams = [
-        { name: "Projeto Aurora", isPlayer: true, attributes: { ...state.attributes } },
+        { name: state.teamName, isPlayer: true, attributes: { ...state.attributes } },
         ...state.rivals.map((rival) => ({
           name: rival.name,
           isPlayer: false,

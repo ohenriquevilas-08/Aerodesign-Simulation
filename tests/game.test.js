@@ -150,6 +150,42 @@ test("mission rules reject invalid transitions and migrate existing version-one 
   assert.equal(game.State.validate(forged), false);
 });
 
+test("new careers store team identity and difficulty and migrate version-two saves", () => {
+  const { game } = createHarness();
+  const state = game.State.create({
+    teamName: "  Asa Verde  ",
+    aircraftName: "  Ventania  ",
+    difficulty: "freshman"
+  });
+  assert.equal(state.teamName, "Asa Verde");
+  assert.equal(state.aircraftName, "Ventania");
+  assert.equal(state.cash, 1400);
+  assert.equal(game.Competition.create(state).event.standings[0].name, "Asa Verde");
+
+  const savedVersionTwo = { ...game.State.create(), version: 2, year: 4, cash: 735 };
+  delete savedVersionTwo.teamName;
+  delete savedVersionTwo.aircraftName;
+  delete savedVersionTwo.difficulty;
+  const migrated = game.State.migrate(savedVersionTwo);
+  assert.equal(migrated.version, game.Content.saveVersion);
+  assert.equal(migrated.teamName, "Projeto Aurora");
+  assert.equal(migrated.aircraftName, "Aurora");
+  assert.equal(migrated.difficulty, "standard");
+  assert.equal(migrated.year, 4);
+  assert.equal(migrated.cash, 735);
+  assert.equal(game.State.validate(migrated), true);
+
+  const easy = game.State.create({ difficulty: "freshman" });
+  const veteran = game.State.create({ difficulty: "veteran" });
+  const easyProgress = game.Rivals.advance(easy.rivals, 2468, easy.difficulty).rivals;
+  const veteranProgress = game.Rivals.advance(veteran.rivals, 2468, veteran.difficulty).rivals;
+  assert(easyProgress.some((rival, index) =>
+    rival.attributes.aerodynamics + rival.attributes.structures + rival.attributes.systems + rival.attributes.report <
+    veteranProgress[index].attributes.aerodynamics + veteranProgress[index].attributes.structures +
+      veteranProgress[index].attributes.systems + veteranProgress[index].attributes.report
+  ));
+});
+
 test("rival strategies reflect team philosophy and flight choices trade reliability for score", () => {
   const { game } = createHarness();
   const design = { aerodynamics: 50, structures: 60, systems: 55, report: 20 };

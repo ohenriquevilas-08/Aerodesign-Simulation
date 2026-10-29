@@ -15,9 +15,11 @@
 
   function renderHeader(state) {
     const remaining = weeksPerSeason - state.week;
+    document.getElementById("teamNameHeader").textContent = state.teamName;
     document.getElementById("weekLabel").textContent = `Semana ${state.week} / ${weeksPerSeason}`;
     document.getElementById("yearLabel").textContent = `Ano ${state.year}`;
     document.getElementById("designYear").textContent = `· Ano ${state.year}`;
+    document.getElementById("aircraftName").textContent = state.aircraftName;
     document.getElementById("cashLabel").textContent = credits(state.cash);
     document.getElementById("prestigeLabel").textContent = state.prestige;
     document.getElementById("weekProgress").style.width = `${(state.week / weeksPerSeason) * 100}%`;
@@ -158,7 +160,7 @@
     }
 
     const champion = previous.winner;
-    const playerName = "Projeto Aurora";
+    const playerName = state.teamName;
     const previousPlayer = previous.standings?.find((team) => team.name === playerName);
     const previousChampion = champion === playerName ? null : previous.standings?.find((team) => team.name === champion);
     const rival = champion === playerName
@@ -173,16 +175,16 @@
         entry.standings.find((team) => team.name === rival.name).position).length
       : 0;
     const encounterCount = olderMeetings.length;
-    const championLabel = champion === playerName ? "Projeto Aurora (defensora)" : escapeHtml(champion);
+    const championLabel = champion === playerName ? `${escapeHtml(playerName)} (defensora)` : escapeHtml(champion);
     const playerLabel = previousPlayer ? `${previousPlayer.position}º lugar · ${previousPlayer.score} pts` : "Resultado registrado";
     const rivalLabel = previousChampion ? `${previousChampion.position}º lugar · ${previousChampion.score} pts` : "Título da equipe";
     container.innerHTML = `
       <p>Campeã defensora: <strong>${championLabel}</strong></p>
-      <p>Projeto Aurora no último ano: <strong>${playerLabel}</strong></p>
+      <p>${escapeHtml(playerName)} no último ano: <strong>${playerLabel}</strong></p>
       ${champion === playerName
         ? `<p>Defesas de título: <strong>${state.history.filter((entry) => entry.winner === playerName).length}</strong></p>`
-        : `<p>Confronto histórico contra a campeã: <strong>${headToHeadWins} vitória(s) Aurora em ${encounterCount} temporada(s)</strong></p><p>Último resultado da rival: <strong>${rivalLabel}</strong></p>`}
-      ${champion === playerName && rival ? `<p>Vice-campeã anterior: <strong>${escapeHtml(rival.name)}</strong> · ${headToHeadWins} vitória(s) Aurora em ${encounterCount} encontro(s)</p>` : ""}`;
+        : `<p>Confronto histórico contra a campeã: <strong>${headToHeadWins} vitória(s) ${escapeHtml(playerName)} em ${encounterCount} temporada(s)</strong></p><p>Último resultado da rival: <strong>${rivalLabel}</strong></p>`}
+      ${champion === playerName && rival ? `<p>Vice-campeã anterior: <strong>${escapeHtml(rival.name)}</strong> · ${headToHeadWins} vitória(s) ${escapeHtml(playerName)} em ${encounterCount} encontro(s)</p>` : ""}`;
   }
 
   function renderLog(state) {
@@ -262,7 +264,7 @@
       <div class="event-content">
         <section class="event-hero">
           <div class="event-header">
-            <div><h3>Campeonato · Ano ${state.year}</h3><p>Quatro rivais. Três baterias. O resultado de hoje entra no histórico da equipe.</p></div>
+            <div><h3>Campeonato · Ano ${state.year}</h3><p>${escapeHtml(state.teamName)} enfrenta quatro rivais em três baterias.</p></div>
             <span class="rival-tag">ABERTURA</span>
           </div>
         </section>
@@ -301,7 +303,7 @@
       <div class="event-content">
         <section class="event-hero">
           <div class="event-header">
-            <div><h3>${escapeHtml(champion.name)} conquista o título</h3><p>Projeto Aurora terminou em ${player.position}º lugar, com ${player.total} pontos.</p></div>
+            <div><h3>${escapeHtml(champion.name)} conquista o título</h3><p>${escapeHtml(state.teamName)} terminou em ${player.position}º lugar, com ${player.total} pontos.</p></div>
             <span class="rival-tag">RESULTADO FINAL</span>
           </div>
         </section>

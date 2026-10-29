@@ -21,7 +21,7 @@
     const next = clone(state);
     mutation(next);
     for (let turn = 0; turn < weeks; turn += 1) {
-      const progress = game.Rivals.advance(next.rivals, next.rngState);
+      const progress = game.Rivals.advance(next.rivals, next.rngState, next.difficulty);
       next.rivals = progress.rivals;
       next.rngState = progress.seed;
       next.week += 1;
@@ -57,8 +57,8 @@
       standings: standings.map(({ name, position, total }) => ({ name, position, score: total }))
     });
     const outcome = player.position === 1
-      ? `Campeões! Projeto Aurora levou o título, +${reward} créditos e ${prestige} de prestígio.`
-      : `Projeto Aurora terminou em ${player.position}º lugar. Prêmio: ${reward} créditos${prestige ? ` e ${prestige} de prestígio` : ""}.`;
+      ? `Campeões! ${next.teamName} levou o título, +${reward} créditos e ${prestige} de prestígio.`
+      : `${next.teamName} terminou em ${player.position}º lugar. Prêmio: ${reward} créditos${prestige ? ` e ${prestige} de prestígio` : ""}.`;
     pushLog(next, weeksPerSeason, outcome);
     return outcome;
   }
@@ -110,7 +110,7 @@
           next.event = game.Competition.revealReports(next.event);
           next.phase = "event-flight";
           const player = next.event.standings.find((team) => team.isPlayer);
-          pushLog(next, weeksPerSeason, `Relatório avaliado: Projeto Aurora marcou ${player.report} pontos.`);
+          pushLog(next, weeksPerSeason, `Relatório avaliado: ${next.teamName} marcou ${player.report} pontos.`);
           return { state: next, notice: { text: "Relatórios avaliados. A primeira bateria está pronta.", kind: "success" } };
         }
         case "choose-strategy": {
@@ -132,8 +132,8 @@
           const player = next.event.standings.find((team) => team.isPlayer);
           const outcome = player.flights[currentRound - 1];
           pushLog(next, weeksPerSeason, outcome.crashed
-            ? `Bateria ${currentRound}: Projeto Aurora sofreu uma queda.`
-            : `Bateria ${currentRound}: Projeto Aurora marcou ${outcome.score} pontos${outcome.partial ? " em pouso parcial" : ""}.`);
+            ? `Bateria ${currentRound}: ${next.teamName} sofreu uma queda.`
+            : `Bateria ${currentRound}: ${next.teamName} marcou ${outcome.score} pontos${outcome.partial ? " em pouso parcial" : ""}.`);
           if (currentRound === 3) {
             const rewardMessage = finalizeCompetition(next);
             return { state: next, notice: { text: rewardMessage, kind: "success" } };

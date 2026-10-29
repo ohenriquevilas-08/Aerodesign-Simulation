@@ -86,6 +86,100 @@
     .button-subtle { min-height: 34px; padding: 0 10px; font-size: 12px; }
     .button-warn { color: var(--warning); }
 
+    .hub-view {
+      display: grid;
+      min-height: min(720px, calc(100vh - 130px));
+      grid-template-columns: minmax(0, 1.15fr) minmax(310px, .85fr);
+      align-items: center;
+      gap: clamp(24px, 6vw, 88px);
+      overflow: hidden;
+      padding: clamp(28px, 6vw, 84px);
+      border: 2px solid #435260;
+      background:
+        linear-gradient(135deg, rgb(82 211 162 / 8%), transparent 48%),
+        repeating-linear-gradient(0deg, transparent 0 39px, rgb(255 255 255 / 2%) 40px),
+        repeating-linear-gradient(90deg, transparent 0 39px, rgb(255 255 255 / 2%) 40px),
+        #121c27;
+      box-shadow: 0 22px 70px rgb(0 0 0 / 32%), inset 0 0 0 6px rgb(0 0 0 / 12%);
+    }
+    .hub-showcase { position: relative; z-index: 1; }
+    .hub-kicker, .hub-menu-label, .hub-button, .hub-field label, .hub-difficulty-help, .hub-save-summary {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .hub-kicker { color: var(--accent); font-size: 11px; font-weight: 750; letter-spacing: .12em; }
+    .hub-title { max-width: 700px; margin: 18px 0; font-size: clamp(42px, 7vw, 88px); line-height: .96; letter-spacing: -.075em; }
+    .hub-title span { display: block; color: var(--accent); }
+    .hub-description { max-width: 470px; color: #b7c3d0; font-size: 15px; line-height: 1.7; }
+    .hub-blueprint {
+      position: relative;
+      width: min(440px, 82%);
+      height: 190px;
+      margin: 54px auto 0;
+      opacity: .8;
+      filter: drop-shadow(0 0 26px rgb(82 211 162 / 14%));
+    }
+    .blueprint-wing, .blueprint-tail, .blueprint-fuselage {
+      position: absolute;
+      background: linear-gradient(135deg, #70d9b2, #409b8a);
+      clip-path: polygon(0 50%, 100% 0, 88% 50%, 100% 100%);
+    }
+    .blueprint-wing { inset: 20% 5% 22% 4%; }
+    .blueprint-tail { right: 3%; bottom: 10%; width: 34%; height: 40%; opacity: .72; }
+    .blueprint-fuselage { z-index: 1; top: 44%; left: 7%; width: 88%; height: 14%; clip-path: polygon(0 40%, 82% 30%, 100% 50%, 82% 70%, 0 60%); background: #d3f5e6; }
+    .hub-menu {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      justify-self: center;
+      padding: clamp(20px, 4vw, 34px);
+      border: 2px solid #526271;
+      background: rgb(19 29 40 / 94%);
+      box-shadow: 8px 8px 0 rgb(0 0 0 / 28%);
+    }
+    .hub-menu-label { margin: 0 0 7px; color: var(--muted); font-size: 10px; letter-spacing: .14em; }
+    .hub-menu h3 { margin: 0 0 20px; font-size: 21px; }
+    .hub-save-summary { min-height: 39px; margin: 0 0 15px; color: #b4c1ce; font-size: 11px; line-height: 1.6; }
+    .hub-menu-actions { display: grid; gap: 10px; }
+    .hub-button {
+      min-height: 52px;
+      padding: 0 16px;
+      border: 2px solid #536271;
+      background: #283746;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-align: left;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .hub-button:hover:not(:disabled), .hub-button:focus-visible { transform: translateX(3px); border-color: var(--accent); outline: none; }
+    .hub-button-primary { border-color: #52d3a2; background: #23634f; color: #effff7; }
+    .hub-button-primary:hover:not(:disabled) { background: #2a795e; }
+    .hub-button:disabled { cursor: not-allowed; opacity: .42; }
+    .hub-form { display: grid; gap: 14px; }
+    .hub-field { display: grid; gap: 7px; }
+    .hub-field label { color: #c7d2de; font-size: 11px; font-weight: 700; }
+    .hub-field input, .hub-field select {
+      width: 100%;
+      min-height: 43px;
+      padding: 9px 11px;
+      border: 1px solid #465767;
+      border-radius: 0;
+      background: #101923;
+      color: var(--text);
+      font: inherit;
+    }
+    .hub-field input:focus, .hub-field select:focus { border-color: var(--accent); outline: 2px solid rgb(82 211 162 / 18%); }
+    .hub-difficulty-help { min-height: 30px; margin: -7px 0 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .hub-replace-save { display: flex; align-items: flex-start; gap: 9px; padding: 10px; border: 1px solid rgb(240 189 104 / 45%); color: var(--warning); font-size: 11px; line-height: 1.5; }
+    .hub-replace-save input { flex: 0 0 auto; margin: 2px 0 0; accent-color: var(--accent); }
+    .hub-form-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 9px; margin-top: 5px; }
+    .hub-status { min-height: 20px; margin: 12px 0 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .hub-status[data-kind="error"] { color: var(--danger); }
+    .hub-status[data-kind="success"] { color: var(--accent); }
+
     .dashboard {
       display: grid;
       grid-template-columns: minmax(240px, 290px) minmax(0, 1fr);
@@ -271,6 +365,9 @@
       .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .season-card { grid-column: 1 / -1; }
       .main-panel { min-height: auto; }
+      .hub-view { min-height: auto; grid-template-columns: 1fr; gap: 28px; padding: clamp(22px, 5vw, 48px); }
+      .hub-blueprint { height: 130px; margin-top: 32px; }
+      .hub-menu { max-width: none; }
     }
     @media (max-width: 620px) {
       .shell { padding: 18px 12px 30px; }
@@ -300,15 +397,70 @@
 </head>
 <body>
   <div class="shell">
+    <main class="hub-view" id="hubView" aria-labelledby="hubTitle">
+      <section class="hub-showcase">
+        <div class="hub-kicker">SIMULAÇÃO UNIVERSITÁRIA · MODO CARREIRA</div>
+        <h2 class="hub-title" id="hubTitle">Aerodesign <span>Manager</span></h2>
+        <p class="hub-description">Monte sua equipe, desenvolva um projeto de avião e encare rivais em uma temporada de decisões e estratégia.</p>
+        <div class="hub-blueprint" aria-hidden="true">
+          <div class="blueprint-wing"></div><div class="blueprint-tail"></div><div class="blueprint-fuselage"></div>
+        </div>
+      </section>
+      <section class="hub-menu" aria-label="Menu principal">
+        <div id="homeMenu">
+          <p class="hub-menu-label">MENU PRINCIPAL</p>
+          <h3>Sua próxima temporada</h3>
+          <p class="hub-save-summary" id="savedGameSummary">Verificando salvamento...</p>
+          <div class="hub-menu-actions">
+            <button class="hub-button hub-button-primary" type="button" data-action="new-game">NOVO JOGO</button>
+            <button class="hub-button" id="continueButton" type="button" data-action="continue" disabled>CONTINUAR</button>
+          </div>
+        </div>
+        <div id="newGameMenu" hidden>
+          <p class="hub-menu-label">CONFIGURAÇÃO DA CARREIRA</p>
+          <h3>Crie sua equipe</h3>
+          <form class="hub-form" id="newGameForm">
+            <div class="hub-field">
+              <label for="teamNameInput">Nome da equipe</label>
+              <input id="teamNameInput" name="teamName" maxlength="32" required value="Projeto Aurora" autocomplete="organization">
+            </div>
+            <div class="hub-field">
+              <label for="aircraftNameInput">Nome do avião</label>
+              <input id="aircraftNameInput" name="aircraftName" maxlength="24" required value="Aurora">
+            </div>
+            <div class="hub-field">
+              <label for="difficultyInput">Dificuldade</label>
+              <select id="difficultyInput" name="difficulty">
+                <option value="freshman">Calouro · mais créditos, rivais mais lentas</option>
+                <option value="standard" selected>Intermediário · desafio equilibrado</option>
+                <option value="veteran">Veterano · menos créditos, rivais mais fortes</option>
+              </select>
+            </div>
+            <p class="hub-difficulty-help" id="difficultyHelp">Recursos e evolução das rivais em equilíbrio.</p>
+            <label class="hub-replace-save" id="replaceSaveLabel" hidden>
+              <input id="replaceSaveInput" type="checkbox">
+              <span>Entendo que iniciar uma nova carreira substituirá o jogo salvo neste navegador.</span>
+            </label>
+            <div class="hub-form-actions">
+              <button class="hub-button" type="button" data-action="home">VOLTAR</button>
+              <button class="hub-button hub-button-primary" type="submit">INICIAR JOGO</button>
+            </div>
+          </form>
+        </div>
+        <p class="hub-status" id="hubStatus" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+    <div id="gameApp" hidden>
     <header class="topbar">
       <div class="brand">
         <div class="brand-mark" aria-hidden="true">A</div>
         <div>
           <h1>Aerodesign Manager</h1>
-          <p>Gestão de equipe universitária</p>
+          <p id="teamNameHeader">Gestão de equipe universitária</p>
         </div>
       </div>
       <div class="topbar-actions">
+        <button class="button button-subtle" type="button" data-action="home">Menu principal</button>
         <button class="button button-subtle" type="button" data-action="save">Salvar</button>
         <button class="button button-subtle" type="button" data-action="load">Carregar</button>
       </div>
@@ -344,7 +496,7 @@
               <p>Indicadores do projeto atual</p>
             </div>
           </div>
-          <h3 class="aircraft-name">Projeto Aurora <span id="designYear"></span></h3>
+          <h3 class="aircraft-name"><span id="aircraftName">Aurora</span> <span id="designYear"></span></h3>
           <p class="aircraft-summary">Estimativas do regulamento</p>
           <div id="aircraftStats"></div>
           <div class="derived-grid" id="derivedStats"></div>
@@ -420,7 +572,7 @@
               <div class="notice" id="actionNotice" role="status" aria-live="polite"></div>
               <div class="week-footer" id="weekFooter">
                 <p>Sem ação disponível? Encerrar a semana avança o calendário e dá às rivais mais tempo para evoluir.</p>
-                <button class="button" type="button" data-action="advance">Encerrar semana <span aria-hidden="true">→</span></button>
+                <button class="button" type="button" data-action="advance-week">Encerrar semana <span aria-hidden="true">→</span></button>
               </div>
             </div>
           </div>
@@ -439,6 +591,7 @@
       </main>
     </div>
     <div class="footer-note">Aerodesign Manager · Campeonato por baterias · Clima e estratégia mudam as chances · Progresso salvo neste navegador</div>
+    </div>
   </div>
 
   <script>

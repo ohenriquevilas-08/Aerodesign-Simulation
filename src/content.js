@@ -3,7 +3,12 @@
 
   game.Content = Object.freeze({
     saveKey: "aerodesign-manager-save-v1",
-    saveVersion: 2,
+    saveVersion: 3,
+    difficulties: Object.freeze({
+      freshman: { label: "Calouro", startingCash: 1400, rivalProgress: 0.75, description: "Mais créditos iniciais; as rivais evoluem com calma." },
+      standard: { label: "Intermediário", startingCash: 1000, rivalProgress: 1, description: "Recursos e evolução das rivais em equilíbrio." },
+      veteran: { label: "Veterano", startingCash: 850, rivalProgress: 1.2, description: "Menos créditos iniciais; as rivais avançam mais rápido." }
+    }),
     weeksPerSeason: 20,
     milestoneLevel: 50,
     baseStats: Object.freeze({ aerodynamics: 30, structures: 30, systems: 25, report: 20 }),

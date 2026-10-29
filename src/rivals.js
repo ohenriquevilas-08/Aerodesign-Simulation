@@ -36,8 +36,9 @@
         };
       });
     },
-    advance(rivals, seed) {
+    advance(rivals, seed, difficulty = "standard") {
       let nextSeed = seed;
+      const progressRate = game.Content.difficulties[difficulty]?.rivalProgress ?? 1;
       const updated = rivals.map((rival) => {
         const result = chooseAction(rival, nextSeed);
         nextSeed = result.seed;
@@ -46,7 +47,7 @@
           copy.cash += 330;
         } else {
           const current = copy.attributes[result.action];
-          copy.attributes[result.action] = Math.min(100, current + 6 * (1 - current / 135));
+          copy.attributes[result.action] = Math.min(100, current + 6 * progressRate * (1 - current / 135));
         }
         return copy;
       });
