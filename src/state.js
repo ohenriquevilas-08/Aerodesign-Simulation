@@ -1,8 +1,39 @@
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear, seasonGoalsForYear, skillNodes } = game.Content;
+  const { baseStats, rivalBlueprints, saveVersion, weeksPerSeason, attributes, weather, strategies, difficulties, seasonScopes, seasonScopeForYear, seasonGoalsForYear, seasonPhases, reusablePartTypes, skillNodes } = game.Content;
   const strategyIds = Object.keys(strategies);
   const skillNodeIds = skillNodes.map((node) => node.id);
+  const conceptSkillIds = skillNodes.filter((node) => node.concept).map((node) => node.id);
+  const emptyStats = Object.fromEntries(attributes.map(({ key }) => [key, 0]));
+
+  function validPart(part) {
+    return part && typeof part.id === "string" && part.id.length > 0 &&
+      reusablePartTypes.includes(part.type) && isNumber(part.quality) &&
+      part.quality >= 0 && part.quality <= 100 && isNumber(part.condition) &&
+      part.condition >= 0 && part.condition <= 100 && Number.isInteger(part.builtYear) &&
+      part.builtYear >= 1;
+  }
+
+  function validProject(project) {
+    return project && typeof project.prototypeBuilt === "boolean" &&
+      Number.isInteger(project.prototypeTests) && project.prototypeTests >= 0 && project.prototypeTests <= 3 &&
+      Number.isInteger(project.finalTests) && project.finalTests >= 0 && project.finalTests <= 2 &&
+      Array.isArray(project.reusedPartIds) && new Set(project.reusedPartIds).size === project.reusedPartIds.length &&
+      (project.finalAircraft === null || (
+        project.finalAircraft && typeof project.finalAircraft.name === "string" &&
+        Number.isInteger(project.finalAircraft.year) && project.finalAircraft.year >= 1 &&
+        isNumber(project.finalAircraft.reliabilityBonus) && project.finalAircraft.reliabilityBonus >= 0 &&
+        project.finalAircraft.reliabilityBonus <= 0.1 &&
+        project.finalAircraft.attributes && attributes.every(({ key }) =>
+          isNumber(project.finalAircraft.attributes[key]) &&
+          project.finalAircraft.attributes[key] >= 0 && project.finalAircraft.attributes[key] <= 100
+        ) &&
+        project.finalAircraft.components && reusablePartTypes.every((type) =>
+          validPart(project.finalAircraft.components[type]) &&
+          project.finalAircraft.components[type].type === type
+        )
+      ));
+  }
 
   function validSkills(skills) {
     if (!Array.isArray(skills) || new Set(skills).size !== skills.length ||
@@ -29,6 +60,7 @@
         version: saveVersion,
         teamName: teamName || "Projeto Aurora",
         aircraftName: aircraftName || "Aurora",
+        aircraftBaseName: aircraftName || "Aurora",
         difficulty,
         seasonScope: seasonScopeForYear(1).id,
         skills: [],
@@ -38,7 +70,15 @@
         prestige: 0,
         reputation: 0,
         team: game.Team.create(1),
-        attributes: { ...baseStats },
+        attributes: { ...emptyStats },
+        parts: [],
+        project: {
+          prototypeBuilt: false,
+          prototypeTests: 0,
+          finalTests: 0,
+          finalAircraft: null,
+          reusedPartIds: []
+        },
         rivals: game.Rivals.create(1),
         scouted: {},
         rivalNews: { week: 0, activities: [] },
@@ -121,6 +161,12 @@
         Number.isInteger(candidate.reputation) && candidate.reputation >= 0 && candidate.reputation <= 100 &&
         Number.isInteger(candidate.rngState) && candidate.rngState >= 0 && candidate.rngState <= 0xffffffff &&
         validAttributes && validSkills(candidate.skills) && validRivals && validGoals && validRivalNews &&
+        typeof candidate.aircraftBaseName === "string" && candidate.aircraftBaseName.trim().length > 0 &&
+        candidate.aircraftBaseName.length <= 24 &&
+        Array.isArray(candidate.parts) && candidate.parts.every(validPart) &&
+        new Set(candidate.parts.map((part) => part.id)).size === candidate.parts.length &&
+        validProject(candidate.project) &&
+        candidate.project.reusedPartIds.every((id) => candidate.parts.some((part) => part.id === id)) &&
         game.Team.validate(candidate.team, candidate.year, candidate.reputation) &&
         Array.isArray(candidate.history) && Array.isArray(candidate.log) &&
         candidate.scouted && typeof candidate.scouted === "object" &&
@@ -129,7 +175,8 @@
         validEventPhase;
     },
     migrate(candidate) {
-      if (!candidate || ![1, 2, 3, 4, 5, 6].includes(candidate.version)) return candidate;
+      if (!candidate || !Number.isInteger(candidate.version) || candidate.version < 1 ||
+        candidate.version >= saveVersion) return candidate;
       let migrated = { ...candidate };
 
       if (candidate.version === 1) {
@@ -154,6 +201,12 @@
         }));
 
         if (candidate.phase === "event" && candidate.week === weeksPerSeason) {
+          migrated.project = {
+            finalAircraft: {
+              attributes: { ...(candidate.attributes || baseStats) },
+              reliabilityBonus: 0
+            }
+          };
           const eventPlan = game.Competition.create(migrated);
           migrated.rngState = eventPlan.seed;
           if (Array.isArray(candidate.eventWeather) && candidate.eventWeather.length === 3) {
@@ -211,6 +264,11 @@
         aircraftName: typeof migrated.aircraftName === "string" && migrated.aircraftName.trim()
           ? migrated.aircraftName.trim()
           : "Aurora",
+        aircraftBaseName: typeof migrated.aircraftBaseName === "string" && migrated.aircraftBaseName.trim()
+          ? migrated.aircraftBaseName.trim()
+          : typeof migrated.aircraftName === "string" && migrated.aircraftName.trim()
+            ? migrated.aircraftName.trim()
+            : "Aurora",
         difficulty: Object.hasOwn(difficulties, migrated.difficulty) ? migrated.difficulty : "standard",
         seasonScope: seasonScopes.some((scope) => scope.id === migrated.seasonScope)
           ? migrated.seasonScope
@@ -250,6 +308,34 @@
           }))
         };
       }
+      migrated.parts = [];
+      migrated.project = {
+        prototypeBuilt: (migrated.week || 0) >= seasonPhases[0].weeks,
+        prototypeTests: 0,
+        finalTests: 0,
+        finalAircraft: null,
+        reusedPartIds: []
+      };
+      if (migrated.phase !== "preparation") {
+        const player = migrated.event?.standings.find((team) => team.isPlayer);
+        const aircraftAttributes = player?.attributes || migrated.attributes || { ...emptyStats };
+        const components = Object.fromEntries(reusablePartTypes.map((type) => [type, {
+          id: `migrated-${migrated.year}-${type}`,
+          type,
+          quality: aircraftAttributes[type],
+          condition: 100,
+          builtYear: migrated.year || 1
+        }]));
+        migrated.project.finalAircraft = {
+          name: migrated.aircraftName,
+          year: migrated.year || 1,
+          attributes: { ...aircraftAttributes },
+          components,
+          reliabilityBonus: 0
+        };
+        migrated.project.prototypeBuilt = true;
+      }
+      migrated.skills = migrated.skills.filter((skill) => !conceptSkillIds.includes(skill));
       return migrated;
     }
   });

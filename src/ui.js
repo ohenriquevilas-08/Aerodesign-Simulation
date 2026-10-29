@@ -1,6 +1,6 @@
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { attributes, fundraisers, milestones, milestoneLevel, strategies, weeksPerSeason } = game.Content;
+  const { attributes, fundraisers, milestones, milestoneLevel, strategies, weeksPerSeason, seasonPhases } = game.Content;
   const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
   })[character]);
@@ -12,7 +12,7 @@
     if (scope.flightMultiplier !== 1) impacts.push(`potencial de voo ${signedPercent(scope.flightMultiplier - 1)}`);
     if (scope.reportMultiplier !== 1) impacts.push(`relatório ${signedPercent(scope.reportMultiplier - 1)}`);
     if (scope.reliabilityModifier !== 0) impacts.push(`confiabilidade +${Math.round(scope.reliabilityModifier * 100)} p.p.`);
-    return `Impacto: ${impacts.join(" · ") || "critérios equilibrados"}.`;
+    return `Impacto: ${impacts.join(" · ") || "critérios equilibrados"}. ${scope.reuseRule}`;
   }
 
   function setNotice(notice) {
@@ -33,6 +33,8 @@
   ]);
   function renderHeader(state, activeScreen) {
     const remaining = weeksPerSeason - state.week;
+    const currentPhase = game.Content.seasonPhaseForWeek(state.week);
+    const phaseIndex = seasonPhases.findIndex(({ id }) => id === currentPhase.id);
     document.getElementById("teamNameHeader").textContent = state.teamName;
     document.getElementById("weekLabel").textContent = `Semana ${state.week} / ${weeksPerSeason}`;
     document.getElementById("yearLabel").textContent = `Ano ${state.year}`;
@@ -49,7 +51,7 @@
       : state.phase === "event-report" ? "Avaliação de relatório"
         : state.phase === "event-flight" ? `Bateria ${state.event.round + 1} de 3` : "Temporada concluída";
     document.getElementById("seasonCaption").textContent = state.phase === "preparation"
-      ? "Preparação para a competição"
+      ? `Etapa ${phaseIndex + 1}/3 · ${currentPhase.title}`
       : state.phase === "event-report" ? "Abertura do campeonato"
         : state.phase === "event-flight" ? "Competição em andamento" : "Resultado oficial";
     const scope = game.Content.seasonScopes.find((option) => option.id === state.seasonScope) ||
@@ -65,7 +67,7 @@
           : `Temporada ${state.year} encerrada. Confira a classificação e prepare o próximo ciclo.`
       : active.subtitle;
     document.getElementById("championshipCountdown").textContent =
-      `Semana ${state.week} de ${weeksPerSeason} · ${remaining} ${remaining === 1 ? "ação restante" : "ações restantes"} até a competição`;
+      `Etapa ${phaseIndex + 1}/3 · ${currentPhase.title} · Semana ${state.week} de ${weeksPerSeason}`;
     document.getElementById("weekFooter").hidden = state.phase !== "preparation";
   }
 
@@ -132,7 +134,11 @@
             );
             const conceptLocked = node.concept && selectedConcept && selectedConcept !== node.id;
             const cost = game.Aircraft.researchCost(node, state.skills);
-            const weeksUnavailable = state.week + node.weeks > weeksPerSeason;
+            const weeksUnavailable = state.week + node.weeks > weeksPerSeason ||
+              (node.concept && (
+                game.Content.seasonPhaseForWeek(state.week).id !== "project" ||
+                state.week + node.weeks > seasonPhases[0].weeks
+              ));
             const disabled = unlocked || missingPrerequisite || conceptLocked ||
               state.phase !== "preparation" || weeksUnavailable || state.cash < cost;
             const prerequisiteLabel = prerequisites.length
@@ -155,7 +161,8 @@
               return labels[key];
             }).join(" · ");
             const stateLabel = unlocked ? "PESQUISADA"
-              : conceptLocked ? "CONCEITO DEFINIDO"
+              : node.concept && game.Content.seasonPhaseForWeek(state.week).id !== "project" ? "PROJETO ENCERRADO"
+                : conceptLocked ? "CONCEITO DEFINIDO"
                 : missingPrerequisite ? "BLOQUEADA"
                   : weeksUnavailable ? "SEM SEMANAS"
                     : state.cash < cost ? "SEM CRÉDITOS" : "DISPONÍVEL";
@@ -179,11 +186,12 @@
   }
 
   function renderEngineering(state) {
-    document.getElementById("engineeringList").innerHTML = attributes.map((attribute) => {
+    const projectPhase = game.Content.seasonPhaseForWeek(state.week).id === "project";
+    document.getElementById("engineeringList").innerHTML = attributes.filter(({ key }) => key !== "report").map((attribute) => {
       const level = state.attributes[attribute.key];
       const gain = game.Aircraft.upgradeGain(attribute, level, state.skills);
       const cost = game.Aircraft.upgradeCost(attribute, level, state.skills);
-      const disabled = state.week >= weeksPerSeason || state.cash < cost || gain <= 0;
+      const disabled = !projectPhase || state.week >= weeksPerSeason || state.cash < cost || gain <= 0;
       return `
         <article class="engineering-item">
           <div class="engineering-copy">
@@ -200,6 +208,51 @@
           </div>
         </article>`;
     }).join("");
+    renderProjectStage(state);
+  }
+
+  function renderProjectStage(state) {
+    const host = document.getElementById("projectStagePanel");
+    const phase = game.Content.seasonPhaseForWeek(state.week);
+    const phaseIndex = seasonPhases.findIndex(({ id }) => id === phase.id);
+    const phaseStart = seasonPhases.slice(0, phaseIndex).reduce((total, entry) => total + entry.weeks, 0);
+    const remaining = phase.weeks - (state.week - phaseStart);
+    const status = `<div class="project-stage-heading"><strong>Etapa ${phaseIndex + 1}/3 · ${escapeHtml(phase.title)}</strong><span>${remaining} ${remaining === 1 ? "semana" : "semanas"} nesta etapa</span></div>`;
+    const partNames = { aerodynamics: "Asa", structures: "Estrutura", systems: "Sistemas" };
+    let actions = "";
+    if (phase.id === "project") {
+        actions = `<p>Desenvolva o projeto da temporada. O avião e o relatório ainda não existem; o conhecimento e o elenco pertencem à equipe.</p>
+          <div class="project-stage-status">Projeto: ${escapeHtml(state.aircraftName)} · Nenhuma peça montada</div>`;
+    } else if (phase.id === "prototype") {
+        actions = state.project.prototypeBuilt
+          ? `<p>Protótipo construído · ${state.project.prototypeTests}/3 ensaios concluídos. Cada ensaio gera dados para melhorar um eixo do projeto.</p>
+            <div class="project-stage-actions">${[
+              ["aerodynamics", "Ensaio de sustentação"],
+              ["structures", "Ensaio estrutural"],
+              ["systems", "Ensaio de sistemas"]
+            ].map(([key, label]) => `<button class="button button-subtle" type="button" data-action="test-prototype" data-attribute="${key}" ${remaining <= 0 || state.project.prototypeTests >= 3 ? "disabled" : ""}>${label} · 1 sem.</button>`).join("")}</div>`
+          : `<p>Construa um protótipo para validar o conceito antes de fabricar a aeronave que vai competir.</p>
+            <button class="button button-primary" type="button" data-action="build-prototype" ${remaining <= 0 || state.cash < 280 ? "disabled" : ""}>Construir protótipo · 280 cr · 1 sem.</button>`;
+    } else {
+        const scope = game.Content.seasonScopes.find((entry) => entry.id === state.seasonScope);
+        const eligibleParts = state.parts.filter((part) => scope.reusableParts.includes(part.type));
+        const reuseOptions = eligibleParts.length
+          ? `<div class="project-parts"><strong>Peças permitidas pelo regulamento</strong>${eligibleParts.map((part) => {
+            const selected = state.project.reusedPartIds.includes(part.id);
+            const label = `${partNames[part.type]} · qualidade ${Math.round(part.quality)} · conservação ${Math.round(part.condition)}%`;
+            return `<button class="project-part-option ${selected ? "selected" : ""}" type="button" data-action="toggle-part-reuse" data-part="${escapeHtml(part.id)}" ${state.project.finalAircraft ? "disabled" : ""} aria-pressed="${selected}">${selected ? "Reutilizar" : "Selecionar"} · ${escapeHtml(label)}</button>`;
+          }).join("")}</div>`
+          : `<div class="project-stage-status">Nenhuma peça anterior compatível com este regulamento. ${escapeHtml(scope.reuseRule)}</div>`;
+        const aircraftAction = state.project.finalAircraft
+          ? `<div class="project-stage-status">Aeronave montada: ${escapeHtml(state.project.finalAircraft.name)} · ${state.project.finalTests}/2 ensaios · relatório ${Math.round(state.attributes.report)}%</div>
+            <div class="project-stage-actions">
+              <button class="button button-subtle" type="button" data-action="test-final-aircraft" ${remaining <= 0 || state.project.finalTests >= 2 ? "disabled" : ""}>Ensaiar versão final · 1 sem.</button>
+              <button class="button button-subtle" type="button" data-action="write-report" ${remaining <= 0 || state.attributes.report >= 100 ? "disabled" : ""}>Redigir relatório · +35% · 1 sem.</button>
+            </div>`
+          : `<button class="button button-primary" type="button" data-action="build-final-aircraft" ${remaining <= 0 || !state.project.prototypeBuilt || state.cash < 500 ? "disabled" : ""}>Montar avião final · 500 cr · 1 sem.</button>`;
+        actions = `<p>A aeronave do protótipo não compete. Monte um avião novo e decida quais peças anteriores permitidas pelo regulamento serão reaproveitadas.</p>${reuseOptions}${aircraftAction}`;
+    }
+    host.innerHTML = `<section class="project-stage-card">${status}${actions}</section>`;
   }
 
   function renderFundraising(state) {
@@ -253,6 +306,7 @@
   }
 
   function renderAircraft(state) {
+    const aircraftAttributes = state.project.finalAircraft?.attributes || state.attributes;
     const fields = [
       { key: "aerodynamics", label: "Aerodinâmica" },
       { key: "structures", label: "Estruturas" },
@@ -273,7 +327,7 @@
       .join(" ");
     const values = fields.map(({ key, label }, index) => ({
       label,
-      value: Math.max(0, Math.min(100, Math.round(state.attributes[key]))),
+      value: Math.max(0, Math.min(100, Math.round(aircraftAttributes[key]))),
       color: axisColors[index]
     }));
     const dataPoints = values.map(({ value }, index) => {
@@ -298,10 +352,14 @@
           ${values.map(({ label, value, color }) => `<div><span class="aircraft-radar-key" style="--radar-axis-color:${color}" aria-hidden="true"></span><span>${label}</span><strong>${value}</strong></div>`).join("")}
         </div>
       </div>`;
-    const design = game.Aircraft.derive(state.attributes, state.skills);
+    const design = game.Aircraft.derive(aircraftAttributes, state.skills);
     const concept = state.skills
       .map((id) => game.Content.skillNodes.find((node) => node.id === id))
       .find((node) => node?.concept);
+    document.getElementById("aircraftSummary").textContent = state.project.finalAircraft
+      ? "Aeronave final · pronta para a competição"
+      : state.project.prototypeBuilt ? "Protótipo em ensaios · sem avião final"
+        : "Projeto em desenvolvimento · nenhuma aeronave montada";
     document.getElementById("aircraftConcept").textContent = concept
       ? `Conceito: ${concept.title.replace("Conceito · ", "")}`
       : "Conceito: ainda não escolhido";

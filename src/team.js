@@ -167,7 +167,7 @@
         typeof entry.text === "string");
   }
 
-  function advance(team, attributes, cash, year, week) {
+  function advance(team, attributes, cash, year, week, seasonPhase) {
     const next = clone(team);
     const updatedAttributes = { ...attributes };
     let updatedCash = cash;
@@ -182,7 +182,9 @@
       else member.motivation = Math.max(20, member.motivation - 0.2);
 
       const motivationFactor = 0.65 + member.motivation / 300;
-      if (assignment.attribute) {
+      if (assignment.attribute &&
+        (seasonPhase !== "final" || assignment.attribute === "report") &&
+        (assignment.attribute !== "report" || seasonPhase === "final")) {
         const fitFactor = matchesSpecialty ? 1.15 : 0.75;
         const gain = Math.min(100 - updatedAttributes[assignment.attribute],
           (0.18 + member.experience * 0.045) * motivationFactor * fitFactor);

@@ -143,6 +143,12 @@
       }
       case "upgrade": return apply({ type: "upgrade", key: button.dataset.attribute });
       case "research-skill": return apply({ type: "research-skill", id: button.dataset.skill });
+      case "build-prototype": return apply({ type: "build-prototype" });
+      case "test-prototype": return apply({ type: "test-prototype", key: button.dataset.attribute });
+      case "toggle-part-reuse": return apply({ type: "toggle-part-reuse", partId: button.dataset.part });
+      case "build-final-aircraft": return apply({ type: "build-final-aircraft" });
+      case "test-final-aircraft": return apply({ type: "test-final-aircraft" });
+      case "write-report": return apply({ type: "write-report" });
       case "fundraise": return apply({ type: "fundraise", id: button.dataset.fundraiser });
       case "scout": return apply({ type: "scout", index: Number(button.dataset.rival) });
       case "recruit-member": return apply({ type: "recruit-member", candidateId: button.dataset.candidate });

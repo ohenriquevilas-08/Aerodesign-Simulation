@@ -291,6 +291,17 @@
     .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .career-panel-content .engineering-item { min-height: 0; grid-template-columns: minmax(0, 1fr); align-content: space-between; }
     .career-panel-content .engineering-actions { justify-items: start; }
+    .project-stage-panel { margin-bottom: 10px; }
+    .project-stage-card { display: grid; gap: 7px; padding: 10px 12px; border: 1px solid rgb(82 211 162 / 26%); border-radius: 9px; background: rgb(82 211 162 / 5%); }
+    .project-stage-heading { display: flex; justify-content: space-between; gap: 8px; color: var(--accent); }
+    .project-stage-card p { margin: 0; color: var(--muted); line-height: 1.4; }
+    .project-stage-status { padding: 6px 8px; border-radius: 6px; background: rgb(0 0 0 / 12%); color: #c8d1dc; }
+    .project-stage-actions, .project-parts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .project-parts { padding-top: 5px; border-top: 1px solid var(--border); }
+    .project-parts > strong { flex-basis: 100%; color: #c8d1dc; }
+    .project-part-option { min-height: 32px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--panel-alt); color: var(--text); cursor: pointer; }
+    .project-part-option.selected { border-color: var(--accent); background: var(--accent-dark); color: #c6f5e1; }
+    .project-part-option:disabled { cursor: not-allowed; opacity: .6; }
     .skill-tree-intro { margin: 0 0 8px; color: var(--muted); font-size: 10px; line-height: 1.4; }
     .skill-tree-summary { margin: 0 0 8px; padding: 7px 9px; border: 1px solid rgb(82 211 162 / 25%); border-radius: 8px; background: rgb(82 211 162 / 6%); color: #b6e8d2; font-size: 10px; }
     .skill-tree { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; }
@@ -672,6 +683,11 @@
       .career-panel .section-heading p { display: none; }
       .career-panel-content { padding: 6px 8px 8px; }
       .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 5px; }
+      .project-stage-panel { margin-bottom: 5px; }
+      .project-stage-card { gap: 5px; padding: 6px; }
+      .project-stage-heading { flex-wrap: wrap; }
+      .project-stage-actions, .project-parts { gap: 4px; }
+      .project-stage-card .button, .project-part-option { min-height: 30px; padding: 4px 6px; }
       .engineering-item, .fundraising-item, .scouting-item { min-width: 0; grid-template-columns: minmax(0, 1fr); gap: 5px; padding: 7px; }
       .engineering-name { gap: 5px; font-size: 10px; }
       .engineering-icon { width: 22px; height: 22px; flex-basis: 22px; font-size: 10px; }
@@ -955,7 +971,7 @@
             <section class="panel aircraft-card">
               <div class="section-heading"><div><h2>Status do avião</h2><p>Indicadores do projeto atual</p></div></div>
               <h3 class="aircraft-name"><span id="aircraftName">Aurora</span> <span id="designYear"></span></h3>
-              <p class="aircraft-summary">Estimativas do regulamento</p>
+              <p class="aircraft-summary" id="aircraftSummary">Projeto em desenvolvimento · nenhuma aeronave montada</p>
               <p class="aircraft-concept" id="aircraftConcept">Conceito: ainda não escolhido</p>
               <div id="aircraftStats"></div>
               <div class="derived-grid" id="derivedStats"></div>
@@ -983,6 +999,7 @@
             <div class="section-heading"><div><h3>Desenvolvimento do projeto</h3><p>Invista tempo e créditos para evoluir seu avião.</p></div><div class="hint">Cada melhoria consome 1 semana</div></div>
             <div class="career-panel-content">
               <section id="pane-engineering">
+                <div class="project-stage-panel" id="projectStagePanel"></div>
                 <div class="engineering-list" id="engineeringList"></div>
               </section>
             </div>
@@ -1043,7 +1060,7 @@
             <div class="championship-preview" id="championshipPreparation">
               <span class="eyebrow">CAMPEONATO UNIVERSITÁRIO</span>
               <h3>O próximo desafio da equipe</h3>
-              <p>Conclua as 20 semanas de preparação para revelar os relatórios, disputar três baterias de voo e acompanhar a classificação ao vivo.</p>
+              <p>Desenvolva um projeto, ensaie protótipos e prepare uma aeronave final com relatório para disputar três baterias.</p>
               <p id="championshipCountdown">Semana 0 de 20 · 20 ações até a competição</p>
               <button class="button" type="button" data-screen="engineering">Voltar ao projeto <span aria-hidden="true">→</span></button>
             </div>

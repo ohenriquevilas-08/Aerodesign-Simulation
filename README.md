@@ -36,7 +36,15 @@ O menu inicial permite continuar a carreira salva ou criar uma nova. Na configur
 
 Durante a preparação, navegue horizontalmente por Visão geral, Projeto, Habilidades, Finanças, Rivais e Equipe. A aba Campeonato só aparece ao fim das 20 semanas e permanece disponível durante o evento e a classificação final. Use as setas na interface, as teclas de direção ou deslize horizontalmente na área principal. A interface se ajusta à altura da janela sem rolagem vertical; durante as baterias, o circuito, os controles e o placar ficam visíveis juntos.
 
-Na árvore de habilidades, escolha um conceito exclusivo para o avião (carga máxima, estrutura leve ou estabilidade) e pesquise melhorias de engenharia e gestão da equipe. Pesquisas consomem semanas e créditos; seus efeitos persistem entre temporadas. Pré-requisitos e impactos numéricos ficam visíveis antes de pesquisar. Saves antigos são migrados automaticamente para incluir a árvore.
+Na árvore de habilidades, escolha um conceito exclusivo para o projeto do ano (carga máxima, estrutura leve ou estabilidade) e pesquise melhorias de engenharia e gestão da equipe. Pesquisas consomem semanas e créditos; melhorias de equipe persistem entre temporadas, mas o conceito é específico de cada projeto. Pré-requisitos e impactos numéricos ficam visíveis antes de pesquisar. Saves antigos são migrados automaticamente para incluir a árvore.
+
+## Projeto, protótipos e peças
+
+Cada temporada tem 20 semanas divididas em três etapas: Projeto (6 semanas), Protótipos + ensaios (7) e Versão final + ensaios + relatório (7). Uma carreira nova começa sem atributos desenvolvidos, avião, relatório ou peças. Melhorias de engenharia pertencem ao projeto do ano e só podem ser feitas na primeira etapa.
+
+Na segunda etapa, construa o protótipo por 280 créditos e use até três semanas de ensaio para desenvolver o projeto. Na etapa final, monte por 500 créditos o avião que efetivamente competirá, faça até dois ensaios de confiabilidade e escreva o relatório em ações de uma semana. O evento só começa quando houver avião final e ao menos uma etapa do relatório concluída.
+
+O avião final compete uma vez. Depois do evento, suas peças entram no acervo com condição ajustada pelos resultados dos voos. O regulamento anual define quais tipos podem ser reaproveitados; peças incompatíveis não podem ser selecionadas. Ao iniciar o ano seguinte, os atributos e o projeto são reiniciados, enquanto equipe, melhorias permanentes e peças armazenadas continuam. Saves anteriores à versão 8 são migrados automaticamente.
 
 ## Fundação da carreira
 
@@ -44,12 +52,12 @@ A campanha principal cobre cinco temporadas e continua em modo livre depois do q
 
 A cada semana de preparação, as quatro equipes BOT avançam em paralelo conforme suas filosofias; o diário registra publicamente as decisões tomadas, sem revelar os atributos exatos. O scouting custa 150 créditos por equipe e temporada, não consome uma semana e produz tendências aproximadas sobre pontos fortes, vulnerabilidades, aderência ao regulamento atual e estratégias prováveis em diferentes condições de voo.
 
-Carreiras da versão 5 são migradas automaticamente para incluir reputação, metas e atividade recente das rivais; os relatórios antigos de scouting permanecem identificados como históricos.
+Carreiras anteriores são migradas automaticamente para incluir reputação, metas, atividade recente das rivais e o modelo de projeto/peças; os relatórios antigos de scouting permanecem identificados como históricos.
 
 ## Gestão de equipe
 
 A carreira começa com o presidente e dois capitães fundadores. Integrantes recrutados têm especialidade, experiência, motivação e uma previsão de saída visível; contratação e mudança de alocação não consomem semanas. As tarefas delegadas contribuem modestamente para engenharia, captação ou mentoria a cada turno, enquanto a motivação influencia a produtividade. A capacidade do elenco cresce com a reputação.
 
-Os fundadores deixam a equipe ao começar o Ano 3. Use o Ano 2 para indicar sucessores das capitanias de Aerodinâmica e Estruturas; a transição anual processa as saídas programadas e as nomeações. A partir do Ano 3, os capitães têm mandato de uma temporada, e o presidente permanece. Saves da versão 6 são migrados automaticamente com um elenco compatível com o ano atual.
+Os fundadores deixam a equipe ao começar o Ano 3. Use o Ano 2 para indicar sucessores das capitanias de Aerodinâmica e Estruturas; a transição anual processa as saídas programadas e as nomeações. A partir do Ano 3, os capitães têm mandato de uma temporada, e o presidente permanece.
 
 Referência visual consultada: [EA SPORTS FC 26 — Career Mode Deep Dive](https://www.ea.com/games/ea-sports-fc/fc-26/news/pitch-notes-fc26-career-mode-deep-dive), especialmente a navegação por seções e os painéis de Manager Career.

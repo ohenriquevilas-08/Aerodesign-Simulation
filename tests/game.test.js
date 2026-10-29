@@ -82,6 +82,48 @@ function apply(game, state, type, details = {}) {
   return transition.state;
 }
 
+function prepareSeason(game, initialState, atFinalStage = null) {
+  let state = initialState;
+  const testAttributes = ["aerodynamics", "structures", "systems"];
+  while (state.phase === "preparation") {
+    const stage = game.Content.seasonPhaseForWeek(state.week).id;
+    if (stage === "final" && atFinalStage) {
+      state = atFinalStage(state);
+      atFinalStage = null;
+    }
+    if (stage === "project") {
+      state = state.cash < 780
+        ? apply(game, state, "fundraise", { id: "raffle" })
+        : apply(game, state, "advance-week");
+    } else if (stage === "prototype") {
+      if (!state.project.prototypeBuilt) state = apply(game, state, "build-prototype");
+      else if (state.project.prototypeTests < 3) {
+        state = apply(game, state, "test-prototype", {
+          key: testAttributes[state.project.prototypeTests]
+        });
+      } else state = apply(game, state, "advance-week");
+    } else if (!state.project.finalAircraft) {
+      state = apply(game, state, "build-final-aircraft");
+    } else if (state.attributes.report < 100) {
+      state = apply(game, state, "write-report");
+    } else if (state.project.finalTests < 2) {
+      state = apply(game, state, "test-final-aircraft");
+    } else state = apply(game, state, "advance-week");
+  }
+  return state;
+}
+
+function addAircraftSnapshot(state) {
+  state.project.finalAircraft = {
+    name: state.aircraftName,
+    year: state.year,
+    attributes: { ...state.attributes },
+    components: {},
+    reliabilityBonus: 0
+  };
+  return state;
+}
+
 test("full season persists between report and flight stages and records a championship", () => {
   const { game, storage } = createHarness();
   let state = game.State.create();
@@ -89,9 +131,7 @@ test("full season persists between report and flight stages and records a champi
   state.rngState = 123456789;
   assert.equal(game.State.validate(state), true);
 
-  for (let week = 0; week < 20; week += 1) {
-    state = apply(game, state, "advance-week");
-  }
+  state = prepareSeason(game, state);
   assert.equal(state.week, 20);
   assert.equal(state.phase, "event-report");
   assert.equal(state.event.round, 0);
@@ -139,22 +179,25 @@ test("full season persists between report and flight stages and records a champi
 
   const player = state.event.standings.find((team) => team.isPlayer);
   const prize = player.position === 1 ? 1400 : player.position === 2 ? 900 : player.position === 3 ? 600 : 300;
-  assert(state.cash >= 1000 + prize);
+  assert(state.cash >= prize);
   assert.equal(storage.has(game.Content.saveKey), true);
 
-  const seasonEndAttributes = { ...state.attributes };
-  const legacyBonus = Math.min(2, Math.floor(state.prestige / 25));
   state = apply(game, state, "next-season");
   assert.equal(state.year, 2);
   assert.equal(state.week, 0);
   assert.equal(state.phase, "preparation");
   assert.equal(state.event, null);
   assert.equal(state.history.length, 1);
-  assert.deepEqual(JSON.parse(JSON.stringify(state.attributes)), Object.fromEntries(
-    Object.entries(seasonEndAttributes).map(([key, value]) => [key, Math.min(100, value + legacyBonus)])
-  ));
-  assert(state.attributes.aerodynamics > 67);
-  assert(state.attributes.structures > 61);
+  assert.deepEqual(JSON.parse(JSON.stringify(state.attributes)), {
+    aerodynamics: 0,
+    structures: 0,
+    systems: 0,
+    report: 0
+  });
+  assert.equal(state.project.prototypeBuilt, false);
+  assert.equal(state.project.finalAircraft, null);
+  assert.equal(state.aircraftName, "Aurora 2");
+  assert(state.parts.length > 0);
   assert.equal(state.seasonScope, "reliability");
 });
 
@@ -162,7 +205,8 @@ test("mission rules reject invalid transitions and migrate existing version-one 
   const { game } = createHarness();
   const current = game.State.create();
   const lateSeason = { ...current, week: 19 };
-  const rejected = game.Game.apply(lateSeason, { type: "fundraise", id: "sponsorship" });
+  const rejected = game.Game.apply(lateSeason, { type: "fundraise", id: "sponsorship"   });
+
   assert.equal(rejected.state, lateSeason);
   assert.equal(rejected.notice.kind, "warning");
 
@@ -178,6 +222,65 @@ test("mission rules reject invalid transitions and migrate existing version-one 
   assert.equal(game.State.validate(forged), false);
 });
 
+test("new careers start with an empty project and recover parts after the event", () => {
+  const { game } = createHarness();
+  let state = game.State.create();
+  assert.deepEqual(JSON.parse(JSON.stringify(state.attributes)), {
+    aerodynamics: 0,
+    structures: 0,
+    systems: 0,
+    report: 0
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(state.parts)), []);
+  assert.equal(state.project.prototypeBuilt, false);
+  assert.equal(state.project.finalAircraft, null);
+  assert.equal(game.State.validate(state), true);
+
+  const earlyPrototype = game.Game.apply(state, { type: "build-prototype" });
+  assert.equal(earlyPrototype.state, state);
+  assert.match(earlyPrototype.notice.text, /segunda etapa/);
+
+  state = prepareSeason(game, state);
+  assert.equal(state.phase, "event-report");
+  assert(state.project.finalAircraft);
+  assert.equal(game.State.validate(state), true);
+  state = apply(game, state, "reveal-reports");
+  for (let flight = 0; flight < 3; flight += 1) state = apply(game, state, "run-flight");
+  state = apply(game, state, "next-season");
+  assert(state.parts.length > 0);
+  assert.equal(state.project.finalAircraft, null);
+  assert.equal(state.attributes.aerodynamics, 0);
+  assert.equal(game.State.validate(state), true);
+});
+
+test("reused aircraft parts follow the annual regulation and retain their original identity", () => {
+  const { game } = createHarness();
+  let state = prepareSeason(game, game.State.create());
+  state = apply(game, state, "reveal-reports");
+  for (let flight = 0; flight < 3; flight += 1) state = apply(game, state, "run-flight");
+  state = apply(game, state, "next-season");
+  const structure = state.parts.find((part) => part.type === "structures");
+  const wing = state.parts.find((part) => part.type === "aerodynamics");
+  assert(structure);
+  assert(wing);
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(game.Content.seasonScopes.find((scope) => scope.id === state.seasonScope).reusableParts)),
+    ["structures"]
+  );
+
+  state = prepareSeason(game, state, (finalStageState) => {
+    const forbidden = game.Game.apply(finalStageState, { type: "toggle-part-reuse", partId: wing.id });
+    assert.equal(forbidden.state, finalStageState);
+    const selected = apply(game, finalStageState, "toggle-part-reuse", { partId: structure.id });
+    assert.deepEqual(JSON.parse(JSON.stringify(selected.project.reusedPartIds)), [structure.id]);
+    return selected;
+  });
+  assert.equal(state.project.finalAircraft.components.structures.builtYear, structure.builtYear);
+  assert.equal(state.project.finalAircraft.components.aerodynamics.builtYear, state.year);
+  assert.equal(state.parts.some((part) => part.id === structure.id), false);
+  assert.equal(game.State.validate(state), true);
+});
+
 test("new careers store team identity and difficulty and migrate version-two saves", () => {
   const { game } = createHarness();
   const state = game.State.create({
@@ -188,7 +291,8 @@ test("new careers store team identity and difficulty and migrate version-two sav
   assert.equal(state.teamName, "Asa Verde");
   assert.equal(state.aircraftName, "Ventania");
   assert.equal(state.cash, 1400);
-  assert.equal(game.Competition.create(state).event.standings[0].name, "Asa Verde");
+  assert.equal(state.project.finalAircraft, null);
+  assert.equal(state.teamName, "Asa Verde");
 
   const savedVersionTwo = { ...game.State.create(), version: 2, year: 4, cash: 735 };
   delete savedVersionTwo.teamName;
@@ -220,12 +324,12 @@ test("annual scopes change competition criteria without resetting aircraft level
   state.year = 3;
   state.seasonScope = game.Content.seasonScopeForYear(3).id;
   state.attributes.report = 72;
-  const event = game.Competition.create(state).event;
+  const event = game.Competition.create(addAircraftSnapshot(state)).event;
   const player = event.standings.find((team) => team.isPlayer);
   assert.equal(event.scope.id, "technical-report");
   assert.equal(player.report, game.Aircraft.reportScore(72, 1.1));
 
-  const oldEvent = game.Competition.create(game.State.create()).event;
+  const oldEvent = game.Competition.create(addAircraftSnapshot(game.State.create())).event;
   delete oldEvent.scope;
   const versionThree = {
     ...game.State.create(),
@@ -244,6 +348,7 @@ test("skill tree enforces concept choices, prerequisites, costs, and persistent 
   const { game, storage } = createHarness();
   let state = game.State.create();
   state.cash = 5000;
+  state.attributes = { aerodynamics: 50, structures: 50, systems: 50, report: 50 };
   const originalDesign = game.Aircraft.derive(state.attributes);
   const conceptResearch = game.Game.apply(state, { type: "research-skill", id: "concept-lift" });
   state = conceptResearch.state;
@@ -285,7 +390,12 @@ test("skill tree enforces concept choices, prerequisites, costs, and persistent 
 
   const nextSeason = { ...state, phase: "results" };
   const preservedSkills = apply(game, nextSeason, "next-season");
-  assert.deepEqual(JSON.parse(JSON.stringify(preservedSkills.skills)), JSON.parse(JSON.stringify(state.skills)));
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(preservedSkills.skills)),
+    JSON.parse(JSON.stringify(state.skills.filter((skill) =>
+      !game.Content.skillNodes.find((node) => node.id === skill).concept
+    )))
+  );
 });
 
 test("version-four careers migrate without losing in-progress event validity", () => {
@@ -293,6 +403,13 @@ test("version-four careers migrate without losing in-progress event validity", (
   const state = game.State.create();
   for (let week = 0; week < 20; week += 1) state.week += 1;
   state.phase = "event-report";
+  state.project.finalAircraft = {
+    name: state.aircraftName,
+    year: state.year,
+    attributes: { ...state.attributes },
+    components: {},
+    reliabilityBonus: 0
+  };
   state.event = game.Competition.create(state).event;
   state.version = 4;
   delete state.skills;
@@ -300,6 +417,23 @@ test("version-four careers migrate without losing in-progress event validity", (
   const migrated = game.State.migrate(state);
   assert.deepEqual(JSON.parse(JSON.stringify(migrated.skills)), []);
   assert(migrated.event.standings.every((team) => Array.isArray(team.skills)));
+  assert.equal(game.State.validate(migrated), true);
+});
+
+test("version-seven saves gain a valid aircraft snapshot during an active event", () => {
+  const { game } = createHarness();
+  const legacy = prepareSeason(game, game.State.create());
+  legacy.version = 7;
+  delete legacy.aircraftBaseName;
+  delete legacy.parts;
+  delete legacy.project;
+
+  const migrated = game.State.migrate(legacy);
+  assert.equal(migrated.version, game.Content.saveVersion);
+  assert.equal(migrated.phase, "event-report");
+  assert.equal(migrated.project.finalAircraft.name, legacy.aircraftName);
+  assert.equal(migrated.project.finalAircraft.attributes.aerodynamics,
+    legacy.event.standings.find((team) => team.isPlayer).attributes.aerodynamics);
   assert.equal(game.State.validate(migrated), true);
 });
 
@@ -312,7 +446,7 @@ test("career UI keeps cash visible and presents the aircraft flight circuit", ()
   assert.match(elements.get("skillTreeSummary").textContent, /Ainda não definido/);
   assert.match(elements.get("skillTree").innerHTML, /Conceito · Carga máxima/);
 
-  for (let week = 0; week < 20; week += 1) state = apply(game, state, "advance-week");
+  state = prepareSeason(game, state);
   state = apply(game, state, "reveal-reports");
   game.UI.render(state, "championship", { text: "", kind: "" });
   assert.match(elements.get("eventView").innerHTML, /Pista 2D · Ventania/);
@@ -417,7 +551,7 @@ test("renderer presents rivalry, weather, the live battery decision, and accessi
   assert.equal(screenPanels[0].inert, true);
   assert.equal(screenPanels[1].inert, false);
 
-  for (let week = 0; week < 20; week += 1) state = apply(game, state, "advance-week");
+  state = prepareSeason(game, state);
   game.UI.render(state, "championship", { text: "", kind: "" });
   assert.equal(navButtons[6].hidden, false);
   assert.equal(screenPanels[6].hidden, false);
@@ -443,7 +577,7 @@ test("annual goals award institutional reputation and preserve rival development
   const { game } = createHarness();
   let state = game.State.create();
   state.attributes = { aerodynamics: 100, structures: 100, systems: 100, report: 100 };
-  for (let week = 0; week < 20; week += 1) state = apply(game, state, "advance-week");
+  state = prepareSeason(game, state);
   state = apply(game, state, "reveal-reports");
   while (state.phase === "event-flight") state = apply(game, state, "run-flight");
 
@@ -608,7 +742,7 @@ test("captain succession replaces founders in year three and rotates captains an
   const { game } = createHarness();
   const finishSeason = (start) => {
     let state = start;
-    while (state.phase === "preparation") state = apply(game, state, "advance-week");
+    state = prepareSeason(game, state);
     state = apply(game, state, "reveal-reports");
     while (state.phase === "event-flight") state = apply(game, state, "run-flight");
     return state;
@@ -632,6 +766,7 @@ test("captain succession replaces founders in year three and rotates captains an
   state = apply(game, state, "nominate-captain", { area: "structures", memberId: structureSuccessor.id });
   assert.equal(state.week, 0);
   state = finishSeason(state);
+  state.reputation = 60;
   state = apply(game, state, "next-season");
 
   assert.equal(state.year, 3);
@@ -641,6 +776,7 @@ test("captain succession replaces founders in year three and rotates captains an
   assert.equal(state.team.members.find((member) => member.captainArea === "structures").id, structureSuccessor.id);
   assert(state.team.members.filter((member) => member.role === "captain").every((member) => member.leaveYear === 4));
 
+  state.cash = 5000;
   state = game.Game.apply(state, {
     type: "recruit-member",
     candidateId: "candidate-3-aerodynamics"

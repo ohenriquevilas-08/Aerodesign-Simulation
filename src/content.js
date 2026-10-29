@@ -7,7 +7,9 @@
       criteria: "A arbitragem valoriza projetos que transportam mais carga.",
       flightMultiplier: 1.08,
       reportMultiplier: 1,
-      reliabilityModifier: 0
+      reliabilityModifier: 0,
+      reusableParts: Object.freeze(["structures", "systems"]),
+      reuseRule: "Reaproveite estruturas e sistemas; a asa deve ser nova."
     }),
     Object.freeze({
       id: "reliability",
@@ -15,7 +17,9 @@
       criteria: "Segurança e voos consistentes recebem prioridade.",
       flightMultiplier: 0.98,
       reportMultiplier: 1,
-      reliabilityModifier: 0.06
+      reliabilityModifier: 0.06,
+      reusableParts: Object.freeze(["structures"]),
+      reuseRule: "Somente a estrutura pode ser reaproveitada."
     }),
     Object.freeze({
       id: "technical-report",
@@ -23,7 +27,9 @@
       criteria: "Documentação e apresentação técnica têm peso maior.",
       flightMultiplier: 1,
       reportMultiplier: 1.1,
-      reliabilityModifier: 0
+      reliabilityModifier: 0,
+      reusableParts: Object.freeze([]),
+      reuseRule: "O regulamento exige peças novas."
     }),
     Object.freeze({
       id: "balanced-efficiency",
@@ -31,9 +37,25 @@
       criteria: "A competição busca equilíbrio entre carga, segurança e projeto.",
       flightMultiplier: 1.03,
       reportMultiplier: 1.04,
-      reliabilityModifier: 0.02
+      reliabilityModifier: 0.02,
+      reusableParts: Object.freeze(["aerodynamics", "structures", "systems"]),
+      reuseRule: "Todas as partes podem ser reaproveitadas."
     })
   ]);
+  const seasonPhases = Object.freeze([
+    Object.freeze({ id: "project", title: "Projeto", weeks: 6 }),
+    Object.freeze({ id: "prototype", title: "Protótipos + ensaios", weeks: 7 }),
+    Object.freeze({ id: "final", title: "Versão final + ensaios + relatório", weeks: 7 })
+  ]);
+  const seasonPhaseForWeek = (week) => {
+    let remainingWeeks = Math.max(0, week);
+    for (const phase of seasonPhases) {
+    if (remainingWeeks < phase.weeks) return phase;
+    remainingWeeks -= phase.weeks;
+    }
+    return seasonPhases.at(-1);
+  };
+  const reusablePartTypes = Object.freeze(["aerodynamics", "structures", "systems"]);
   const seasonScopeForYear = (year) => seasonScopes[(Math.max(1, year) - 1) % seasonScopes.length];
   const seasonGoalsForYear = (year, attributes) => {
     const scope = seasonScopeForYear(year);
@@ -150,10 +172,13 @@
 
   game.Content = Object.freeze({
     saveKey: "aerodesign-manager-save-v1",
-    saveVersion: 7,
+    saveVersion: 8,
     seasonScopes,
     seasonScopeForYear,
     seasonGoalsForYear,
+    seasonPhases,
+    seasonPhaseForWeek,
+    reusablePartTypes,
     teamRoles,
     teamAssignments,
     teamCandidates,

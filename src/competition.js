@@ -28,14 +28,21 @@
       }
 
       const teams = [
-        { name: state.teamName, isPlayer: true, attributes: { ...state.attributes }, skills: [...(state.skills || [])] },
+        {
+          name: state.teamName,
+          isPlayer: true,
+          attributes: { ...state.project.finalAircraft.attributes },
+          skills: [...(state.skills || [])],
+          reliabilityBonus: state.project.finalAircraft.reliabilityBonus
+        },
         ...state.rivals.map((rival) => ({
           name: rival.name,
           isPlayer: false,
           philosophy: rival.philosophy,
           weights: { ...rival.weights },
           attributes: { ...rival.attributes },
-          skills: []
+          skills: [],
+          reliabilityBonus: 0
         }))
       ];
       const standings = teams.map((team) => ({
@@ -74,7 +81,8 @@
         const strategy = strategies[strategyId];
         const design = Aircraft.derive(team.attributes, team.skills);
         const effectiveReliability = clamp(
-          design.reliability + roundWeather.reliabilityModifier + strategy.reliabilityModifier + scope.reliabilityModifier,
+          design.reliability + (team.reliabilityBonus || 0) +
+            roundWeather.reliabilityModifier + strategy.reliabilityModifier + scope.reliabilityModifier,
           0.35,
           0.98
         );
