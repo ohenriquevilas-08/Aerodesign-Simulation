@@ -241,7 +241,7 @@
     .career-arrow:hover:not(:disabled), .career-arrow:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
     .career-arrow:disabled { cursor: not-allowed; opacity: .35; }
     .career-position { min-width: 43px; color: var(--muted); font-size: 10px; text-align: center; }
-    .career-context, .career-nav-wrap, .career-viewport, .career-toolbar, .footer-note { width: 100%; max-width: 1440px; min-width: 0; margin-right: auto; margin-left: auto; }
+    .career-context, .career-nav-wrap, .career-viewport, .footer-note { width: 100%; max-width: 1440px; min-width: 0; margin-right: auto; margin-left: auto; }
     .career-viewport {
       min-height: 0;
       flex: 1 1 0;
@@ -267,7 +267,7 @@
     }
     .career-screen:focus { outline: none; }
     .career-screen[aria-hidden="true"] { pointer-events: none; }
-    .overview-grid { display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: auto auto 1fr; gap: 8px; }
+    .overview-grid { display: grid; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.15fr) minmax(270px, .85fr); grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
     .overview-grid > .panel { min-height: 0; overflow: hidden; }
     .overview-grid .season-card { grid-column: 1; }
     .overview-grid .aircraft-card { grid-column: 1; grid-row: 2 / 4; }
@@ -371,12 +371,18 @@
     .championship-preview .eyebrow { color: var(--accent); }
     .championship-preview h3 { margin: 0; font-size: clamp(21px, 4vw, 34px); }
     .championship-preview p { max-width: 520px; margin: 0 auto; color: var(--muted); font-size: 13px; line-height: 1.6; }
-    .career-toolbar { display: grid; min-height: 0; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; margin-top: 8px; flex: 0 0 auto; }
-    .career-toolbar .notice { min-height: 0; margin: 0; }
-    .career-toolbar .notice:empty { display: none; }
-    .career-toolbar .week-footer { margin: 0; padding: 0; border: 0; }
-    .career-toolbar .week-footer p { display: none; }
-    .career-toolbar .week-footer .button { min-width: 180px; }
+    #actionNotice {
+      position: fixed;
+      z-index: 20;
+      bottom: 12px;
+      left: 50%;
+      width: max-content;
+      max-width: calc(100vw - 24px);
+      margin: 0;
+      transform: translateX(-50%);
+      box-shadow: var(--shadow);
+      pointer-events: none;
+    }
     .panel {
       border: 1px solid var(--border);
       border-radius: 14px;
@@ -396,45 +402,55 @@
     .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
 
     .season-card { overflow: hidden; }
-    .season-top { padding: 19px 19px 17px; }
+    .season-top { padding: 14px 16px 12px; }
     .season-label { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; }
     .season-number { margin: 9px 0 3px; font-size: 30px; font-weight: 750; letter-spacing: -.055em; }
     .season-caption { color: var(--muted); font-size: 12px; }
     .progress-track { height: 7px; overflow: hidden; margin-top: 16px; border-radius: 20px; background: #0f1720; }
     .progress-fill { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #39b98b, #9be4c5); transition: width .25s ease; }
     .season-bottom { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); }
-    .metric { padding: 14px 18px; }
+    .metric { padding: 10px 14px; }
     .metric + .metric { border-left: 1px solid var(--border); }
     .metric-label { color: var(--muted); font-size: 11px; }
     .metric-value { margin-top: 5px; font-size: 17px; font-weight: 720; }
     .cash-value { color: var(--accent); }
 
-    .aircraft-card { padding: 18px; }
-    .overview-grid > .aircraft-card { overflow-y: auto; }
-    .aircraft-name { margin: 0 0 3px; font-size: 14px; }
-    .aircraft-summary { margin: 0 0 17px; color: var(--muted); font-size: 11px; }
-    .aircraft-concept { margin: -8px 0 14px; color: #b6e8d2; font-size: 10px; }
-    .aircraft-radar-wrap { width: 100%; max-width: 360px; margin: 0 auto; }
+    .aircraft-card {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      grid-template-rows: auto auto auto minmax(0, 1fr);
+      column-gap: 16px;
+      align-content: stretch;
+      padding: 16px 18px;
+    }
+    .aircraft-card > .section-heading { grid-column: 1 / -1; grid-row: 1; margin-bottom: 5px; }
+    .aircraft-card > .section-heading > div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+    .aircraft-card > .section-heading p { margin: 0; line-height: 1.25; }
+    .aircraft-card > .aircraft-name { grid-column: 1; grid-row: 2; align-self: center; margin: 0; }
+    .aircraft-card > .aircraft-summary { grid-column: 2; grid-row: 2; align-self: center; margin: 0; }
+    .aircraft-card > .aircraft-concept { grid-column: 1 / -1; grid-row: 3; margin: 0 0 5px; }
+    #aircraftStats { grid-column: 1; grid-row: 4; align-self: stretch; min-width: 0; min-height: 0; }
+    .aircraft-details { display: grid; grid-column: 2; grid-row: 4; align-content: stretch; min-width: 0; min-height: 0; }
+    .aircraft-pending { grid-column: 1 / -1; grid-row: 4; align-self: center; margin: 0; color: var(--muted); font-size: 12px; text-align: center; }
+    .aircraft-name { font-size: 14px; }
+    .aircraft-summary { color: var(--muted); font-size: 11px; line-height: 1.3; }
+    .aircraft-concept { color: #b6e8d2; font-size: 10px; }
+    .aircraft-radar-wrap { display: grid; width: 100%; height: 100%; max-width: 340px; grid-template-columns: minmax(0, 1fr) minmax(105px, .65fr); align-items: center; gap: 8px; margin: 0 auto; }
     .aircraft-radar { display: block; width: 100%; height: auto; }
     .aircraft-radar-grid { fill: none; stroke: #344557; stroke-width: 1; }
     .aircraft-radar-grid line { stroke: #3a4b5e; }
     .aircraft-radar-area { fill: rgb(82 211 162 / 25%); stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
     .aircraft-radar-point { stroke: #143e36; stroke-width: 1.5; }
-    .aircraft-radar-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 12px; margin: 0 auto; }
+    .aircraft-radar-legend { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; margin: 0 auto; }
     .aircraft-radar-legend > div { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; align-items: center; gap: 5px; color: #c8d1dc; }
     .aircraft-radar-key { width: 8px; height: 8px; border-radius: 50%; background: var(--radar-axis-color); }
     .aircraft-radar-legend strong { color: var(--text); font-weight: 750; }
     .mini-track { height: 5px; overflow: hidden; border-radius: 8px; background: #101822; }
     .mini-fill { height: 100%; border-radius: inherit; background: var(--blue); }
-    .derived-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
-    .derived-stat { padding: 10px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 10%); }
+    .derived-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin: 0; }
+    .derived-stat { min-width: 0; padding: 4px; border: 1px solid var(--border); border-radius: 9px; background: rgb(0 0 0 / 10%); }
     .derived-stat span { display: block; color: var(--muted); font-size: 10px; }
-    .derived-stat strong { display: block; margin-top: 5px; font-size: 14px; }
-    .milestone-list { display: grid; gap: 6px; margin-top: 12px; }
-    .milestone { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 8px; border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-size: 9px; }
-    .milestone.unlocked { border-color: rgb(82 211 162 / 30%); background: rgb(82 211 162 / 6%); color: #a7e8cd; }
-    .milestone strong { font-size: 9px; font-weight: 700; }
-
+    .derived-stat strong { display: block; margin-top: 2px; font-size: 12px; }
     .rival-list { display: grid; gap: 10px; }
     .rival-item { padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: rgb(0 0 0 / 10%); }
     .rival-heading { justify-content: space-between; gap: 8px; }
@@ -598,11 +614,18 @@
       .hub-title { font-size: clamp(36px, 6vw, 58px); }
       .hub-blueprint { height: 120px; margin-top: 24px; }
       .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(220px, .9fr); }
+      .aircraft-card { column-gap: 10px; padding: 12px; }
+      .aircraft-details { gap: 6px; }
+      .aircraft-radar-wrap { max-width: 340px; }
+      .derived-grid { gap: 5px; }
+      .derived-stat { padding: 6px; }
+      .derived-stat strong { font-size: 12px; }
       .career-panel-content .engineering-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .rivals-screen-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .team-screen-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
     }
     @media (max-width: 620px) {
+      body { min-width: 0; }
       .shell { padding: 7px; }
       .hub-view { grid-template-columns: minmax(0, 1fr); align-content: center; gap: 8px; padding: 10px; }
       .hub-showcase { text-align: center; }
@@ -637,11 +660,18 @@
       .nav-full-label { display: none; }
       .nav-short-label { display: inline; }
       .career-screen { padding: 5px; }
-      .overview-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, .65fr) minmax(0, 1fr) minmax(0, .75fr); gap: 5px; }
+      .career-viewport { flex: 1 1 0; min-height: 0; overflow-x: hidden; overflow-y: auto; }
+      .career-track { height: auto; min-height: 100%; align-items: flex-start; }
+      .career-screen { height: auto; min-height: 100%; overflow: visible; }
+      .overview-grid { height: auto; min-height: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto; align-content: start; gap: 5px; }
       .overview-grid .season-card { grid-column: 1; grid-row: 1; }
       .overview-grid .rivalry-panel { grid-column: 2; grid-row: 1; }
-      .overview-grid .aircraft-card { grid-column: 1; grid-row: 2 / 4; padding: 8px; }
-      .overview-grid .scope-card { grid-column: 2; grid-row: 2; padding: 8px; }
+      .overview-grid .aircraft-card { grid-column: 1 / -1; grid-row: 2; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto auto auto auto; row-gap: 4px; padding: 8px; }
+      .aircraft-card > .aircraft-summary { grid-column: 1; grid-row: 3; }
+      .aircraft-card > .aircraft-concept { grid-row: 4; }
+      #aircraftStats { grid-row: 5; }
+      .aircraft-details { grid-column: 1; grid-row: 6; align-content: start; }
+      .overview-grid .scope-card { grid-column: 1; grid-row: 3; padding: 8px; }
       .overview-grid .season-log { grid-column: 2; grid-row: 3; padding: 8px; }
       .season-top { padding: 8px; }
       .season-label { font-size: 9px; }
@@ -659,18 +689,21 @@
       .overview-grid .section-heading p { display: none; }
       .rivalry-score p { font-size: 9px; line-height: 1.3; }
       .aircraft-card .section-heading { margin-bottom: 5px; }
-      .aircraft-card .section-heading p, .aircraft-summary { display: none; }
+      .aircraft-card > .section-heading { margin-bottom: 3px; }
+      .aircraft-card .section-heading p { font-size: 9px; }
       .aircraft-name { margin-bottom: 2px; font-size: 11px; }
+      .aircraft-summary { margin: 0 0 4px; font-size: 8px; line-height: 1.2; }
       .aircraft-concept { margin: 0 0 5px; font-size: 8px; }
-      .aircraft-radar-wrap { max-width: 320px; }
-      .aircraft-radar-legend { gap: 3px 6px; }
-      .derived-grid { gap: 4px; margin-top: 7px; }
-      .derived-stat { padding: 5px; }
-      .derived-stat span { font-size: 8px; }
-      .derived-stat strong { margin-top: 2px; font-size: 10px; }
-      .milestone-list { gap: 3px; margin-top: 5px; }
-      .milestone { padding: 4px 5px; font-size: 7px; }
-      .milestone strong { font-size: 7px; }
+      .aircraft-radar-wrap { display: block; max-width: none; }
+      .aircraft-radar { width: auto; height: 112px; max-width: 100%; margin: 0 auto; }
+      .aircraft-radar-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px 5px; }
+      .aircraft-radar-legend > div { grid-template-columns: 6px minmax(0, 1fr) auto; gap: 3px; font-size: 8px; }
+      .aircraft-radar-key { width: 6px; height: 6px; }
+      .aircraft-details { gap: 5px; }
+      .derived-grid { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+      .derived-stat { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; padding: 3px 4px; }
+      .derived-stat span { font-size: 7px; white-space: normal; }
+      .derived-stat strong { margin: 0; font-size: 8px; white-space: normal; }
       .scope-card .eyebrow { font-size: 7px; }
       .scope-card h2 { margin: 3px 0; font-size: 10px; }
       .scope-card p, .scope-impact { font-size: 8px; line-height: 1.3; }
@@ -760,10 +793,6 @@
       .team-candidate > div span { font-size: 6px; }
       .team-candidate p { display: none; }
       .team-candidate .button { min-height: 21px; padding: 0 4px; font-size: 7px; }
-      .career-toolbar { grid-template-columns: minmax(0, 1fr) auto; gap: 4px; margin-top: 6px; }
-      .career-toolbar .notice { padding: 5px; font-size: 9px; line-height: 1.2; }
-      .career-toolbar .notice:empty { display: none; }
-      .career-toolbar .week-footer .button { width: auto; min-width: 0; padding: 0 9px; white-space: nowrap; }
       .event-content { padding: 8px; }
       .event-hero { padding: 8px; }
       .event-header { gap: 5px; }
@@ -805,7 +834,6 @@
       .hub-title { margin-top: 8px; }
       .career-context { margin-bottom: 4px; }
       .career-nav-wrap { margin-bottom: 4px; }
-      .career-toolbar { margin-top: 4px; }
       .rivals-screen-grid .scouting-list { gap: 5px; }
       .scouting-intel { gap: 2px; margin-top: 4px; }
       .event-summary-content .event-stages { gap: 3px; }
@@ -973,9 +1001,11 @@
               <h3 class="aircraft-name"><span id="aircraftName">Aurora</span> <span id="designYear"></span></h3>
               <p class="aircraft-summary" id="aircraftSummary">Projeto em desenvolvimento · nenhuma aeronave montada</p>
               <p class="aircraft-concept" id="aircraftConcept">Conceito: ainda não escolhido</p>
+              <p class="aircraft-pending" id="aircraftPending" hidden>Construa o protótipo para revelar os indicadores da aeronave.</p>
               <div id="aircraftStats"></div>
-              <div class="derived-grid" id="derivedStats"></div>
-              <div class="milestone-list" id="milestoneList"></div>
+              <div class="aircraft-details" id="aircraftDetails">
+                <div class="derived-grid" id="derivedStats"></div>
+              </div>
             </section>
             <section class="panel panel-pad rivalry-panel" id="rivalryPanel">
               <div class="section-heading"><div><h2>Disputa pelo título</h2><p>Rivalidade da temporada</p></div></div>
@@ -1069,13 +1099,7 @@
         </section>
       </div>
     </div>
-    <div class="career-toolbar">
-      <div class="notice" id="actionNotice" role="status" aria-live="polite"></div>
-      <div class="week-footer" id="weekFooter">
-        <p>Sem ação disponível? Encerrar a semana avança o calendário e dá às rivais mais tempo para evoluir.</p>
-        <button class="button" type="button" data-action="advance-week">Encerrar semana <span aria-hidden="true">→</span></button>
-      </div>
-    </div>
+    <div class="notice" id="actionNotice" role="status" aria-live="polite"></div>
     <div class="footer-note">Aerodesign Manager · Campeonato por baterias · Clima e estratégia mudam as chances · Progresso salvo neste navegador</div>
     </div>
   </div>
@@ -2848,7 +2872,7 @@
 /* ui.js */
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { attributes, fundraisers, milestones, milestoneLevel, strategies, weeksPerSeason, seasonPhases } = game.Content;
+  const { attributes, fundraisers, strategies, weeksPerSeason, seasonPhases } = game.Content;
   const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
   })[character]);
@@ -2916,7 +2940,6 @@
       : active.subtitle;
     document.getElementById("championshipCountdown").textContent =
       `Etapa ${phaseIndex + 1}/3 · ${currentPhase.title} · Semana ${state.week} de ${weeksPerSeason}`;
-    document.getElementById("weekFooter").hidden = state.phase !== "preparation";
   }
 
   function renderCareerNavigation(activeScreen, state) {
@@ -3154,6 +3177,24 @@
   }
 
   function renderAircraft(state) {
+    const concept = state.skills
+      .map((id) => game.Content.skillNodes.find((node) => node.id === id))
+      .find((node) => node?.concept);
+    document.getElementById("aircraftSummary").textContent = state.project.finalAircraft
+      ? "Aeronave final · pronta para a competição"
+      : state.project.prototypeBuilt ? "Protótipo em ensaios · sem avião final"
+        : "Projeto em desenvolvimento · nenhuma aeronave montada";
+    document.getElementById("aircraftConcept").textContent = concept
+      ? `Conceito: ${concept.title.replace("Conceito · ", "")}`
+      : "Conceito: ainda não escolhido";
+    const hasPrototype = state.project.prototypeBuilt || Boolean(state.project.finalAircraft);
+    const pending = document.getElementById("aircraftPending");
+    pending.textContent = "Construa o protótipo para revelar os indicadores da aeronave.";
+    pending.hidden = hasPrototype;
+    document.getElementById("aircraftStats").hidden = !hasPrototype;
+    document.getElementById("aircraftDetails").hidden = !hasPrototype;
+    if (!hasPrototype) return;
+
     const aircraftAttributes = state.project.finalAircraft?.attributes || state.attributes;
     const fields = [
       { key: "aerodynamics", label: "Aerodinâmica" },
@@ -3201,25 +3242,11 @@
         </div>
       </div>`;
     const design = game.Aircraft.derive(aircraftAttributes, state.skills);
-    const concept = state.skills
-      .map((id) => game.Content.skillNodes.find((node) => node.id === id))
-      .find((node) => node?.concept);
-    document.getElementById("aircraftSummary").textContent = state.project.finalAircraft
-      ? "Aeronave final · pronta para a competição"
-      : state.project.prototypeBuilt ? "Protótipo em ensaios · sem avião final"
-        : "Projeto em desenvolvimento · nenhuma aeronave montada";
-    document.getElementById("aircraftConcept").textContent = concept
-      ? `Conceito: ${concept.title.replace("Conceito · ", "")}`
-      : "Conceito: ainda não escolhido";
     document.getElementById("derivedStats").innerHTML = `
       <div class="derived-stat"><span>Peso vazio</span><strong>${design.emptyWeight.toFixed(1).replace(".", ",")} kg</strong></div>
       <div class="derived-stat"><span>Carga estimada</span><strong>${design.payload.toFixed(1).replace(".", ",")} kg</strong></div>
       <div class="derived-stat"><span>Confiabilidade</span><strong>${Math.round(design.reliability * 100)}%</strong></div>
       <div class="derived-stat"><span>Potencial de voo</span><strong>${Math.round(design.payloadPotential)} / 100</strong></div>`;
-    document.getElementById("milestoneList").innerHTML = milestones.map((milestone) => `
-      <div class="milestone ${design.milestones[milestone.key] ? "unlocked" : ""}">
-        <strong>${milestone.label}</strong><span>${design.milestones[milestone.key] ? milestone.effect : `Nível ${milestoneLevel}`}</span>
-      </div>`).join("");
   }
 
   function lastSeason(state) {
@@ -3792,7 +3819,7 @@
     state = game.State.create({ teamName, aircraftName, difficulty });
     careerScreen = "overview";
     appView = "game";
-    notice = { text: `Carreira iniciada · dificuldade ${game.Content.difficulties[state.difficulty].label}.`, kind: "success" };
+    notice = { text: "", kind: "" };
     const result = game.Storage.save(state);
     if (!result.ok) notice = { text: `Carreira iniciada, mas não foi possível salvar: ${result.message}`, kind: "error" };
     hubNotice = { text: "", kind: "" };

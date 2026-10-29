@@ -457,9 +457,13 @@ test("career UI keeps cash visible and presents the aircraft flight circuit", ()
 test("aircraft overview plots all four attributes on a labeled radar chart", () => {
   const { game, elements } = createHarness();
   const state = game.State.create();
+  state.project.prototypeBuilt = true;
   state.attributes = { aerodynamics: 12, structures: 34, systems: 56, report: 78 };
   game.UI.render(state, "overview", { text: "", kind: "" });
 
+  assert.equal(elements.get("aircraftPending").hidden, true);
+  assert.equal(elements.get("aircraftStats").hidden, false);
+  assert.equal(elements.get("aircraftDetails").hidden, false);
   const chart = elements.get("aircraftStats").innerHTML;
   assert.match(chart, /<svg class="aircraft-radar"[^>]+role="img"/);
   assert.match(chart, /points="130\.0,91\.8 153\.1,100\.0 130\.0,138\.1 77\.0,100\.0"/);
@@ -472,6 +476,28 @@ test("aircraft overview plots all four attributes on a labeled radar chart", () 
     assert.match(chart, new RegExp(`<span class="aircraft-radar-key"[^>]+></span><span>${label}</span><strong>${value}</strong>`));
   }
   assert.doesNotMatch(chart, /mini-track|aircraft-stat/);
+});
+
+test("aircraft overview hides flight indicators until a prototype is built", () => {
+  const { game, elements } = createHarness();
+  const state = game.State.create();
+
+  game.UI.render(state, "overview", { text: "", kind: "" });
+
+  assert.equal(elements.get("aircraftSummary").textContent, "Projeto em desenvolvimento · nenhuma aeronave montada");
+  assert.equal(elements.get("aircraftPending").hidden, false);
+  assert.match(elements.get("aircraftPending").textContent, /Construa o protótipo/);
+  assert.equal(elements.get("aircraftStats").hidden, true);
+  assert.equal(elements.get("aircraftDetails").hidden, true);
+
+  state.project.prototypeBuilt = true;
+  game.UI.render(state, "overview", { text: "", kind: "" });
+
+  assert.equal(elements.get("aircraftPending").hidden, true);
+  assert.equal(elements.get("aircraftStats").hidden, false);
+  assert.equal(elements.get("aircraftDetails").hidden, false);
+  assert.match(elements.get("aircraftStats").innerHTML, /aircraft-radar/);
+  assert.match(elements.get("derivedStats").innerHTML, /Peso vazio/);
 });
 
 test("rival strategies reflect team philosophy and flight choices trade reliability for score", () => {

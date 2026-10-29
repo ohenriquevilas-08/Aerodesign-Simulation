@@ -1,6 +1,6 @@
 (() => {
   const game = globalThis.AeroDesign ||= {};
-  const { attributes, fundraisers, milestones, milestoneLevel, strategies, weeksPerSeason, seasonPhases } = game.Content;
+  const { attributes, fundraisers, strategies, weeksPerSeason, seasonPhases } = game.Content;
   const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
   })[character]);
@@ -68,7 +68,6 @@
       : active.subtitle;
     document.getElementById("championshipCountdown").textContent =
       `Etapa ${phaseIndex + 1}/3 · ${currentPhase.title} · Semana ${state.week} de ${weeksPerSeason}`;
-    document.getElementById("weekFooter").hidden = state.phase !== "preparation";
   }
 
   function renderCareerNavigation(activeScreen, state) {
@@ -306,6 +305,24 @@
   }
 
   function renderAircraft(state) {
+    const concept = state.skills
+      .map((id) => game.Content.skillNodes.find((node) => node.id === id))
+      .find((node) => node?.concept);
+    document.getElementById("aircraftSummary").textContent = state.project.finalAircraft
+      ? "Aeronave final · pronta para a competição"
+      : state.project.prototypeBuilt ? "Protótipo em ensaios · sem avião final"
+        : "Projeto em desenvolvimento · nenhuma aeronave montada";
+    document.getElementById("aircraftConcept").textContent = concept
+      ? `Conceito: ${concept.title.replace("Conceito · ", "")}`
+      : "Conceito: ainda não escolhido";
+    const hasPrototype = state.project.prototypeBuilt || Boolean(state.project.finalAircraft);
+    const pending = document.getElementById("aircraftPending");
+    pending.textContent = "Construa o protótipo para revelar os indicadores da aeronave.";
+    pending.hidden = hasPrototype;
+    document.getElementById("aircraftStats").hidden = !hasPrototype;
+    document.getElementById("aircraftDetails").hidden = !hasPrototype;
+    if (!hasPrototype) return;
+
     const aircraftAttributes = state.project.finalAircraft?.attributes || state.attributes;
     const fields = [
       { key: "aerodynamics", label: "Aerodinâmica" },
@@ -353,25 +370,11 @@
         </div>
       </div>`;
     const design = game.Aircraft.derive(aircraftAttributes, state.skills);
-    const concept = state.skills
-      .map((id) => game.Content.skillNodes.find((node) => node.id === id))
-      .find((node) => node?.concept);
-    document.getElementById("aircraftSummary").textContent = state.project.finalAircraft
-      ? "Aeronave final · pronta para a competição"
-      : state.project.prototypeBuilt ? "Protótipo em ensaios · sem avião final"
-        : "Projeto em desenvolvimento · nenhuma aeronave montada";
-    document.getElementById("aircraftConcept").textContent = concept
-      ? `Conceito: ${concept.title.replace("Conceito · ", "")}`
-      : "Conceito: ainda não escolhido";
     document.getElementById("derivedStats").innerHTML = `
       <div class="derived-stat"><span>Peso vazio</span><strong>${design.emptyWeight.toFixed(1).replace(".", ",")} kg</strong></div>
       <div class="derived-stat"><span>Carga estimada</span><strong>${design.payload.toFixed(1).replace(".", ",")} kg</strong></div>
       <div class="derived-stat"><span>Confiabilidade</span><strong>${Math.round(design.reliability * 100)}%</strong></div>
       <div class="derived-stat"><span>Potencial de voo</span><strong>${Math.round(design.payloadPotential)} / 100</strong></div>`;
-    document.getElementById("milestoneList").innerHTML = milestones.map((milestone) => `
-      <div class="milestone ${design.milestones[milestone.key] ? "unlocked" : ""}">
-        <strong>${milestone.label}</strong><span>${design.milestones[milestone.key] ? milestone.effect : `Nível ${milestoneLevel}`}</span>
-      </div>`).join("");
   }
 
   function lastSeason(state) {

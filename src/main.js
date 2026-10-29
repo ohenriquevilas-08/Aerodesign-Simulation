@@ -196,7 +196,7 @@
     state = game.State.create({ teamName, aircraftName, difficulty });
     careerScreen = "overview";
     appView = "game";
-    notice = { text: `Carreira iniciada · dificuldade ${game.Content.difficulties[state.difficulty].label}.`, kind: "success" };
+    notice = { text: "", kind: "" };
     const result = game.Storage.save(state);
     if (!result.ok) notice = { text: `Carreira iniciada, mas não foi possível salvar: ${result.message}`, kind: "error" };
     hubNotice = { text: "", kind: "" };
